@@ -2536,6 +2536,7 @@ namespace UltrakULL.json
         public string tutorial_introStatusUpdate;
 
         public string tutorial_audioCalibrationTitle;
+        public string tutorial_audioCalibrationSliderOFF;
         public string tutorial_audioCalibrationWarning1;
         public string tutorial_audioCalibrationWarning2;
         public string tutorial_audioCalibrationWarning3;
@@ -2578,6 +2579,8 @@ namespace UltrakULL.json
         public string tutorial_shockwave3;
         public string tutorial_orb1;
         public string tutorial_orb2;
+        public string tutorial_calibrationError;
+        public string tutorial_calibrationOk;
 
     }
 

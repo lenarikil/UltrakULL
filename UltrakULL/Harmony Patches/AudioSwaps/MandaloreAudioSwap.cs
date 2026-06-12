@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Reflection.Emit;
 using HarmonyLib;
 using UltrakULL.audio;
 using UltrakULL.json;
@@ -9,158 +13,201 @@ using static UltrakULL.CommonFunctions;
 
 namespace UltrakULL.Harmony_Patches.AudioSwaps
 {
-    [HarmonyPatch(typeof(Mandalore),"Start")]
+    [HarmonyPatch(typeof(Mandalore), "Start")]
     public static class MandaloreAudioSwap
     {
-        [HarmonyPostfix]
-        public static void Mandalore_AudioSwap(Mandalore __instance)
+        private static string _deathSubtitleText;
+        private static readonly HashSet<int> _deathHandledInstances = new HashSet<int>();
+        private static int _tauntSequenceIndex = 0;
+
+        private static int GetSequentialTauntIndex(int max)
+        {
+            return _tauntSequenceIndex++ % max;
+        }
+
+        private static readonly Dictionary<string, string> ClipNameMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "fullauto", "mandaloreFullAuto" },
+            { "fullerauto", "mandaloreFullerAuto" },
+            { "speed1_shammy", "mandalorePhaseChange1Owl" },
+            { "speed2_shammy", "mandalorePhaseChange2Owl" },
+            { "speed3_shammy", "mandalorePhaseChangeFinalOwl" },
+            { "death_shammy", "mandaloreDefeatedOwl" },
+            { "taunt1_shammy", "mandaloreTaunt_ImGonnaShootThem" },
+            { "taunt2_shammy", "mandaloreTaunt_WhyAreWeInThePast" },
+            { "taunt3_shammy", "mandaloreTaunt_ImGonnaPoisonYou" },
+            { "taunt4_shammy", "mandaloreTaunt4Owl" },
+            { "speed1_mandy", "mandalorePhaseChange1Manda" },
+            { "speed2_mandy", "mandalorePhaseChange2Manda" },
+            { "speed3_mandy", "mandalorePhaseChangeFinalManda" },
+            { "death_mandy", "mandaloreDefeatedManda" },
+            { "taunt1_mandy", "mandaloreTaunt_YouCannotImagine" },
+            { "taunt2_mandy", "mandaloreTaunt2Manda" },
+            { "taunt3_mandy", "mandaloreTaunt_What" },
+            { "taunt4_mandy", "mandaloreTaunt_HoldStill" },
+        };
+
+        [HarmonyTranspiler]
+        static IEnumerable<CodeInstruction> MandaloreStartTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            var codes = instructions.ToList();
+            var randomRange = AccessTools.Method(typeof(UnityEngine.Random), "Range", new[] { typeof(int), typeof(int) });
+            var sequentialTaunt = AccessTools.Method(typeof(MandaloreAudioSwap), nameof(GetSequentialTauntIndex), new[] { typeof(int) });
+
+            for (int i = 0; i < codes.Count; i++)
+            {
+                if (codes[i].opcode == OpCodes.Call && codes[i].operand != null && codes[i].operand.Equals(randomRange))
+                {
+                    int minPush = FindPrecedingLdcI4_0(codes, i);
+                    if (minPush >= 0)
+                    {
+                        codes.RemoveAt(minPush);
+                        i--;
+                    }
+                    codes[i].operand = sequentialTaunt;
+                    break;
+                }
+            }
+            return codes;
+        }
+
+        private static int FindPrecedingLdcI4_0(List<CodeInstruction> codes, int fromIndex)
+        {
+            for (int j = fromIndex - 1; j >= 0; j--)
+            {
+                if (codes[j].opcode == OpCodes.Ldc_I4_0)
+                {
+                    if (j + 1 < fromIndex && codes[j + 1].opcode == OpCodes.Ldelem_Ref)
+                        continue;
+                    return j;
+                }
+            }
+            return -1;
+        }
+
+        [HarmonyPrefix]
+        public static bool Mandalore_AudioSwap(Mandalore __instance)
         {
             try
             {
-                if(LanguageManager.configFile.Bind("General","activeDubbing","False").Value == "False" || isUsingEnglish())
-                {
-                    return;
-                }
+                if (LanguageManager.configFile.Bind("General", "activeDubbing", "False").Value == "False" || isUsingEnglish())
+                    return true;
 
-                Mandalore instance = __instance;
-                AudioPreloadManager.EnsureCurrentScenePreloaded(delegate { ApplyAudioSwap(instance); });
+                ApplyAudioSwap(__instance);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Logging.Warn("[MandaloreAudioSwap] Exception in patch: " + e.Message);
             }
+            return true;
+        }
+
+        private static string ResolveClipPath(string clipName, string folder)
+        {
+            string mappedName;
+            if (ClipNameMap.TryGetValue(clipName, out mappedName))
+                return folder + mappedName;
+            return folder + clipName;
         }
 
         private static void ApplyAudioSwap(Mandalore __instance)
         {
-            try
+            if (__instance == null) return;
+
+            string mandaloreFolder = AudioSwapper.SpeechFolder + "mandalore" + Path.DirectorySeparatorChar;
+
+            if (__instance.voices != null)
             {
-                if (__instance == null)
+                for (int i = 0; i < __instance.voices.Length; i++)
                 {
-                    return;
-                }
-
-                //Mandalore uses an array for MandaloreVoice.
-                //voices[0] - Mandalore, voices[1] = Owl.
-                
-                //NOTE - both audio files for Manda & Owl play at the SAME TIME.
-                //This means each seperate audio file will need to have the relevant period of silence before/after speaking.
-                string mandaloreFolder = AudioSwapper.SpeechFolder + "mandalore" + Path.DirectorySeparatorChar;
-                if (__instance.voices != null)
-                {
-                    for (int i = 0; i < __instance.voices.Length; i++)
+                    if (__instance.voices[i] != null)
                     {
-                        if (__instance.voices[i] != null)
-                            AudioSwapper.LogAudioSourceDiagnostics(__instance.voices[i].GetComponent<AudioSource>(), "MandaloreVoice" + i);
-                    }
-                }
-            
-                //Attack 1 (Full auto)
-                var inst = __instance;
-                AudioClip tmpAttack1 = inst.voiceFull;
-                string mandaloreAttack1String = mandaloreFolder + "mandaloreFullAuto";
-                AudioSwapper.SwapClipWithFileAsync(tmpAttack1, mandaloreAttack1String, (clip) => { try { inst.voiceFull = clip; } catch { } });
-
-                //Attack 2 (Fuller auto)
-                AudioClip tmpAttack2 = inst.voiceFuller;
-                string mandaloreAttack2String = mandaloreFolder + "mandaloreFullerAuto";
-                AudioSwapper.SwapClipWithFileAsync(tmpAttack2, mandaloreAttack2String, (clip) => { try { inst.voiceFuller = clip; } catch { } });
-
-                //Phase change 1 (speed increase)
-                ref AudioClip mandalorePhaseChange1Manda = ref __instance.voices[0].secondPhase;
-                ref AudioClip mandalorePhaseChange1Owl = ref __instance.voices[1].secondPhase;
-                
-                string mandalorePhaseChange1MandaString = mandaloreFolder + "mandalorePhaseChange1Manda";
-                string mandalorePhaseChange1OwlString = mandaloreFolder + "mandalorePhaseChange1Owl";
-                
-                AudioClip tmpPhase1M = mandalorePhaseChange1Manda;
-                AudioSwapper.SwapClipWithFileAsync(tmpPhase1M, mandalorePhaseChange1MandaString, (clip) => { try { inst.voices[0].secondPhase = clip; } catch { } });
-                AudioClip tmpPhase1O = mandalorePhaseChange1Owl;
-                AudioSwapper.SwapClipWithFileAsync(tmpPhase1O, mandalorePhaseChange1OwlString, (clip) => { try { inst.voices[1].secondPhase = clip; } catch { } });
-
-                //Phase change 2 (max speed)
-                ref AudioClip mandalorePhaseChange2Manda = ref __instance.voices[0].thirdPhase;
-                ref AudioClip mandalorePhaseChange2Owl = ref __instance.voices[1].thirdPhase;
-                
-                string mandalorePhaseChange2MandaString = mandaloreFolder + "mandalorePhaseChange2Manda";
-                string mandalorePhaseChange2OwlString = mandaloreFolder + "mandalorePhaseChange2Owl";
-                
-                AudioClip tmpPhase2M = mandalorePhaseChange2Manda;
-                AudioSwapper.SwapClipWithFileAsync(tmpPhase2M, mandalorePhaseChange2MandaString, (clip) => { try { inst.voices[0].thirdPhase = clip; } catch { } });
-                AudioClip tmpPhase2O = mandalorePhaseChange2Owl;
-                AudioSwapper.SwapClipWithFileAsync(tmpPhase2O, mandalorePhaseChange2OwlString, (clip) => { try { inst.voices[1].thirdPhase = clip; } catch { } });
-                
-                //Phase change 3 (sanded)
-                ref AudioClip mandalorePhaseChange3Manda = ref __instance.voices[0].finalPhase;
-                ref AudioClip mandalorePhaseChange3Owl = ref __instance.voices[1].finalPhase;
-                
-                string mandalorePhaseChange3MandaString = mandaloreFolder + "mandalorePhaseChangeFinalManda";
-                string mandalorePhaseChange3OwlString = mandaloreFolder + "mandalorePhaseChangeFinalOwl";
-                
-                AudioClip tmpPhase3M = mandalorePhaseChange3Manda;
-                AudioSwapper.SwapClipWithFileAsync(tmpPhase3M, mandalorePhaseChange3MandaString, (clip) => { try { inst.voices[0].finalPhase = clip; } catch { } });
-                AudioClip tmpPhase3O = mandalorePhaseChange3Owl;
-                AudioSwapper.SwapClipWithFileAsync(tmpPhase3O, mandalorePhaseChange3OwlString, (clip) => { try { inst.voices[1].finalPhase = clip; } catch { } });
-                
-                //Defeated
-                ref AudioClip mandaloreDefeatedManda = ref __instance.voices[0].death;
-                ref AudioClip mandaloreDefeatedOwl = ref __instance.voices[1].death;
-                
-                string mandaloreDefeatedMandaString = mandaloreFolder + "mandaloreDefeatedManda";
-                string mandaloreDefeatedOwlString = mandaloreFolder + "mandaloreDefeatedOwl";
-                
-                AudioClip tmpDefM = mandaloreDefeatedManda;
-                AudioSwapper.SwapClipWithFileAsync(tmpDefM, mandaloreDefeatedMandaString, (clip) => { try { inst.voices[0].death = clip; } catch { } });
-                AudioClip tmpDefO = mandaloreDefeatedOwl;
-                AudioSwapper.SwapClipWithFileAsync(tmpDefO, mandaloreDefeatedOwlString, (clip) => { try { inst.voices[1].death = clip; } catch { } });
-                
-                //Respawn taunts
-                // copy references to arrays (avoid capturing ref locals in lambdas)
-                AudioClip[] mandaloreTauntManda = inst.voices[0].taunts;
-                AudioClip[] mandaloreTauntOwl = inst.voices[1].taunts;
-                
-                string[] mandaTauntLines = 
-                {
-                    "mandaloreTaunt_YouCannotImagine",
-                    "mandaloreTaunt_What",
-                    "mandaloreTaunt_HoldStill"
-                };
-                
-                string[] owlTauntLines = 
-                {
-                    "mandaloreTaunt_ImGonnaShootThem",
-                    "mandaloreTaunt_WhyAreWeInThePast",
-                    "mandaloreTaunt_ImGonnaPoisonYou",
-                };
-
-                int minLength = Math.Min(mandaloreTauntManda.Length, Math.Min(mandaloreTauntOwl.Length, mandaTauntLines.Length));
-                for (int x = 0; x < minLength; x++)
-                {
-                    int ix = x;
-                    switch(ix)
-                    {
-                        case 1:
+                        AudioSwapper.LogAudioSourceDiagnostics(__instance.voices[i].GetComponent<AudioSource>(), "MandaloreVoice" + i);
+                        if (__instance.voices[i].taunts != null)
                         {
-                            AudioSwapper.SwapClipInArrayAsync(inst.voices[1].taunts, ix, mandaloreFolder + owlTauntLines[ix]);
-                            break;
-                        }
-                        case 3:
-                        {
-                            AudioSwapper.SwapClipInArrayAsync(inst.voices[0].taunts, ix, mandaloreFolder + mandaTauntLines[ix]);
-                            break;
-                        }
-                        default:
-                        {
-                            AudioSwapper.SwapClipInArrayAsync(inst.voices[0].taunts, ix, mandaloreFolder + mandaTauntLines[ix]);
-                            AudioSwapper.SwapClipInArrayAsync(inst.voices[1].taunts, ix, mandaloreFolder + owlTauntLines[ix]);
-                            break;
+                            Logging.Warn("[MandaloreAudioSwap] Voice " + i + " taunts array Length: " + __instance.voices[i].taunts.Length);
+                            for (int t = 0; t < __instance.voices[i].taunts.Length; t++)
+                            {
+                                if (__instance.voices[i].taunts[t] != null)
+                                    Logging.Warn("[MandaloreAudioSwap] Voice " + i + " taunt[" + t + "] clip name: " + __instance.voices[i].taunts[t].name);
+                            }
                         }
                     }
                 }
             }
-            catch(Exception e)
+
+            var inst = __instance;
+
+            SwapClip(inst.voiceFull, mandaloreFolder, (clip) => { inst.voiceFull = clip; });
+            SwapClip(inst.voiceFuller, mandaloreFolder, (clip) => { inst.voiceFuller = clip; });
+
+            if (inst.voices != null && inst.voices.Length >= 2)
             {
-                Console.WriteLine(e.ToString());
+                for (int v = 0; v < 2; v++)
+                {
+                    int vi = v;
+                    SwapClip(inst.voices[vi].secondPhase, mandaloreFolder, (clip) => { inst.voices[vi].secondPhase = clip; });
+                    SwapClip(inst.voices[vi].thirdPhase, mandaloreFolder, (clip) => { inst.voices[vi].thirdPhase = clip; });
+                    SwapClip(inst.voices[vi].finalPhase, mandaloreFolder, (clip) => { inst.voices[vi].finalPhase = clip; });
+                    SwapClip(inst.voices[vi].death, mandaloreFolder, (clip) => { inst.voices[vi].death = clip; });
+                    SwapArray(inst.voices[vi].taunts, mandaloreFolder);
+                }
+
+                SetupDeathMonitor(inst);
+            }
+        }
+
+        private static void SwapClip(AudioClip original, string folder, Action<AudioClip> assign)
+        {
+            if (original == null) return;
+            AudioSwapper.SwapClipWithFileAsync(original, ResolveClipPath(original.name, folder), assign);
+        }
+
+        private static void SwapArray(AudioClip[] clips, string folder)
+        {
+            if (clips == null) return;
+            for (int i = 0; i < clips.Length; i++)
+            {
+                int ix = i;
+                if (clips[ix] == null) continue;
+                AudioSwapper.SwapClipInArrayAsync(clips, ix, ResolveClipPath(clips[ix].name, folder));
+            }
+        }
+
+        private static void SetupDeathMonitor(Mandalore instance)
+        {
+            if (instance == null || instance.voices == null || instance.voices.Length < 2)
+                return;
+
+            _deathSubtitleText = "<color=#9EE6FF>" + LanguageManager.CurrentLanguage.subtitles.subtitles_mandalore_defeated + "</color>";
+        }
+
+        [HarmonyPatch(typeof(Mandalore), "Update")]
+        [HarmonyPostfix]
+        public static void OnUpdatePostfix(Mandalore __instance)
+        {
+            if (__instance.voices != null && __instance.voices.Length >= 2 && __instance.voices[0] != null && __instance.voices[0].dying)
+            {
+                int id = __instance.GetInstanceID();
+                if (_deathHandledInstances.Add(id) && !string.IsNullOrEmpty(_deathSubtitleText))
+                {
+                    MonoSingleton<SubtitleController>.Instance.DisplaySubtitle(_deathSubtitleText, DeathAudioPlayer.AudioSource);
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(MandaloreVoice), "Death")]
+        [HarmonyPostfix]
+        public static void OnDeathPostfix(MandaloreVoice __instance)
+        {
+            if (__instance.death != null)
+            {
+                var aud = __instance.GetComponent<AudioSource>();
+                if (aud != null)
+                {
+                    DeathAudioPlayer.PlayOneShot(__instance.death, aud.volume);
+                    aud.Stop();
+                }
             }
         }
     }
