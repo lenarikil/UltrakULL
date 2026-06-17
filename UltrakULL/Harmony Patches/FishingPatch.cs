@@ -36,11 +36,12 @@ namespace UltrakULL.Harmony_Patches
             }
             if(show && fish != null)
             {
-                string fishName = "";
-                switch(fish.fishName)
+                string fishName = fish.fishName;
+                switch (fish.fishName)
                 { 
                     case "Funny Stupid Fish (Friend)":
                     {
+                        fishName = LanguageManager.CurrentLanguage.fishing.fish_terminalfunnyStupidFish;
                         fishName = LanguageManager.CurrentLanguage.fishing.fish_funnyStupidFish;
                         break;
                     }
@@ -100,7 +101,7 @@ namespace UltrakULL.Harmony_Patches
                         break;
                     }
                 }
-                ___fishCaughtText.text ="<size=28>" + LanguageManager.CurrentLanguage.fishing.fish_fishCaught + "</size> <color=orange>" + fishName + "</color>";
+                ___fishCaughtText.text = "<size=56>" + LanguageManager.CurrentLanguage.fishing.fish_fishCaught + "</size> <color=orange><size=80>" + fishName + "</size></color>";
                 ___fishCaughtText.resizeTextForBestFit = true;
                 
                 Text fishSizeText = GetTextfromGameObject(___fishSizeContainer);
@@ -109,7 +110,7 @@ namespace UltrakULL.Harmony_Patches
             }
         }
     }
-
+    
     [HarmonyPatch(typeof(FishingRodWeapon),"Update")]
     public class DisplayWaterType
     {
@@ -181,7 +182,7 @@ namespace UltrakULL.Harmony_Patches
             {
                 case "Funny Stupid Fish (Friend)":
                 {
-                    fish.fishName = LanguageManager.CurrentLanguage.fishing.fish_funnyStupidFish;
+                    fish.fishName = LanguageManager.CurrentLanguage.fishing.fish_terminalfunnyStupidFish;
                     fish.description = LanguageManager.CurrentLanguage.fishing.fish_funnyStupidFishDescription1 + "\n\n"
                                         + LanguageManager.CurrentLanguage.fishing.fish_funnyStupidFishDescription2;
                     break;

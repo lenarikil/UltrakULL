@@ -25,7 +25,7 @@ namespace UltrakULL.Harmony_Patches
         public static void UpdateMoneyPostfix(MoneyText __instance)
         {
             TextMeshProUGUI tmtext = __instance.GetComponent<TextMeshProUGUI>();
-            tmtext.text = MoneyText.DivideMoney(GameProgressSaver.GetMoney()) + LanguageManager.CurrentLanguage.shop.shop_moneyCount;
+            tmtext.text = MoneyText.DivideMoney(GameProgressSaver.GetMoney()) + " <color=#FF4343>" + LanguageManager.CurrentLanguage.shop.shop_moneyCount + "</color>";
         }
     }
 
