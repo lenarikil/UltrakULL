@@ -59,7 +59,7 @@ namespace UltrakULL.Harmony_Patches
                     ___equipText.text = LanguageManager.CurrentLanguage.shop.shop_equipped;
                     return;
                 case "Alternate":
-                    ___equipText.text = LanguageManager.CurrentLanguage.shop.shop_colorsAlternative;
+                    ___equipText.text = LanguageManager.CurrentLanguage.shop.shop_alternate;
                     return;
                 default:
                     return;
@@ -78,7 +78,7 @@ namespace UltrakULL.Harmony_Patches
                     ___equipText.text = LanguageManager.CurrentLanguage.shop.shop_equipped;
                     return;
                 case 2:
-                    ___equipText.text = LanguageManager.CurrentLanguage.shop.shop_colorsAlternative;
+                    ___equipText.text = LanguageManager.CurrentLanguage.shop.shop_alternate;
                     return;
                 default:
                     return;
