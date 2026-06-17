@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using static UltrakULL.CommonFunctions;
 using UltrakULL.json;
 using System.Data;
+using System.Threading.Tasks;
 
 namespace UltrakULL
 {
@@ -16,23 +17,38 @@ namespace UltrakULL
 		{
 			try
 			{
-				GameObject titleObject = GetGameObjectChild(mainMenu, "Main Menu (1)");
+				GameObject titleObject = GetGameObjectChild(GetGameObjectChild(mainMenu, "Main Menu (1)"), "LeftSide");
 
 				//Early access tag
-				TextMeshProUGUI earlyAccessText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(titleObject, "Title"), "Text"));
-				earlyAccessText.text = "--" + LanguageManager.CurrentLanguage.frontend.mainmenu_earlyAccess + "--";
+				TextMeshProUGUI earlyAccessText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(titleObject, "Text (3)"), "Text"));
+				earlyAccessText.text = LanguageManager.CurrentLanguage.frontend.mainmenu_earlyAccess;
+				TextMeshProUGUI earlyAccessBackground = GetTextMeshProUGUI(GetGameObjectChild(titleObject, "Text (3)"));
+                earlyAccessBackground.text = "<mark=#000000>" + LanguageManager.CurrentLanguage.frontend.mainmenu_earlyAccess;
 
+                //V1 Initialization strings
+                TextMeshProUGUI v1InitText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(titleObject, "Text (2)"), "Text (1)"));
+				v1InitText.text = LanguageManager.CurrentLanguage.frontend.mainmenu_v1Init;
+                TextMeshProUGUI v1InitBackground = GetTextMeshProUGUI(GetGameObjectChild(titleObject, "Text (2)")); // Yep. Background is a TMP too. 
+                v1InitBackground.text = "<mark=#000000>" + LanguageManager.CurrentLanguage.frontend.mainmenu_v1Init;
+
+                //Init Socials
+                TextMeshProUGUI initSocialsText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(titleObject, "Panel"), "Text (2)"), "Text"));
+                initSocialsText.text = LanguageManager.CurrentLanguage.frontend.mainmenu_initSocials;
+				TextMeshProUGUI initSocialsBackground = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(titleObject, "Panel"), "Text (2)")); // Yep. Background is a TMP too. 
+                initSocialsBackground.text = "<mark=#000000>" + LanguageManager.CurrentLanguage.frontend.mainmenu_initSocials;
+
+                GameObject holidayObject = GetGameObjectChild(titleObject, "Holiday Greetings"); 
                 //Halloween
-                TextMeshProUGUI halloweenText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(titleObject, "Title"), "Text (Halloween)"));
-				halloweenText.text = "<color=orange>--" + LanguageManager.CurrentLanguage.frontend.mainmenu_halloween + "--</color>";
+                TextMeshProUGUI halloweenText = GetTextMeshProUGUI(GetGameObjectChild(holidayObject, "Text (Halloween)"));
+				halloweenText.text = LanguageManager.CurrentLanguage.frontend.mainmenu_halloween;
 
                 //Easter
-                TextMeshProUGUI easterText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(titleObject, "Title"), "Text (Easter)"));
-				easterText.text = "<color=magenta>--" + LanguageManager.CurrentLanguage.frontend.mainmenu_easter + "--</color>";
+                TextMeshProUGUI easterText = GetTextMeshProUGUI(GetGameObjectChild(holidayObject, "Text (Easter)"));
+				easterText.text = LanguageManager.CurrentLanguage.frontend.mainmenu_easter;
 
                 //Christmas
-                TextMeshProUGUI christmasText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(titleObject, "Title"), "Text (Christmas)"));
-				christmasText.text = "<color=red>--" + LanguageManager.CurrentLanguage.frontend.mainmenu_christmas + "--</color>";
+                TextMeshProUGUI christmasText = GetTextMeshProUGUI(GetGameObjectChild(holidayObject, "Text (Christmas)"));
+				christmasText.text = LanguageManager.CurrentLanguage.frontend.mainmenu_christmas;
 
 				//Play button
 				TextMeshProUGUI playButtonText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(titleObject, "Continue"), "Text"));
@@ -49,22 +65,6 @@ namespace UltrakULL
 				//Quit button
 				TextMeshProUGUI quitButtontext = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(titleObject, "Quit"), "Text"));
 				quitButtontext.text = LanguageManager.CurrentLanguage.frontend.mainmenu_quit;
-
-				//UMM buttons
-
-				foreach (Transform a in titleObject.GetComponentsInChildren<Transform>())
-				{
-					if(a.name == "ModsButton")
-					{
-						Text modsButtonText = GetTextfromGameObject(GetGameObjectChild(a.gameObject,"Text"));
-						modsButtonText.text = LanguageManager.CurrentLanguage.frontend.mainmenu_mods;
-					}
-					if(a.name == "RestartButton")
-					{
-						Text restartButtonText = GetTextfromGameObject(GetGameObjectChild(a.gameObject,"Text"));
-						restartButtonText.text = LanguageManager.CurrentLanguage.frontend.mainmenu_restart;
-					}
-				}
 			}
 			catch (Exception e)
 			{
@@ -72,31 +72,118 @@ namespace UltrakULL
 				Logging.Error(e.ToString());
 			}
 		}
-		
-		public static void ChangeTitle(GameObject mainMenu)
+
+        private static void PatchPopUps(GameObject mainMenu)
+        {
+            try
+            {
+                GameObject aboutEncoreObject = GetGameObjectChild(GetGameObjectChild(mainMenu, "EncorePopUp (1)"), "Image");
+
+                //About Encore Title
+                TextMeshProUGUI aboutEncoreTitleText = GetTextMeshProUGUI(GetGameObjectChild(aboutEncoreObject, "Text (TMP) (1)"));
+				if (LanguageManager.CurrentLanguage.frontend.aboutEncoreTitle != "")
+				{
+					aboutEncoreTitleText.text = LanguageManager.CurrentLanguage.frontend.aboutEncoreTitle;
+				}
+				else 
+				{
+                    Logging.Warn("No aboutEncoreTitle text found in the language file. Using default: " + aboutEncoreTitleText.text);
+                }
+                //About Encore Main text
+                TextMeshProUGUI aboutEncoreMainText = GetTextMeshProUGUI(GetGameObjectChild(aboutEncoreObject, "Text (TMP)"));
+				if (LanguageManager.CurrentLanguage.frontend.aboutEncoreMain != "")
+				{
+                    aboutEncoreMainText.text = LanguageManager.CurrentLanguage.frontend.aboutEncoreMain;
+                }
+				else 
+				{ 
+					Logging.Warn("No aboutEncoreMain text found in the language file. Using default: " + aboutEncoreMainText.text); 
+				}
+
+                //About Encore Button //Umm, id dont know, need to translate "Ok" button, but... OK
+                GameObject aboutEncoreButtonTextObject = GetGameObjectChild(GetGameObjectChild(aboutEncoreObject, "General (1)"), "Text");
+				TextMeshProUGUI aboutEncoreButtonText = GetTextMeshProUGUI(aboutEncoreButtonTextObject);
+				if (LanguageManager.CurrentLanguage.frontend.aboutEncoreButton != "")
+				{
+					aboutEncoreButtonText.text = LanguageManager.CurrentLanguage.frontend.aboutEncoreButton;
+				}
+                else
+                {
+                    Logging.Warn("No aboutEncoreButton text found in the language file. Using default: " + aboutEncoreButtonText.text);
+                }
+
+                //Encore available PopUp
+                GameObject encoreAvailableObject = GetGameObjectChild(GetGameObjectChild(mainMenu, "EncorePopUp"), "Image");
+
+                //Encore available Main text
+                TextMeshProUGUI encoreAvailableMainText = GetTextMeshProUGUI(GetGameObjectChild(encoreAvailableObject, "Text (TMP)"));
+                if (LanguageManager.CurrentLanguage.frontend.encoreAvailableMainText != "")
+                {
+                    encoreAvailableMainText.text = LanguageManager.CurrentLanguage.frontend.encoreAvailableMainText;
+                }
+                else
+                {
+                    Logging.Warn("No encoreAvailableMainText text found in the language file. Using default: " + encoreAvailableMainText.text);
+                }
+
+                //Encore available Button //Umm, id dont know, need to translate "Ok" button, but... OK
+                GameObject encoreAvailableButtonTextObject = GetGameObjectChild(GetGameObjectChild(encoreAvailableObject, "General (1)"), "Text");
+                TextMeshProUGUI encoreAvailableButtonText = GetTextMeshProUGUI(encoreAvailableButtonTextObject);
+                if (LanguageManager.CurrentLanguage.frontend.encoreAvailableButton != "")
+                {
+                    encoreAvailableButtonText.text = LanguageManager.CurrentLanguage.frontend.encoreAvailableButton;
+                }
+                else
+                {
+                    Logging.Warn("No encoreAvailableButton text found in the language file. Using default: " + encoreAvailableButtonText.text);
+                }
+
+            }
+            catch (Exception e)
+            {
+                Logging.Error("An error occured while patching PopUp's. Check the console for details.");
+                Logging.Error(e.ToString());
+            }
+        }
+
+
+        /*public static void ChangeTitle(GameObject mainMenu) // This feature is currently disabled because there is a more global texture replacement feature (＞﹏＜)
 		{
 			try
-            {
+			{
 				Logging.Warn("Attempting to change the main menu's title image");
-                GameObject trueMainMenu = GetGameObjectChild(mainMenu, "Main Menu (1)");
+				GameObject trueMainMenu = GetGameObjectChild(GetGameObjectChild(mainMenu, "Main Menu (1)"), "LeftSide");
+				GameObject titleObject = GetGameObjectChild(trueMainMenu, "Title");
+				GameObject titleObjectArabic = null;
+				string currentLangName = LanguageManager.CurrentLanguage.metadata.langName;
+				bool usingArabicLogo = false;
 
-                if (Core.ArabicUltrakillLogo != null)
+                if (currentLangName.Substring(currentLangName.Length - 2).ToUpper() == "AR" && Core.ArabicUltrakillLogo != null)
+				{
+					if (titleObjectArabic == null)
+					{
+						GameObject.Instantiate(titleObject, titleObject.transform.position, Quaternion.identity, trueMainMenu.transform);
+					}
+					titleObjectArabic = GetGameObjectChild(trueMainMenu, "Title(Clone)");
+					titleObjectArabic.GetComponent<Image>().sprite = Core.ArabicUltrakillLogo;
+					usingArabicLogo = true;
+				}
+				else
+				{
+					usingArabicLogo = false;
+                }
+                if (titleObjectArabic != null)
                 {
-                    GameObject TitleObject = GetGameObjectChild(trueMainMenu, "Title");
-					if(GetGameObjectChild(trueMainMenu, "Title(Clone)") == null)
+					if (usingArabicLogo)
 					{
-						GameObject.Instantiate(TitleObject, TitleObject.transform.position, Quaternion.identity, trueMainMenu.transform);
-                    }
-                    GameObject titleObjectArabic = GetGameObjectChild(trueMainMenu, "Title(Clone)");
-                    titleObjectArabic.GetComponent<Image>().sprite = Core.ArabicUltrakillLogo;
-                    if (LanguageManager.CurrentLanguage.metadata.langName == "en-AR")
-					{
-						TitleObject.SetActive(false);
+						trueMainMenu.GetComponent<ObjectActivateInSequence>().objectsToActivate[0] = titleObjectArabic;
+                        titleObject.SetActive(false);
 						titleObjectArabic.SetActive(true);
 					}
 					else
-					{
-						TitleObject.SetActive(true);
+                    {
+                        trueMainMenu.GetComponent<ObjectActivateInSequence>().objectsToActivate[0] = titleObject;
+                        titleObject.SetActive(true);
 						titleObjectArabic.SetActive(false);
 					}
                 }
@@ -106,18 +193,18 @@ namespace UltrakULL
                 Logging.Error("An error occured while switching the title. Check the console for details.");
                 Logging.Error(e.ToString());
             }
-        }
+        }*/
 
 		//Patches all text strings in the difficulty selection menu.
 		private static void PatchDifficultyMenu(GameObject frontEnd)
 		{
 			try
 			{
-				GameObject difficultyObject = GetGameObjectChild(frontEnd, "Difficulty Select (1)");
+				GameObject difficultyObject = GetGameObjectChild(GetGameObjectChild(frontEnd, "Difficulty Select (1)"),"Interactables");
 
 				//Difficulty header text (note: this can't fit much without reducing the default font size.)
 				TextMeshProUGUI difficultyText = GetTextMeshProUGUI(difficultyObject.transform.Find("Title").gameObject);
-				difficultyText.text = LanguageManager.CurrentLanguage.frontend.difficulty_title;
+				difficultyText.text = "--" + LanguageManager.CurrentLanguage.frontend.difficulty_title + "--";
 
 				//Easy header text
 				GameObject easyObject = difficultyObject.transform.Find("Easy").gameObject;
@@ -145,7 +232,7 @@ namespace UltrakULL
 				//Standard header
 				GameObject standardTextObject = GetGameObjectChild(difficultyObject, "Standard");
                 TextMeshProUGUI standardText = GetTextMeshProUGUI(standardTextObject.transform.Find("Name").gameObject);
-				standardText.text = LanguageManager.CurrentLanguage.frontend.difficulty_standard;
+				standardText.text = LanguageManager.CurrentLanguage.frontend.difficulty_standard + " <color=orange>*</color>";
 
 				//Violent header
 				GameObject violentTextObject = GetGameObjectChild(difficultyObject, "Violent");
@@ -162,9 +249,14 @@ namespace UltrakULL
 						TextMeshProUGUI umdText = GetTextMeshProUGUI(umdTextObject.transform.Find("Name").gameObject);
                 		umdText.text = LanguageManager.CurrentLanguage.frontend.difficulty_umd;
 
-				//No need for UMD header yet as it's not in-game
 
-				if (LanguageManager.IsRightToLeft)
+                TextMeshProUGUI underConstructionText = GetTextMeshProUGUI(GetGameObjectChild(umdTextObject, "Under Construction"));
+                underConstructionText.text = LanguageManager.CurrentLanguage.frontend.difficulty_underConstruction;
+
+
+                //No need for UMD header yet as it's not in-game
+
+                if (LanguageManager.IsRightToLeft)
 				{
 					RtlFixDifficultyButton(brutalTextObject, brutalText);
 					RtlFixDifficultyButton(violentTextObject, violentText);
@@ -190,7 +282,7 @@ namespace UltrakULL
 		{
 			try
 			{
-				GameObject difficultyObject = GetGameObjectChild(frontEnd, "Difficulty Select (1)");
+				GameObject difficultyObject = GetGameObjectChild(GetGameObjectChild(frontEnd, "Difficulty Select (1)"), "Interactables");
 
 				//Harmless title
 				GameObject harmlessObject = GetGameObjectChild(difficultyObject, "Harmless Info");
@@ -261,10 +353,6 @@ namespace UltrakULL
                     + LanguageManager.CurrentLanguage.frontend.difficulty_brutalDescription2 + "</color>"
                     + "\n\n"
                     + "<b>" + LanguageManager.CurrentLanguage.frontend.difficulty_brutalDescription3 + "<b>";
-
-                TextMeshProUGUI underConstructionText = GetTextMeshProUGUI(GetGameObjectChild(difficultyObject, "Under Construction"));
-				underConstructionText.text = LanguageManager.CurrentLanguage.frontend.difficulty_underConstruction;
-
 				// RTL
 				if (LanguageManager.IsRightToLeft)
 				{
@@ -338,24 +426,6 @@ namespace UltrakULL
 				rect.anchoredPosition = new Vector3(-388f, 0f, 0f);
 			}
 
-			GameObject progressObject = obj.transform.Find("Progress").gameObject;
-			if (progressObject != null)
-			{
-				Text progress = progressObject.GetComponent<Text>();
-				if (progress != null)
-				{
-					progress.alignment = TextAnchor.MiddleLeft;
-					RectTransform rectTrans = progress.rectTransform;
-					if (rectTrans != null)
-					{
-						rectTrans.anchoredPosition = new Vector2(380.0f - 60.0f, 0.0f);
-					}
-				}
-				else
-				{
-				}
-			}
-
 			GameObject act1RankIcon = obj.transform.Find("RankPanel").gameObject;
 			if (act1RankIcon != null)
 			{
@@ -372,16 +442,74 @@ namespace UltrakULL
 				}
 			}
 
+			GameObject progressObject = obj.transform.Find("Progress").gameObject;
+			if (progressObject != null)
+			{
+				TextMeshProUGUI progress = progressObject.GetComponent<TextMeshProUGUI>();
+				if (progress != null)
+				{
+					progress.alignment = TextAlignmentOptions.MidlineLeft;
+					RectTransform rectTrans = progress.rectTransform;
+					if (rectTrans != null)
+					{
+						rectTrans.anchorMin = new Vector2(0.0f, 0.5f);
+						rectTrans.anchorMax = new Vector2(0.0f, 0.5f);
+						GameObject rankPanel = obj.transform.Find("RankPanel")?.gameObject;
+						RectTransform parentRect = obj.GetComponent<RectTransform>();
+						float minDistance = -70f; // Минимальный отступ между Rank и Progress
+						float progressWidth = rectTrans.rect.width;
+						float newX = 0f;
+
+						if (rankPanel != null)
+						{
+							RectTransform rankRect = rankPanel.GetComponent<RectTransform>();
+							if (rankRect != null)
+							{
+								// Вычисляем правый край RankPanel с учетом его позиции и ширины
+								float rankFullRight = rankRect.anchoredPosition.x + (rankRect.rect.width * 1.0f);
+								// Ставим Progress справа от RankPanel (учитываем, что anchor слева)
+								newX = rankFullRight + minDistance;
+							}
+						}
+
+						// Проверка на выход за пределы родителя
+						if (parentRect != null)
+						{
+							float parentRight = parentRect.rect.width;
+							float maxX = parentRight - progressWidth - minDistance;
+							if (newX > maxX)
+							{
+								newX = maxX;
+							}
+						}
+
+						rectTrans.anchoredPosition = new Vector2(newX, 0.0f);
+					}
+				}
+				else
+				{
+				}
+			}
 
 		}
 
 		private static void PatchChapterSelect(GameObject frontEnd)
 		{
-			GameObject chapterObject = GetGameObjectChild(frontEnd, "Chapter Select");
-            TextMeshProUGUI chapterText = GetTextMeshProUGUI(chapterObject.transform.Find("Title (1)").gameObject);
+			GameObject chapterObject = GetGameObjectChild(GetGameObjectChild(frontEnd, "Chapter Select"), "Chapters");
+            TextMeshProUGUI chapterText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(frontEnd, "Chapter Select"), "Title (1)"));
 			chapterText.text = "--" + LanguageManager.CurrentLanguage.frontend.chapter_title + "--";
 
-			GameObject preludeObject = GetGameObjectChild(chapterObject, "Prelude");
+            //Start patching the Primary and Secondary chapters type titles
+            GameObject primaryObject = GetGameObjectChild(GetGameObjectChild(chapterObject, "Primary"), "Title");
+            TextMeshProUGUI primaryText = GetTextMeshProUGUI(primaryObject);
+            primaryText.text = LanguageManager.CurrentLanguage.frontend.chapter_type_primary;
+
+            GameObject secondaryObject = GetGameObjectChild(GetGameObjectChild(chapterObject, "Secondary"), "Title");
+            TextMeshProUGUI secondaryText = GetTextMeshProUGUI(secondaryObject);
+            secondaryText.text = LanguageManager.CurrentLanguage.frontend.chapter_type_secondary;
+            // End patching the Primary and Secondary chapters type titles
+
+            GameObject preludeObject = GetGameObjectChild(chapterObject, "Prelude");
             TextMeshProUGUI preludeText = GetTextMeshProUGUI(preludeObject.transform.Find("Name").gameObject);
 			preludeText.text = LanguageManager.CurrentLanguage.frontend.chapter_prelude;
 
@@ -397,7 +525,12 @@ namespace UltrakULL
             TextMeshProUGUI act3Text = GetTextMeshProUGUI(act3Object.transform.Find("Name").gameObject);
 			act3Text.text = LanguageManager.CurrentLanguage.frontend.chapter_act3;
 
-			GameObject primeObject = GetGameObjectChild(chapterObject, "Prime");
+			GameObject encoreObject = GetGameObjectChild(chapterObject, "Encore");
+            TextMeshProUGUI encoreText = GetTextMeshProUGUI(encoreObject.transform.Find("Name").gameObject);
+            encoreText.text = LanguageManager.CurrentLanguage.frontend.chapter_encore;
+
+
+            GameObject primeObject = GetGameObjectChild(chapterObject, "Prime");
             TextMeshProUGUI primeText = GetTextMeshProUGUI(primeObject.transform.Find("Name").gameObject);
 			primeText.text = LanguageManager.CurrentLanguage.frontend.chapter_prime;
 
@@ -415,7 +548,8 @@ namespace UltrakULL
 				RtlFixActButton(act1Object, act1Text);
 				RtlFixActButton(act2Object, act2Text);
 				RtlFixActButton(act3Object, act3Text);
-				RtlFixActButton(sandboxObject, sandboxText);
+                RtlFixActButton(encoreObject, encoreText);
+                RtlFixActButton(sandboxObject, sandboxText);
 				RtlFixActButton(cgObject, cgText);
 				RtlFixActButton(primeObject, primeText);
             }
@@ -430,7 +564,7 @@ namespace UltrakULL
             //Prelude title
             TextMeshProUGUI preludeTitleText = GetTextMeshProUGUI(GetGameObjectChild(preludeHeader,"Text"));
 			preludeTitleText.text = LanguageManager.CurrentLanguage.frontend.layer_prelude;
-			preludeTitleText.fontSize = 36;
+			preludeTitleText.fontSize = 46;
 
             //Prelude secret mission title
             TextMeshProUGUI secretText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(preludeHeader, "Secret Mission"), "Text").gameObject);
@@ -471,7 +605,7 @@ namespace UltrakULL
             Text fullIntroText = GetTextfromGameObject(fullIntroObject.transform.Find("Text").gameObject);
 			fullIntroText.text = LanguageManager.CurrentLanguage.frontend.level_fullIntroPrompt;
 
-            Text fullIntroYesText = GetTextfromGameObject(GetGameObjectChild(fullIntroObject, "Button (1)").transform.Find("Text").gameObject);
+            UnityEngine.UI.Text fullIntroYesText = GetTextfromGameObject(GetGameObjectChild(fullIntroObject, "Button (1)").transform.Find("Text").gameObject);
 			fullIntroYesText.text = LanguageManager.CurrentLanguage.frontend.level_fullIntroPromptYes;
 
             Text fullIntroNoText = GetTextfromGameObject(GetGameObjectChild(fullIntroObject, "Button").transform.Find("Text").gameObject);
@@ -708,20 +842,53 @@ namespace UltrakULL
 			treacherySecondChallenge.text = Act3Strings.GetLevelChallenge("Level 9-2");
 		}
 
-		private static void PatchLevelSelectPrime(GameObject frontEnd)
+        private static void PatchLevelSelectEncore(GameObject frontEnd)
+        {
+            GameObject lsEncoreObject = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(frontEnd, "Level Select (Encore)"), "Scroll Rect"), "Contents");
+
+            GameObject encoreHeader = GetGameObjectChild(GetGameObjectChild(lsEncoreObject, "Encores"), "Header");
+
+            //Encore title
+            TextMeshProUGUI preludeTitleText = GetTextMeshProUGUI(GetGameObjectChild(encoreHeader, "Text"));
+            preludeTitleText.text = LanguageManager.CurrentLanguage.frontend.chapter_encore;
+            preludeTitleText.fontSize = 46;
+            
+        }
+
+        private static void PatchLevelSelectPrime(GameObject frontEnd)
 		{
 			GameObject primeObject = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(frontEnd, "Level Select (Prime)"), "Prime Sanctums"),"Header");
             TextMeshProUGUI primeTitle = GetTextMeshProUGUI(GetGameObjectChild(primeObject, "Text"));
 			primeTitle.text = LanguageManager.CurrentLanguage.frontend.layer_prime;
 		}
-		
+        private static void PatchTextArroundV1(GameObject mainMenu)
+        {
+            GameObject textV1 = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(mainMenu, "Main Menu (1)"), "BackgroundSwapper"), "Text (TMP)"), "V1Text");
+            TextMeshProUGUI wingModule = GetTextMeshProUGUI(GetGameObjectChild(textV1, "Text (TMP)"));
+            TextMeshProUGUI armModuleFactory = GetTextMeshProUGUI(GetGameObjectChild(textV1, "Text (TMP) (1)"));
+            TextMeshProUGUI armModuleFeedbacker = GetTextMeshProUGUI(GetGameObjectChild(textV1, "Text (TMP) (2)"));
+            TextMeshProUGUI visualCortexModule = GetTextMeshProUGUI(GetGameObjectChild(textV1, "Text (TMP) (3)"));
+            TextMeshProUGUI legModule = GetTextMeshProUGUI(GetGameObjectChild(textV1, "Text (TMP) (4)"));
+			if (!string.IsNullOrEmpty(LanguageManager.CurrentLanguage.frontend.wingModule))
+				wingModule.text = LanguageManager.CurrentLanguage.frontend.wingModule;
+			if (!string.IsNullOrEmpty(LanguageManager.CurrentLanguage.frontend.armModuleFactory))
+				armModuleFactory.text = LanguageManager.CurrentLanguage.frontend.armModuleFactory;
+			if (!string.IsNullOrEmpty(LanguageManager.CurrentLanguage.frontend.armModuleFeedbacker))
+				armModuleFeedbacker.text = LanguageManager.CurrentLanguage.frontend.armModuleFeedbacker;
+			if (!string.IsNullOrEmpty(LanguageManager.CurrentLanguage.frontend.visualCortexModule))
+				visualCortexModule.text = LanguageManager.CurrentLanguage.frontend.visualCortexModule;
+			if (!string.IsNullOrEmpty(LanguageManager.CurrentLanguage.frontend.legModule))
+				legModule.text = LanguageManager.CurrentLanguage.frontend.legModule;
+        }
 
-		public static void Patch(GameObject frontEnd)
+        public static void Patch(GameObject frontEnd)
 		{
 			try
 			{
 				PatchMainMenu(frontEnd);
-				ChangeTitle(frontEnd);
+                PatchTextArroundV1(frontEnd);
+                PatchPopUps(frontEnd);
+                //ChangeTitle(frontEnd);
 				PatchDifficultyMenu(frontEnd);
 				PatchDifficultyDescriptors(frontEnd);
 
@@ -730,7 +897,8 @@ namespace UltrakULL
 				PatchLevelSelectAct1(frontEnd);
 				PatchLevelSelectAct2(frontEnd);
 				PatchLevelSelectAct3(frontEnd);
-				PatchLevelSelectPrime(frontEnd);
+				PatchLevelSelectEncore(frontEnd);
+                PatchLevelSelectPrime(frontEnd);
 			}
 			catch (Exception e)
 			{

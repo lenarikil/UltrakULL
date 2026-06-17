@@ -4,7 +4,7 @@ using UltrakULL.json;
 using UnityEngine;
 using UnityEngine.UI;
 using static UltrakULL.CommonFunctions;
-                                                                                 
+
 namespace UltrakULL
 {
     public static class HUDMessages
@@ -44,11 +44,11 @@ namespace UltrakULL
             {
                 return LanguageManager.CurrentLanguage.misc.hud_outOfBounds;
             }
-            if(message.Contains("CLASH"))
+            if (message.Contains("CLASH"))
             {
                 return LanguageManager.CurrentLanguage.misc.hud_clashMode;
             }
-            if(message.Contains("DRONE HAUNTING"))
+            if (message.Contains("DRONE HAUNTING"))
             {
                 return LanguageManager.CurrentLanguage.misc.hud_droneHaunting;
             }
@@ -65,13 +65,13 @@ namespace UltrakULL
                 return message; //4-S transaction complete
             }
             //For some reason 5-S passes through this function instead of passing through HudMessage. So we'll do this
-            if(GetCurrentSceneName() == "Level 5-S")
+            if (GetCurrentSceneName() == "Level 5-S")
             {
                 return StringsParent.GetMessage(message, "", "");
             }
-            
+
             //chessTip
-            if(GetCurrentSceneName() == "CreditsMuseum2")
+            if (GetCurrentSceneName() == "CreditsMuseum2")
             {
                 return StringsParent.GetMessage(message, "", "");
             }
@@ -80,7 +80,7 @@ namespace UltrakULL
             //Cybergrind custom pattern fix
             if (GetCurrentSceneName() == "Endless")
             {
-                if(message.Contains("NO PATTERNS"))
+                if (message.Contains("NO PATTERNS"))
                 {
                     return LanguageManager.CurrentLanguage.cyberGrind.cybergrind_noPatternsSelected;
                 }
@@ -100,17 +100,28 @@ namespace UltrakULL
                 Behaviour bhvr = (Behaviour)test[3];
                 bhvr.enabled = false;
 
-                try
+                //why only EarlyAccessEnd?
+                if (GetCurrentSceneName() == "EarlyAccessEnd")
                 {
-                    Text youDiedText = GetTextfromGameObject(deathScreen);
-                    youDiedText.text = LanguageManager.CurrentLanguage.misc.youDied1 + "\n\n\n\n\n" + LanguageManager.CurrentLanguage.misc.youDied2;
-                }
-                catch
-                {   //why only EarlyAccessEnd?B
-                    Logging.Warn("Failed to patch deathScreen");
-                    Logging.Warn("trying to get TextMeshProUGUI component.");
                     GetTextMeshProUGUI(deathScreen).text = LanguageManager.CurrentLanguage.misc.youDied1 + "\n\n\n\n\n" + LanguageManager.CurrentLanguage.misc.youDied2;
                 }
+                else
+                {
+                    try
+                    {
+                        Text youDiedText = GetTextfromGameObject(deathScreen);
+                        youDiedText.text = LanguageManager.CurrentLanguage.misc.youDied1 + "\n\n\n\n\n" + LanguageManager.CurrentLanguage.misc.youDied2;
+                    }
+                    catch
+                    {
+                        Logging.Warn("Failed to patch deathScreen");
+                        Logging.Warn("trying to get TextMeshProUGUI component.");
+                        GetTextMeshProUGUI(deathScreen).text = LanguageManager.CurrentLanguage.misc.youDied1 + "\n\n\n\n\n" + LanguageManager.CurrentLanguage.misc.youDied2;
+                    }
+                }
+                GameObject deathSequence = GetGameObjectChild(GetGameObjectChild(canvasObj, "DeathSequence"), "Text (TMP)");
+                TextMeshProUGUI deathSequenceText = GetTextMeshProUGUI(deathSequence);
+                deathSequenceText.text = LanguageManager.CurrentLanguage.misc.DeathSequence;
             }
             catch (Exception e)
             {
@@ -118,20 +129,21 @@ namespace UltrakULL
                 Logging.Error(e.ToString());
             }
         }
-        
-        
+
+
 
         public static void PatchMisc(ref GameObject canvasObj)
         {
+            string currentLevel = GetCurrentSceneName();
             GameObject player = GameObject.Find("Player");
             GameObject styleMeter = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(player, "Main Camera"), "HUD Camera"), "HUD"), "StyleCanvas"), "Panel (1)"), "Panel"), "Text (1)"), "Text");
             TextMeshProUGUI styleMeterMultiplierText = GetTextMeshProUGUI(styleMeter);
             styleMeterMultiplierText.text = LanguageManager.CurrentLanguage.style.stylemeter_multiplier;
-            
+
             //Classic HUD
             GameObject classicHudBw = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(canvasObj, "Crosshair Filler"), "AltHud"), "Filler");
             GameObject classicHudColor = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(canvasObj, "Crosshair Filler"), "AltHud (2)"), "Filler");
-            
+
             TextMeshProUGUI classicHudBwHealth = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(classicHudBw, "Health"), "Title"));
             TextMeshProUGUI classicHudColorHealth = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(classicHudColor, "Health (1)"), "Title"));
             classicHudBwHealth.text = LanguageManager.CurrentLanguage.misc.classicHud_health;
@@ -141,7 +153,7 @@ namespace UltrakULL
             TextMeshProUGUI classicHudColorStamina = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(classicHudColor, "Stamina (1)"), "Title"));
             classicHudBwStamina.text = LanguageManager.CurrentLanguage.misc.classicHud_stamina;
             classicHudColorStamina.text = LanguageManager.CurrentLanguage.misc.classicHud_stamina;
-            
+
             TextMeshProUGUI classicHudBwWeapon = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(classicHudBw, "Weapon"), "Title"));
             TextMeshProUGUI classicHudColorWeapon = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(classicHudColor, "Weapon (1)"), "Title"));
             classicHudBwWeapon.text = LanguageManager.CurrentLanguage.misc.classicHud_weapon;
@@ -166,6 +178,13 @@ namespace UltrakULL
             TextBinds bookPanelBinds = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(canvasObj, "ScanningStuff"), "ReadingScanned"), "Panel"), "Text (1)").GetComponent<TextBinds>();
             bookPanelBinds.text1 = LanguageManager.CurrentLanguage.books.books_pressToClose1 + " <color=orange>";
             bookPanelBinds.text2 = "</color> " + LanguageManager.CurrentLanguage.books.books_pressToClose2;
+
+            if (currentLevel.Contains("7-3")) // Feed It Message
+            {
+                GameObject feedItMessage = GetGameObjectChild(canvasObj, "Feed It");
+                feedItMessage.GetComponent<TextMeshProUGUI>().text = "<color=red>" + LanguageManager.CurrentLanguage.act3.act3_violenceThird_feedIt + "</color>";
+                feedItMessage.GetComponent<ScrollingText>().message = "<color=red>" + LanguageManager.CurrentLanguage.act3.act3_violenceThird_feedIt + "</color>";
+            }
 
         }
     }

@@ -36,7 +36,7 @@ namespace UltrakULL
             saveOverwriteCancel.text = LanguageManager.CurrentLanguage.cheats.cheats_disclaimerNo;
 
             TextMeshProUGUI saveOverwriteSave = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(saveOverwriteConfirmPanel, "Confirm"), "Text"));
-            saveOverwriteSave.text = "<color=orange>" + LanguageManager.CurrentLanguage.cheats.cheats_dupesSave + "</color>";
+            saveOverwriteSave.text = "<color=#F9A100>" + LanguageManager.CurrentLanguage.cheats.cheats_dupesSave + "</color>";
 
         }
 
@@ -45,17 +45,21 @@ namespace UltrakULL
             //text mesh pro out of date
             Text navmeshWarning = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(canvasObj, "Navmesh Warning"), "Text (1)"));
             navmeshWarning.text = LanguageManager.CurrentLanguage.sandbox.sandbox_navmeshWarn;
-
+			//I don't know how to add a second line that doesn't exist.
+			//Text navmeshWarningShadow = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(canvasObj, "Navmesh Warning"), "Text (1)"));
+            //navmeshWarningShadow.text = LanguageManager.CurrentLanguage.sandbox.sandbox_navmeshWarnshadow;
             //shop
             GameObject sandboxShop = GameObject.Find("Sandbox Shop");
-            GameObject sandboxShopCanvas =
-                GetGameObjectChild(GetGameObjectChild(sandboxShop, "Canvas"), "Border");
+
+            GameObject sandboxShopCanvas = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(sandboxShop, "Canvas"), "Background"), "Main Panel");
+
+            TextMeshProUGUI sandboxShopStatsTitle = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(sandboxShopCanvas, "Stats"), "Title"));
+            sandboxShopStatsTitle.text = LanguageManager.CurrentLanguage.sandbox.sandbox_shop_stats;
+            //for wondering, actual stat texts are patched in StatsPatch.cs
+
             
             //Main menu
-            GameObject sandboxShopMenu = GetGameObjectChild(sandboxShopCanvas, "Main Menu");
-
-            TextMeshProUGUI sandboxShopTitle = GetTextMeshProUGUI(GetGameObjectChild(sandboxShopMenu, "Menu Title"));
-            sandboxShopTitle.text = "--" + LanguageManager.CurrentLanguage.frontend.chapter_sandbox + "--";
+            GameObject sandboxShopMenu = GetGameObjectChild(GetGameObjectChild(sandboxShopCanvas, "Main Menu"), "Buttons");
 
             TextMeshProUGUI sandboxShopTimeOfDayButton = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(sandboxShopMenu, "TimeOfDayButton"), "Text"));
             sandboxShopTimeOfDayButton.text = LanguageManager.CurrentLanguage.sandbox.sandbox_shop_timeOfDay;
@@ -67,28 +71,34 @@ namespace UltrakULL
             sandboxShopIconsButton.text = LanguageManager.CurrentLanguage.sandbox.sandbox_shop_icons;
             
             //Time of day
-            GameObject sandboxShopTimeOfDay = GetGameObjectChild(GetGameObjectChild(sandboxShopCanvas, "TOD Changer"),"Panel");
+            GameObject sandboxShopTimeOfDay = GetGameObjectChild(sandboxShopCanvas, "Time of Day");
+
+            TextMeshProUGUI sandboxShopTimeOfDayTitle =
+                GetTextMeshProUGUI(GetGameObjectChild(sandboxShopTimeOfDay, "Title"));
+            sandboxShopTimeOfDayTitle.text = LanguageManager.CurrentLanguage.sandbox.sandbox_shop_timeOfDay;
+
             TextMeshProUGUI sandboxShopTimeOfDayLoading =
-                GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(sandboxShopTimeOfDay, "Blocker"), "Panel"), "Text"));
+                GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(sandboxShopTimeOfDay, "Panel"), "Loading"), "Title"));
             sandboxShopTimeOfDayLoading.text = LanguageManager.CurrentLanguage.misc.loading;
-            TextMeshProUGUI sandboxShopTimeOfDayClose = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(sandboxShopTimeOfDay, "Close Button"),"Text"));
+
+            TextMeshProUGUI sandboxShopTimeOfDayClose = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(sandboxShopTimeOfDay, "Panel"), "Close Button"),"Text"));
             sandboxShopTimeOfDayClose.text = LanguageManager.CurrentLanguage.options.save_close;
             
             //World options
-            GameObject sandboxShopWorldOptions = GetGameObjectChild(GetGameObjectChild(sandboxShopCanvas, "World Options"),"Panel");
+            GameObject sandboxShopWorldOptions = GetGameObjectChild(sandboxShopCanvas, "World Options");
             TextMeshProUGUI sandboxShopWorldOptionsTitle = GetTextMeshProUGUI(GetGameObjectChild(sandboxShopWorldOptions, "Title"));
             sandboxShopWorldOptionsTitle.text =
-                "--" + LanguageManager.CurrentLanguage.sandbox.sandbox_shop_worldOptionsTitle + "--";
-            TextMeshProUGUI sandboxWorldOptionsClose = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(sandboxShopWorldOptions, "Close Button"),"Text"));
+                LanguageManager.CurrentLanguage.sandbox.sandbox_shop_worldOptionsTitle;
+            TextMeshProUGUI sandboxWorldOptionsClose = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(sandboxShopWorldOptions, "Panel"), "Close Button"),"Text"));
             sandboxWorldOptionsClose.text = LanguageManager.CurrentLanguage.options.save_close;
             
-            GameObject sandboxShopWorldOptionsMapBorder = GetGameObjectChild(GetGameObjectChild(sandboxShopWorldOptions,"Image"),"Map Border");
-            TextMeshProUGUI sandboxShopWorldOptionsMapBorderTitle = GetTextMeshProUGUI(GetGameObjectChild(sandboxShopWorldOptionsMapBorder, "Text"));
+            GameObject sandboxShopWorldOptionsMapBorder = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(sandboxShopWorldOptions, "Panel"), "Options"),"Map Border");
+            TextMeshProUGUI sandboxShopWorldOptionsMapBorderTitle = GetTextMeshProUGUI(GetGameObjectChild(sandboxShopWorldOptionsMapBorder, "Title Text"));
             sandboxShopWorldOptionsMapBorderTitle.text = LanguageManager.CurrentLanguage.sandbox.sandbox_shop_mapBorder;
 
             TextMeshProUGUI sandboxShopWorldOptionsMapBorderStatus = GetTextMeshProUGUI(GetGameObjectChild(sandboxShopWorldOptionsMapBorder, "Status Text"));
-            TextMeshProUGUI sandboxShopWorldOptionsMapBorderButton = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(sandboxShopWorldOptionsMapBorder, "Panel"), "Toggle Button"),"Text"));
-            switch(sandboxShopWorldOptionsMapBorderStatus.text)
+            TextMeshProUGUI sandboxShopWorldOptionsMapBorderButton = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(sandboxShopWorldOptionsMapBorder, "Button"),"Text"));
+            switch(sandboxShopWorldOptionsMapBorderStatus.text.ToUpper())
             {
                 case "ENABLED":
                 {
@@ -101,7 +111,7 @@ namespace UltrakULL
                     break;
                 }
             }
-            switch (sandboxShopWorldOptionsMapBorderButton.text)
+            switch (sandboxShopWorldOptionsMapBorderButton.text.ToUpper())
             {
                 case "ENABLE":
                 {
@@ -116,19 +126,19 @@ namespace UltrakULL
             }
 
             //Icons
-            GameObject sandboxShopIcons = GetGameObjectChild(GetGameObjectChild(sandboxShopMenu, "Icons Menu"),"Panel");
-            TextMeshProUGUI sandboxShopIconsTitle = GetTextMeshProUGUI(GetGameObjectChild(sandboxShopIcons, "Title"));
+            GameObject sandboxShopIcons = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(sandboxShopCanvas, "Icons"), "Icons Window"),"Panel");
+            TextMeshProUGUI sandboxShopIconsTitle = GetTextMeshProUGUI(GetGameObjectChild(sandboxShopIcons.transform.parent.gameObject, "Title"));
             sandboxShopIconsTitle.text =
-                "--" + LanguageManager.CurrentLanguage.sandbox.sandbox_shop_iconsTitle + "--";
+                LanguageManager.CurrentLanguage.sandbox.sandbox_shop_iconsTitle;
             
-            TextMeshProUGUI sandboxShopIconsDefault = GetTextMeshProUGUI(GetGameObjectChild(sandboxShopIcons, "TipText"));
+            TextMeshProUGUI sandboxShopIconsDefault = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(sandboxShopIcons, "Default"), "Text"));
             sandboxShopIconsDefault.text = LanguageManager.CurrentLanguage.sandbox.sandbox_shop_default;
             
-            TextMeshProUGUI sandboxShopIconsPitr = GetTextMeshProUGUI(GetGameObjectChild(sandboxShopIcons, "TipText (1)"));
+            TextMeshProUGUI sandboxShopIconsPitr = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(sandboxShopIcons, "PITR"), "Text"));
             sandboxShopIconsPitr.text = LanguageManager.CurrentLanguage.sandbox.sandbox_shop_pitr;
             
-            TextMeshProUGUI sandboxIconsClose = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(sandboxShopIcons, "Close Button"),"Text"));
-            sandboxIconsClose.text = LanguageManager.CurrentLanguage.options.save_close;
+            TextMeshProUGUI sandboxIconsClose = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(sandboxShopCanvas, "Icons"), "Back Button"),"Text"));
+            sandboxIconsClose.text = LanguageManager.CurrentLanguage.shop.shop_back;
         }
         public static void PatchAlterMenu()
         {

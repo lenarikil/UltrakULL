@@ -56,14 +56,14 @@ namespace UltrakULL
                 string levelname = primeSanctumChallengeStrings.GetLevelName();
                 
                 //First lock buttons
-                GameObject firstLockObject = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetInactiveRootObject("Main Section"),"Inside"),"8 - Elevator"),"8 Stuff"),"PuzzleScreen"),"Canvas");
+                GameObject firstLockObject = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetInactiveRootObject("Main Section"),"Inside"),"8 - Elevator"),"8 Stuff"), "InteractiveScreenWithStand"), "InteractiveScreen"),"Canvas"), "Background");
                 
-                TextMeshProUGUI firstLockLocked = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(firstLockObject,"Button"),"Text (Locked)"));
-                TextMeshProUGUI firstLockUnlocked = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(firstLockObject,"Button"),"Text (Unlocked)"));
-                TextMeshProUGUI secondLockLocked = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(firstLockObject,"Button (1)"),"Text (Locked)"));
-                TextMeshProUGUI secondLockUnlocked = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(firstLockObject,"Button (1)"),"Text (Unlocked)"));
-                TextMeshProUGUI thirdLockLocked = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(firstLockObject,"Button (2)"),"Text (Locked)"));
-                TextMeshProUGUI thirdLockUnlocked = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(firstLockObject,"Button (2)"),"Text (Unlocked)"));
+                TextMeshProUGUI firstLockLocked = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(firstLockObject,"A"), "Text (TMP)"));
+                TextMeshProUGUI firstLockUnlocked = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(firstLockObject, "A (Pressed)"), "Text (TMP)"));
+                TextMeshProUGUI secondLockLocked = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(firstLockObject,"B"), "Text (TMP)"));
+                TextMeshProUGUI secondLockUnlocked = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(firstLockObject, "B (Pressed)"),"Text (TMP)"));
+                TextMeshProUGUI thirdLockLocked = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(firstLockObject,"C"), "Text (TMP)"));
+                TextMeshProUGUI thirdLockUnlocked = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(firstLockObject, "C (Pressed)"), "Text (TMP)"));
 
                 firstLockLocked.text = LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_lockFirstLocked;
                 firstLockUnlocked.text = LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_lockUnlocked;
@@ -73,32 +73,41 @@ namespace UltrakULL
                 thirdLockUnlocked.text = LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_lockUnlocked;
                 
                 //Second lock buttons
-                GameObject secondLockObject = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetInactiveRootObject("Main Section"),"Inside"),"8 - Elevator"),"8 Stuff"),"PuzzleScreen (1)"),"Canvas");
+                GameObject secondLockObject = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetInactiveRootObject("Main Section"), "Inside"), "8 - Elevator"), "8 Stuff"), "InteractiveScreenWithStand (1)"), "InteractiveScreen"), "Canvas"), "Background");
 
                 TextMeshProUGUI secondLockOpen =
-                    GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(secondLockObject, "Button"), "Text"));
+                    GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(secondLockObject, "InteractiveScreenButton"), "Text (TMP)"));
                 TextMeshProUGUI secondLockAreYouSure = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(secondLockObject, "AreYouSure"), "Text"));
 
-                TextMeshProUGUI secondLockWarning = GetTextMeshProUGUI(GetGameObjectChild(secondLockObject, "WarningText"));
-                TextMeshProUGUI secondLockAsIf = GetTextMeshProUGUI(GetGameObjectChild(secondLockObject, "AsIfText"));
+                TextMeshProUGUI secondLockWarning = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(secondLockObject, "WarningText"), "WarningText"));
+                GameObject secondLockAsIf = GetGameObjectChild(secondLockObject, "AsIfText");
 
                 secondLockOpen.text = LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_lockOpen;
-                secondLockOpen.fontSize = 20;
+                //secondLockOpen.fontSize = 20;
                 secondLockAreYouSure.text = LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_lockAreYouSure;
-                secondLockAreYouSure.fontSize = 20;
+                //secondLockAreYouSure.fontSize = 20;
                 secondLockWarning.text =
                     LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_lockYes1 + "\n\n"
                     + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_lockYes2 + "\n\n"
                     + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_lockYes3 + "\n\n"
                     + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_lockYes4 + "\n\n"
-                    + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_lockYes5 + "\n\n";
-                secondLockWarning.fontSize = 18;
-                secondLockAsIf.text =
-                    LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_lockNo1 + "\n"
-                    + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_lockNo1 + "\n"
-                    + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_lockNo1 + "\n"
-                    + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_lockNo1 + "\n\n"
-                    + "<color=red>" + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_lockNo2 + "\n</color>";
+                    + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_lockYes5;
+
+                //secondLockWarning.fontSize = 18;
+
+                for (int i = 0; i < 6; i++)
+                {
+                    try
+                    {
+                        TextMeshProUGUI haText = GetTextMeshProUGUI(GetGameObjectChild(secondLockAsIf.transform.GetChild(i).gameObject, "Text (TMP)"));
+                        haText.text = LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_lockNo1;
+                    }
+                    catch { }
+                }
+
+                TextMeshProUGUI secondLockAsIfText = GetTextMeshProUGUI(GetGameObjectChild(secondLockAsIf.transform.GetChild(7).gameObject, "Text (TMP)"));
+                secondLockAsIfText.text =
+                    "<color=red>" + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_lockNo2 + "\n</color>";
                 
                 
                 

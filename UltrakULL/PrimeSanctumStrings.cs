@@ -29,9 +29,9 @@ namespace UltrakULL
 
             switch (currentLevel)
             {
-                case "Level P-1": { return "P-1 - " + LanguageManager.CurrentLanguage.levelNames.levelName_primeFirst; }
-                case "Level P-2": { return "P-2 - " + LanguageManager.CurrentLanguage.levelNames.levelName_primeSecond; }
-              //case "Level P-3": { return "P-3 - " + LanguageManager.CurrentLanguage.levelNames.levelName_primeThird; }
+                case "Level P-1": { return "P-1: " + LanguageManager.CurrentLanguage.levelNames.levelName_primeFirst; }
+                case "Level P-2": { return "P-2: " + LanguageManager.CurrentLanguage.levelNames.levelName_primeSecond; }
+              //case "Level P-3": { return "P-3: " + LanguageManager.CurrentLanguage.levelNames.levelName_primeThird; }
 
                 default: { return "Unknown level name"; }
             }
@@ -41,22 +41,22 @@ namespace UltrakULL
         {
             this.p1SecretText =
                 LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_first_secretText1 + "\n"
-                + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_first_secretText2 + "\n\n"
-                + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_first_secretText3 + "\n\n"
+                + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_first_secretText2 + "\n<color=#666666>"
+                + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_first_secretText3 + "</color>\n"
                 + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_first_secretText4 + "\n\n"
-                + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_first_secretText5 + "\n"
-                + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_first_secretText6 + "\n\n"
+                + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_first_secretText5 + "\n<size=7.5><color=#666666>"
+                + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_first_secretText6 + "</color></size>\n\n"
                 + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_first_secretText7 + "\n\n"
                 + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_first_secretText8 + "\n\n"
-                + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_first_secretText9;
+                + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_first_secretText9 + "\n\n" + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_first_secretText10;
 
             this.p2SecretText =
                 LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_secretText1 + "\n"
-                + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_secretText2 + "\n"
-                + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_secretText3 + "\n\n"
+                + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_secretText2 + "\n<color=#666666>"
+                + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_secretText3 + "</color>\n\n"
                 + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_secretText4 + "\n\n"
-                + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_secretText5 + "\n\n"
-                + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_secretText6 + "\n\n"
+                + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_secretText5 + "\n\n\n"
+                + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_secretText6 + "\n\n\n"
                 + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_secretText7 + "\n\n"
                 + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_secretText8 + "\n\n"
                 + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_secretText9 + "\n\n"
