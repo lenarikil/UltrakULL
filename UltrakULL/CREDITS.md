@@ -1,6 +1,6 @@
 ﻿# UltrakULL Credits & Contributors
 
-- UltrakULL created & maintained by **[Clearwater](https://github.com/ClearwaterTM)**
+- UltrakULL was created and maintained by **[Clearwater](https://github.com/ClearwaterTM)** until 2026 . In June 2026, he archived the main repository and left the project.
 - Additional contributions by:
   - **[Temperz87](https://github.com/Temperz87/)**: UI elements, language loader, in-game language changing
   - **[CoatlessAli](https://github.com/coatlessali)**: Cross-platform compatability
@@ -8,8 +8,9 @@
   - **[lenarikil](https://github.com/lenarikil)**: Credits museum Cyrillic font support, texture patching, intermission audio dub, easy font changer
   - **[Dice](https://github.com/Dice-001)**: Some bug fixes, Korean Bug Fix Patch, patches for font changer system
   - **[greycsont](https://github.com/greycsont)**: Add ability to load diff type of audio in audioswapper
-  - Flazhik: Subtitle refactoring
-  - Hydraxous: R2ModManager support
+  - **[753](https://github.com/x753/)**: ThunderStore support
+  - **Flazhik**: Subtitle refactoring
+  - **Hydraxous**: R2ModManager support
   
 - Languages & translations created by members and players of the ULTRAKILL community (view the Language tab in [README.md](./README.md) for credits for each language)
 - ULTRAKILL published by New Blood & developed by Arsi "Hakita" Patala and co.
