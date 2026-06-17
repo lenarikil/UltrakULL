@@ -79,6 +79,7 @@ namespace UltrakULL.json
         public string fish_book8;
         public string fish_book9;
         public string fish_book10;
+		public string fish_book11;
 
         public string fish_rodFar;
         public string fish_rodClose;
@@ -97,6 +98,7 @@ namespace UltrakULL.json
 
         public string fish_terminalTitle;
         public string fish_funnyStupidFish;
+		public string fish_terminalfunnyStupidFish;
         public string fish_pitrFish;
         public string fish_trout;
         public string fish_amidEvilFish;
@@ -805,7 +807,6 @@ namespace UltrakULL.json
         public string enemyBios_providence_1;
         public string enemyBios_providence_2;
         public string enemyBios_providence_3;
-        public string enemyBios_providence_4;
         public string enemyBios_providence_strategy1;
         public string enemyBios_providence_strategy2;
         public string enemyBios_providence_strategy3;
@@ -843,7 +844,6 @@ namespace UltrakULL.json
         public string enemyBios_deathcatcher_1;
         public string enemyBios_deathcatcher_2;
         public string enemyBios_deathcatcher_3;
-        public string enemyBios_deathcatcher_4;
         public string enemyBios_deathcatcher_strategy1;
         public string enemyBios_deathcatcher_strategy2;
         public string enemyBios_deathcatcher_strategy3;
@@ -859,7 +859,6 @@ namespace UltrakULL.json
         public string subtitles_gabriel_intro6;
         public string subtitles_gabriel_intro7;
         public string subtitles_gabriel_intro8;
-        public string subtitles_gabriel_intro9;
         public string subtitles_gabriel_fightStart;
 
         public string subtitles_gabriel_taunt1;
@@ -1028,7 +1027,6 @@ namespace UltrakULL.json
         public string subtitles_gabrielSecondDefeated9;
         public string subtitles_gabrielSecondDefeated10;
         public string subtitles_gabrielSecondDefeated11;
-        public string subtitles_gabrielSecondDefeated12;
 
         public string subtitles_power_intro_0;
         public string subtitles_power_intro_1;
@@ -1044,7 +1042,6 @@ namespace UltrakULL.json
         public string subtitles_power_taunt_1;
         public string subtitles_power_taunt_2;
         public string subtitles_power_taunt_3;
-        public string subtitles_power_taunt_4;
         public string subtitles_power_cheapShot_0;
         public string subtitles_power_cheapShot_1;
         public string subtitles_power_cheapShot_2;
@@ -1696,6 +1693,7 @@ namespace UltrakULL.json
         public string shop_lotsOfMoney;
         public string shop_equipped;
         public string shop_unequipped;
+		public string shop_alternate;
 
         public string shop_cybergrindDescription1;
         public string shop_cybergrindDescription2;
@@ -2530,13 +2528,13 @@ namespace UltrakULL.json
         public string tutorial_calibrationMechanics;
         public string tutorial_calibrationComplete1;
         public string tutorial_calibrationComplete2;
-        public string tutorial_introReminder;
+        public string tutorial_introReminder1;
+		public string tutorial_introReminder2;
         public string tutorial_systemsOperational;
         public string tutorial_introLoadStatus;
         public string tutorial_introStatusUpdate;
 
         public string tutorial_audioCalibrationTitle;
-        public string tutorial_audioCalibrationSliderOFF;
         public string tutorial_audioCalibrationWarning1;
         public string tutorial_audioCalibrationWarning2;
         public string tutorial_audioCalibrationWarning3;
@@ -2579,8 +2577,6 @@ namespace UltrakULL.json
         public string tutorial_shockwave3;
         public string tutorial_orb1;
         public string tutorial_orb2;
-        public string tutorial_calibrationError;
-        public string tutorial_calibrationOk;
 
     }
 
@@ -2820,6 +2816,7 @@ namespace UltrakULL.json
         public string primeSanctum_first_secretText7;
         public string primeSanctum_first_secretText8;
         public string primeSanctum_first_secretText9;
+		public string primeSanctum_first_secretText10;
 
         public string primeSanctum_second_lockFirstLocked;
         public string primeSanctum_second_lockSecondLocked;
@@ -3110,7 +3107,6 @@ namespace UltrakULL.json
         
         public string museum_bookLenvalBrown1;
         public string museum_bookLenvalBrown2;
-        public string museum_bookLenvalBrown3;
         
         public string museum_bookGianniMatragrano1;
         public string museum_bookGianniMatragrano2;
