@@ -2,17 +2,10 @@
 ![Version](https://img.shields.io/github/v/release/ClearwaterTM/UltrakULL)
 ![Licence](https://img.shields.io/github/license/ClearwaterTM/UltrakULL)
 
-
-
-<div style="border: 3px solid transparent; padding: 20px; border-radius: 5px; background: linear-gradient(135deg, #2d003d, #4a0066) #2d003d; box-shadow: 0 4px 15px rgba(212, 0, 255, 0.3); text-align: center; position: relative; overflow: hidden;">
-  <div style="position: absolute; top: -5px; right: -5px; bottom: -5px; left: -5px; background: linear-gradient(45deg, #d400ff, #ff00d4, #00ff9d); z-index: -1; border-radius: 15px;"></div>
-  <h2 style="color: #ffffff; margin-top: 0; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);">This project/mod was created with the partial help of AI. 🤖</h2>
-</div>
-
-
+[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&weight=800&size=29&letterSpacing=&pause=1000&color=F7F7F7&background=DB20FF27&center=true&vCenter=true&repeat=false&width=1000&lines=This+project%2Fmod+was+created+with+the+partial+help+of+AI.+%F0%9F%A4%96)](https://git.io/typing-svg)
 <img src="https://github.com/user-attachments/assets/98fd5921-0662-4e09-9ab4-b844e2bbf45e">
 
-# UltrakULL
+# **UltrakULL ReFORKED**
 
 **UltrakULL** (ULTRAKILL Language Library) is a modification (mod) for ULTRAKILL that allows for modification of the game's text strings, voiceovers and textures effectively allowing for translation and localization into various languages.\
 This mod's primary purpose is to bridge the gap for localization and translation until ULTRAKILL receives official translations.
@@ -21,20 +14,21 @@ This mod's primary purpose is to bridge the gap for localization and translation
 
 - Translates the entire game from English to any language
 - Support for multiple languages
+- Easy font changing
+- Replacing certain textures by simply changing the .png files, without having to modify the game files
 - JSON formatting of language files allows for easy-to-understand, simple-to-do modification of strings
-- Change languages directly in-game without having to restart
-- Languages are consistently developed and updated for a faithful localization and translation of the original game text
+- Change languages directly in-game without having to restart game
 - Dubbing support allows for translated spoken dialogue
-- Supports right-to-left languages such as Arabic and Persian
+- ~~Supports right-to-left languages such as Arabic and Persian~~ **(At the moment, the feature has a large number of critical bugs. It will be reworked in the future)**
 - Cyrillic character support for languages such as Russian, Ukrainian and Belarusian
 
 
 # Download & Installation
 
-UltrakULL can be obtained either through the [Releases page](https://github.com/ClearwaterTM/UltrakULL/releases) (*recommended*),
+UltrakULL can be obtained either through the [Releases page](https://github.com/lenarikil/UltrakULL/releases) (*recommended*),
 or via the [UltrakULL Discord.](https://discord.gg/ZB7jk6Djv5)
 
-The only prerequisite is an up-to-date Steam version of ULTRAKILL. <br>**Demo, GOG.com and cracked versions are NOT supported.**
+The only requirement is to have the latest version of ULTRAKILL on Steam. <br>**Support for Demo, GOG.com, and Hacked versions is NOT guaranteed**
 
 ## Installation via Thunderstore
 
@@ -66,7 +60,7 @@ Installing UltrakULL via GitHub is divided into 2 parts:
 <img src="https://github.com/user-attachments/assets/d461c5a3-2de2-4d7c-b390-60235f70b21d" alt="drawing">
 
   
-- From the Languages tab, you can browse available translations for the game by selecting the "Browse Languages Online" button. Additionally, language files that are locally installed in the mod folder will be detected and made available for selection any available language based on the language files UltrakULL has found, and will load them into the game.
+- In the "Languages" tab, you can view the translations installed locally in the mod folder, and you can select any available language based on the language files found by UltrakULL and load them into the game.
 
 ### Troubleshooting
 
@@ -84,25 +78,20 @@ Restart the game after applying either steps for your use case.
 
 # Languages
 
-## Languages available
-| Language                                 | Contributors                                                                                                                       | Last update | Notes                                  |
-|------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------|-------------|----------------------------------------|
-| English (U.S)                            | Hakita & New Blood                                                                                                                 | Act 2       | Grammatical improvements by Clearwater |
-| Brazilian Portugese (Portugês do Brasil) | Veni, Jackie, MKaid, hebert, FNChannel, Spooky, Soulvender, RAYLANDER                                                              | Act 2       |                                        |
-| Czech (Čeština)                          | Mina                                                                                                                               | Act 2       |                                        |
-| Filipino (Pilipino)                      | mxkyle, MecanicWithAPistol, FinnianNiko                                                                                            | Act 2       |                                        |
-| French (Français)                        | Clearwater, ZedDev, Frizou, osokour, Tamary, Uranus, Lays                                                                          | Act 2       | French and Quebec variants available   |
-| German (Deutsch)                         | Distrilul, JESTERB0T, Liquid Lest, Psychologemelone44, Termi2, Fabidelune, Madeleine                                               | Act 2       |                                        |
-| Korean (한국어)                             | ARSE™, Susu                                                                                                                        | Act 2       |                                        |
-| Russian (русский)                        | Nessie_A_WA97, D4N5T3P, Edith Bagel, lrddd, Brainy-Stormie, TwinT, towelie84, mctaylors, Solidus Cumcer, Filin, Ega1232387, Khowst | Act 2       |                                        |
-| Spanish (Español)                        | LambCS, Philia, Lukah, Amarok_Lc, Santy, Radripizza, j(LRC), LEVIBOT                                                               | Act 2       |                                        |
-| Simplified Chinese (简体中文)                | Hydracerynitis, ciinore, duke325, ponyweeb, Skugra, GoGoblin                                                                       | Act 2       |                                        |
-| Turkish (Türkçe)                         | Legitname1337, Ömer Talha, RTE, Ray_, legio, Scape, Neige,$ERTU$TAUPTOWN                                                           | Act 2       |                                        |
-
-
-Available languages may be directly downloaded for use in-game via the Languages tab in the options menu.
-This list is updated on a semi-regular basis as new languages are made available.
-### If you would like to submit a new language for use, please do so on our [Discord](https://discord.gg/ZB7jk6Djv5)!
+## Available languages and their creators, before the mod's transition to the SDK platform
+| Language                                 | Contributors                                                                                                                       |
+|------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------|
+| English (U.S)                            | Hakita & New Blood                                                                                                                 |
+| Brazilian Portugese (Portugês do Brasil) | Veni, Jackie, MKaid, hebert, FNChannel, Spooky, Soulvender, RAYLANDER                                                              |
+| Czech (Čeština)                          | Mina                                                                                                                               |
+| Filipino (Pilipino)                      | mxkyle, MecanicWithAPistol, FinnianNiko                                                                                            |
+| French (Français)                        | Clearwater, ZedDev, Frizou, osokour, Tamary, Uranus, Lays                                                                          |
+| German (Deutsch)                         | Distrilul, JESTERB0T, Liquid Lest, Psychologemelone44, Termi2, Fabidelune, Madeleine                                               |
+| Korean (한국어)                           | ARSE™, Susu                                                                                                                        |
+| Russian (русский)                        | Nessie_A_WA97, D4N5T3P, Edith Bagel, lrddd, Brainy-Stormie, TwinT, towelie84, mctaylors, Solidus Cumcer, Filin, Ega1232387, Khowst |
+| Spanish (Español)                        | LambCS, Philia, Lukah, Amarok_Lc, Santy, Radripizza, j(LRC), LEVIBOT                                                               |
+| Simplified Chinese (简体中文)             | Hydracerynitis, ciinore, duke325, ponyweeb, Skugra, GoGoblin                                                                       |
+| Turkish (Türkçe)                         | Legitname1337, Ömer Talha, RTE, Ray_, legio, Scape, Neige,$ERTU$TAUPTOWN                                                           |
 
 # Troubleshooting
 
@@ -147,11 +136,10 @@ on our Discord and I will take a look at it.
 
 ### Can voice lines from characters be translated?
 
-As of UltrakULL v1.1.0, dubbing support is available for speaking characters! To learn more about how to add your own lines, check the [dubbing documentation](https://github.com/ClearwaterTM/UltrakULL/blob/master/UltrakULL/docs/Dubbing.md).
+As of UltrakULL v1.1.0, dubbing support is available for speaking characters! To learn more about how to add your own lines, check the [dubbing documentation](https://github.com/lenarikil/UltrakULL/blob/master/UltrakULL/docs/Dubbing.md).
 
 ### Where can I follow UltrakULL's development?
-I usually like to post updates and news about development in multiple places, including the [UltrakULL Discord](https://discord.gg/ZB7jk6Djv5) itself,
-the [New Blood Discord](https://discord.gg/newblood), and my [personal Twitter](https://twitter.com/ClearwaterHLL).
+I usually like to post updates and news about development in the **[UltrakULL Discord](https://discord.gg/ZB7jk6Djv5)**
 
 ### Is UltrakULL compatible with other mods?
 I cannot guarantee mod compatability with other mods. Mods that do not use the HUD message display functionality
@@ -165,7 +153,7 @@ can be found in the [UltrakULL Discord.](https://discord.gg/ZB7jk6Djv5)
 
 # Building
 ###  (This info is for developers. If you only want to play/use the mod, you do not need to read this.)
-1) Clone the repository.<br>`git clone https://github.com/ClearwaterUK/UltrakULL`
+1) Clone the repository.<br>`git clone https://github.com/lenarikil/UltrakULL`
 2) Set ULTRAKILLPath as an environment variable, which points to your game installation. <br> This is used to automatically acquire any necessary .dll files from the game location to build the mod.
 3) Open the project solution in the IDE of your choice (Visual Studio, Rider, etc.)
 4) Build the solution. The solution will automatically set up the folder structure, and will drop compiled mod as a DLL.dll file into BepInEx/plugins/UltrakULL.<br>
