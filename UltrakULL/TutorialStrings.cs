@@ -85,7 +85,7 @@ namespace UltrakULL
         // & - Ends intro text and loads the tutorial
         // β - Recalibration yes (automatically shows keyboard or controller button depending on what the player is using)
         // δ - Recalibration no (automatically shows keyboard or controller button depending on what the player is using)
-        // Ä - Show calibration menu
+		// Ä - Show calibration menu
 
         public void PatchCalibrationWindows(ref GameObject canvasObj)
         {
@@ -124,7 +124,7 @@ namespace UltrakULL
                 calibrationAudioDoneAlt.text = LanguageManager.CurrentLanguage.shop.shop_colorsDone;
 
                 SliderValueToText calibrationAudioMasterSlider = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(calibrationAudioWindow, "Master Volume (1)"), "Button"), "Slider (1)"), "Text (2)").GetComponentInChildren<SliderValueToText>();
-                calibrationAudioMasterSlider.ifMin = LanguageManager.CurrentLanguage.tutorial.tutorial_audioCalibrationSliderOFF;
+				calibrationAudioMasterSlider.ifMin = LanguageManager.CurrentLanguage.tutorial.tutorial_audioCalibrationSliderOFF;
 
                 SliderValueToText calibrationAudioSFXSlider = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(calibrationAudioWindow, "SFX Volume (1)"), "Button"), "Slider (1)"), "Text (2)").GetComponentInChildren<SliderValueToText>();
                 calibrationAudioSFXSlider.ifMin = LanguageManager.CurrentLanguage.tutorial.tutorial_audioCalibrationSliderOFF;
@@ -317,7 +317,7 @@ namespace UltrakULL
 
                 + "+" + LanguageManager.CurrentLanguage.tutorial.tutorial_calibrationComplete1 + "_ \n"
                 + "+" + LanguageManager.CurrentLanguage.tutorial.tutorial_calibrationComplete2 + "_ \n"
-                + "(±" + LanguageManager.CurrentLanguage.tutorial.tutorial_introReminder + " _)½ \n\n"
+                + "(±" + LanguageManager.CurrentLanguage.tutorial.tutorial_introReminder1 + " _" + LanguageManager.CurrentLanguage.tutorial.tutorial_introReminder2 + ")½ \n\n"
 
                 + "+" + LanguageManager.CurrentLanguage.tutorial.tutorial_systemsOperational + "_½ \n"
                 + LanguageManager.CurrentLanguage.tutorial.tutorial_introLoadStatus + "§";

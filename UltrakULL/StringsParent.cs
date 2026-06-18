@@ -371,12 +371,13 @@ namespace UltrakULL
 			{
 				string part1 = LanguageManager.CurrentLanguage.levelTips.leveltips_sandbox1;
 				string part2 = LanguageManager.CurrentLanguage.levelTips.leveltips_sandbox2;
+				string part3 = LanguageManager.CurrentLanguage.levelTips.leveltips_sandbox3;
 				if (string.IsNullOrEmpty(part1) || string.IsNullOrEmpty(part2))
 				{
 					Logging.Warn($"[StringsParent] Translation missing or empty for uk_construct, falling back to original: '{tipDescriptionText}'");
 					return tipDescriptionText;
 				}
-				return part1 + "\n\n<color=#FF4343>↑ ↑ ↓ ↓ ← → ← → B A</color>\n\n" + part2;
+				return part1 + "\n\n<color=#FF4343>↑ ↑ ↓ ↓ ← → ← → " + part2 + "</color>\n\n" + part3;
 			}
 			if (currentSceneName.Contains("0-E"))
 			{

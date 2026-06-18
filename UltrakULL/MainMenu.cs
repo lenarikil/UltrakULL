@@ -564,7 +564,7 @@ namespace UltrakULL
             //Prelude title
             TextMeshProUGUI preludeTitleText = GetTextMeshProUGUI(GetGameObjectChild(preludeHeader,"Text"));
 			preludeTitleText.text = LanguageManager.CurrentLanguage.frontend.layer_prelude;
-			preludeTitleText.fontSize = 36;
+			preludeTitleText.fontSize = 46;
 
             //Prelude secret mission title
             TextMeshProUGUI secretText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(preludeHeader, "Secret Mission"), "Text").gameObject);
@@ -851,7 +851,7 @@ namespace UltrakULL
             //Encore title
             TextMeshProUGUI preludeTitleText = GetTextMeshProUGUI(GetGameObjectChild(encoreHeader, "Text"));
             preludeTitleText.text = LanguageManager.CurrentLanguage.frontend.chapter_encore;
-            preludeTitleText.fontSize = 36;
+            preludeTitleText.fontSize = 46;
             
         }
 

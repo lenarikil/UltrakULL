@@ -36,7 +36,7 @@ namespace UltrakULL
             saveOverwriteCancel.text = LanguageManager.CurrentLanguage.cheats.cheats_disclaimerNo;
 
             TextMeshProUGUI saveOverwriteSave = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(saveOverwriteConfirmPanel, "Confirm"), "Text"));
-            saveOverwriteSave.text = "<color=orange>" + LanguageManager.CurrentLanguage.cheats.cheats_dupesSave + "</color>";
+            saveOverwriteSave.text = "<color=#F9A100>" + LanguageManager.CurrentLanguage.cheats.cheats_dupesSave + "</color>";
 
         }
 
@@ -45,7 +45,9 @@ namespace UltrakULL
             //text mesh pro out of date
             Text navmeshWarning = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(canvasObj, "Navmesh Warning"), "Text (1)"));
             navmeshWarning.text = LanguageManager.CurrentLanguage.sandbox.sandbox_navmeshWarn;
-
+			//I don't know how to add a second line that doesn't exist.
+			//Text navmeshWarningShadow = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(canvasObj, "Navmesh Warning"), "Text (1)"));
+            //navmeshWarningShadow.text = LanguageManager.CurrentLanguage.sandbox.sandbox_navmeshWarnshadow;
             //shop
             GameObject sandboxShop = GameObject.Find("Sandbox Shop");
 

@@ -41,6 +41,7 @@ namespace UltrakULL.Harmony_Patches
                 { 
                     case "Funny Stupid Fish (Friend)":
                     {
+                        fishName = LanguageManager.CurrentLanguage.fishing.fish_terminalfunnyStupidFish;
                         fishName = LanguageManager.CurrentLanguage.fishing.fish_funnyStupidFish;
                         break;
                     }
@@ -181,7 +182,7 @@ namespace UltrakULL.Harmony_Patches
             {
                 case "Funny Stupid Fish (Friend)":
                 {
-                    fish.fishName = LanguageManager.CurrentLanguage.fishing.fish_funnyStupidFish;
+                    fish.fishName = LanguageManager.CurrentLanguage.fishing.fish_terminalfunnyStupidFish;
                     fish.description = LanguageManager.CurrentLanguage.fishing.fish_funnyStupidFishDescription1 + "\n\n"
                                         + LanguageManager.CurrentLanguage.fishing.fish_funnyStupidFishDescription2;
                     break;
