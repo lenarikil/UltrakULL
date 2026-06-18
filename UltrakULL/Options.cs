@@ -394,7 +394,7 @@ namespace UltrakULL
                 + LanguageManager.CurrentLanguage.options.assists_majorAssistsDisclaimer2
                 + "\n\n"
                 + LanguageManager.CurrentLanguage.options.assists_majorAssistsDisclaimer3;
-            assistDisclaimerText.fontSize = 18;
+            assistDisclaimerText.fontSize = 20;
 
             TextMeshProUGUI assistDisclaimerConfirmText = GetTextMeshProUGUI(GetGameObjectChild(assistMajorAssistPanel, "Summary"));
             assistDisclaimerConfirmText.text = LanguageManager.CurrentLanguage.options.assists_majorAssistsDisclaimerConfirm;
