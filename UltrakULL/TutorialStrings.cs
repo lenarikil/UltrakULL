@@ -85,6 +85,7 @@ namespace UltrakULL
         // & - Ends intro text and loads the tutorial
         // β - Recalibration yes (automatically shows keyboard or controller button depending on what the player is using)
         // δ - Recalibration no (automatically shows keyboard or controller button depending on what the player is using)
+		// Ä - Show calibration menu
 
         public void PatchCalibrationWindows(ref GameObject canvasObj)
         {
@@ -121,6 +122,15 @@ namespace UltrakULL
                 
                 TextMeshProUGUI calibrationAudioDoneAlt = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(calibrationAudioWindow, "Done"), "Text"));
                 calibrationAudioDoneAlt.text = LanguageManager.CurrentLanguage.shop.shop_colorsDone;
+
+                SliderValueToText calibrationAudioMasterSlider = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(calibrationAudioWindow, "Master Volume (1)"), "Button"), "Slider (1)"), "Text (2)").GetComponentInChildren<SliderValueToText>();
+				calibrationAudioMasterSlider.ifMin = LanguageManager.CurrentLanguage.tutorial.tutorial_audioCalibrationSliderOFF;
+
+                SliderValueToText calibrationAudioSFXSlider = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(calibrationAudioWindow, "SFX Volume (1)"), "Button"), "Slider (1)"), "Text (2)").GetComponentInChildren<SliderValueToText>();
+                calibrationAudioSFXSlider.ifMin = LanguageManager.CurrentLanguage.tutorial.tutorial_audioCalibrationSliderOFF;
+
+                SliderValueToText calibrationAudioMusicSlider = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(calibrationAudioWindow, "Music Volume (1)"), "Button"), "Slider (1)"), "Text (2)").GetComponentInChildren<SliderValueToText>();
+                calibrationAudioMusicSlider.ifMin = LanguageManager.CurrentLanguage.tutorial.tutorial_audioCalibrationSliderOFF;
 
                 //Audio warning
                 TextMeshProUGUI calibrationMasterAudioWarningPrompt = GetTextMeshProUGUI(GetGameObjectChild(calibrationAudioWindowWarning, "Text (No Master)"));
