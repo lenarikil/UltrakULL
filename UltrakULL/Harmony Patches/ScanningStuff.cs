@@ -27,8 +27,10 @@ namespace UltrakULL.Harmony_Patches
 
             if (!string.IsNullOrEmpty(bookId))
             {
-                Logging.Message("[BookAudio] Book opened: " + sceneName + "/" + bookId);
-                BookAudioPlayer.Play(sceneName, bookId);
+                bool isReversed = IsReadingScannedTextReversed();
+                string audioBookId = isReversed ? bookId + "_reversed" : bookId;
+                Logging.Message("[BookAudio] Book opened: " + sceneName + "/" + audioBookId);
+                BookAudioPlayer.Play(sceneName, audioBookId);
             }
 
             GameObject canvas = GetInactiveRootObject("Canvas");
@@ -37,6 +39,24 @@ namespace UltrakULL.Harmony_Patches
             scanningText.text = LanguageManager.CurrentLanguage.books.books_scanning;
             text = Books.GetBookText(text);
             return true;
+        }
+
+        public static bool IsReadingScannedTextReversed()
+        {
+            GameObject canvas = GetInactiveRootObject("Canvas");
+            if (canvas == null) return false;
+
+            GameObject readingScanned = GetGameObjectChild(
+                GetGameObjectChild(canvas, "ScanningStuff"),
+                "ReadingScanned");
+            GameObject panel = GetGameObjectChild(readingScanned, "Panel");
+            GameObject scrollRect = GetGameObjectChild(panel, "Scroll Rect");
+            GameObject viewport = GetGameObjectChild(scrollRect, "Viewport");
+            GameObject textObj = GetGameObjectChild(viewport, "Text");
+            if (textObj == null) return false;
+
+            RectTransform textRect = textObj.GetComponent<RectTransform>();
+            return textRect != null && textRect.localScale.x < 0f;
         }
 
         private static string IdentifyBookId(string originalText, string sceneName)

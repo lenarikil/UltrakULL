@@ -31,7 +31,7 @@ namespace UltrakULL.Harmony_Patches
             if (controller == null)
                 controller = panel.AddComponent<BookUIController>();
 
-            controller.EnsureUI(panel);
+            controller.EnsureUI(panel, LocalizeScanningText.IsReadingScannedTextReversed());
         }
     }
 
@@ -200,10 +200,11 @@ namespace UltrakULL.Harmony_Patches
         private const float iconOuterSize = iconContentSize + 2f * borderWidth;
         private const float bevel = 5f;
 
-        public void EnsureUI(GameObject panel)
+        public void EnsureUI(GameObject panel, bool isReversed)
         {
             if (uiCreated && controlsRoot != null)
             {
+                ApplyControlsScale(isReversed);
                 controlsRoot.SetActive(true);
                 return;
             }
@@ -223,6 +224,7 @@ namespace UltrakULL.Harmony_Patches
             rootRect.pivot = new Vector2(0.5f, 0);
             rootRect.offsetMin = new Vector2(scrollRectTransformRef.offsetMin.x, panelMargin);
             rootRect.offsetMax = new Vector2(scrollRectTransformRef.offsetMax.x, ctrlHeight + panelMargin);
+            ApplyControlsScale(isReversed);
 
             BevelBorderGraphic outerBorder = controlsRoot.AddComponent<BevelBorderGraphic>();
             outerBorder.bevel = bevel;
@@ -428,6 +430,18 @@ namespace UltrakULL.Harmony_Patches
             BookAudioPlayer.OnError += OnPlaybackEvent;
 
             UpdateUI();
+        }
+
+        private void ApplyControlsScale(bool isReversed)
+        {
+            if (controlsRoot == null) return;
+
+            RectTransform controlsRect = controlsRoot.GetComponent<RectTransform>();
+            if (controlsRect == null) return;
+
+            Vector3 scale = controlsRect.localScale;
+            scale.x = isReversed ? -1f : 1f;
+            controlsRect.localScale = scale;
         }
 
         private void OnDisable()
