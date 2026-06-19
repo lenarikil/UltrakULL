@@ -1654,6 +1654,8 @@ namespace UltrakULL.json
         public string books_fraudThird2_6;
         public string books_fraudThird2_7;
 
+        public string books_audioError;
+
     }
 
     public class PauseMenu

@@ -2195,7 +2195,8 @@
     "books_fraudThird2_4": "L U C I F E R ,   M Y   L O V E . . .",
     "books_fraudThird2_5": "I SHALL GIFT TO YOU ALL THE AGONIES THAT CAN EXIST,",
     "books_fraudThird2_6": "AND MANY THAT CANNOT.",
-    "books_fraudThird2_7": "\nThe pages of the book are blank."
+    "books_fraudThird2_7": "\nThe pages of the book are blank.",
+    "books_audioError": "ERROR: IMPOSSIBLE TO BUILD A SPEECH PATTERN"
   },
   "visualnovel": {
     "visualnovel_mirageName1": "<color=white>JUST SOMEONE</color>",
