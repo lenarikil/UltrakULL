@@ -18,7 +18,7 @@ namespace UltrakULL
 
             if (fullMessage.Contains("REVOLVER"))
             {
-                return (LanguageManager.CurrentLanguage.prelude.prelude_first_revolverPierce1 + "<color=orange>" + input + "</color>" + LanguageManager.CurrentLanguage.prelude.prelude_first_revolverPierce2);
+                return ("<color=#40E7FF>" + LanguageManager.CurrentLanguage.prelude.prelude_first_revolverPierce1 + "<color=orange>" + input + "</color>" + LanguageManager.CurrentLanguage.prelude.prelude_first_revolverPierce2);
             }
             if (fullMessage.Contains("DEFLECT"))
             {
