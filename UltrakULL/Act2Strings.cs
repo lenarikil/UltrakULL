@@ -140,15 +140,15 @@ namespace UltrakULL
             string fullMessage = message + message2;
             if (fullMessage.Contains("JAKITO"))
             {
-                return (LanguageManager.CurrentLanguage.act2.act2_wrathSecond_jakito1);
+                return "<color=red>" + LanguageManager.CurrentLanguage.act2.act2_wrathSecond_jakito1 + "</color>";
             }
             if (fullMessage.Contains("THANK"))
             {
-                return (LanguageManager.CurrentLanguage.act2.act2_wrathSecond_jakito2);
+                return "<color=red>" + LanguageManager.CurrentLanguage.act2.act2_wrathSecond_jakito2 + "</color>";
             }
             if (fullMessage.Contains("NO"))
             {
-                return (LanguageManager.CurrentLanguage.act2.act2_wrathSecond_jakito3);
+                return "<color=red>" + LanguageManager.CurrentLanguage.act2.act2_wrathSecond_jakito3 + "</color>";
             }
             if (fullMessage.Contains("Hark"))
             {
