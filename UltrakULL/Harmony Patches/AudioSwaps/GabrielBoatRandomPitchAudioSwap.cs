@@ -1,7 +1,9 @@
 using HarmonyLib;
 using UltrakULL.audio;
+using UltrakULL.json;
 using UnityEngine;
 using System.IO;
+using static UltrakULL.CommonFunctions;
 
 namespace UltrakULL.Harmony_Patches
 {
@@ -15,6 +17,9 @@ namespace UltrakULL.Harmony_Patches
         {
             try
             {
+                if (!ActiveDubbingEnabled())
+                    return;
+
                 var aud = __instance.GetComponent<AudioSource>();
                 if (aud == null || aud.clip == null)
                     return;
@@ -27,7 +32,7 @@ namespace UltrakULL.Harmony_Patches
 
                 AudioSwapper.SwapClipWithFileAsync(aud.clip, localizedPath, newClip =>
                 {
-                    if (newClip != null)
+                    if (newClip != null && ActiveDubbingEnabled())
                     {
                         aud.clip = newClip;
                         Logging.Message($"[Flicker] Swapped clip '{clipName}' → '{newClip.name}'");
@@ -47,6 +52,9 @@ namespace UltrakULL.Harmony_Patches
         {
             try
             {
+                if (!ActiveDubbingEnabled())
+                    return;
+
                 var aud = __instance.GetComponent<AudioSource>();
                 if (aud == null || aud.clip == null)
                     return;
@@ -59,7 +67,7 @@ namespace UltrakULL.Harmony_Patches
 
                 AudioSwapper.SwapClipWithFileAsync(aud.clip, localizedPath, newClip =>
                 {
-                    if (newClip != null)
+                    if (newClip != null && ActiveDubbingEnabled())
                     {
                         aud.clip = newClip;
                         Logging.Message($"[RandomPitch] Swapped clip '{clipName}' → '{newClip.name}'");
@@ -79,6 +87,9 @@ namespace UltrakULL.Harmony_Patches
         {
             try
             {
+                if (!ActiveDubbingEnabled())
+                    return;
+
                 var aud = __instance.GetComponent<AudioSource>();
                 if (aud == null || aud.clip == null)
                     return;
@@ -91,7 +102,7 @@ namespace UltrakULL.Harmony_Patches
 
                 AudioSwapper.SwapClipWithFileAsync(aud.clip, localizedPath, newClip =>
                 {
-                    if (newClip != null)
+                    if (newClip != null && ActiveDubbingEnabled())
                     {
                         aud.clip = newClip;
                         Logging.Message($"[RandomPitch Enable] Swapped clip '{clipName}' → '{newClip.name}'");
@@ -101,6 +112,19 @@ namespace UltrakULL.Harmony_Patches
             catch (System.Exception e)
             {
                 Logging.Warn("[RandomPitch OnEnable] Swap error: " + e.Message);
+            }
+        }
+
+        private static bool ActiveDubbingEnabled()
+        {
+            try
+            {
+                return !isUsingEnglish() &&
+                       LanguageManager.configFile.Bind("General", "activeDubbing", "False").Value != "False";
+            }
+            catch
+            {
+                return false;
             }
         }
     }
