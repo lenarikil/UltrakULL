@@ -215,152 +215,152 @@ namespace UltrakULL
             //Intro
             if(inputString.Contains("Heavy steps"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_introFirst1 + "▼\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_introFirst2 + "▼\n"
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_introFirst1 + " ▼\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_introFirst2 + " ▼\n"
                     + LanguageManager.CurrentLanguage.visualnovel.visualnovel_introFirst3
-                    + "▼\n\n"
+                    + " ▼\n\n"
                     + LanguageManager.CurrentLanguage.visualnovel.visualnovel_introFirst4
-                    + "▼\n\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_introFirst5 + "▼\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_introFirst6 + "▼\n\n\n\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_introFirst7 + "▼\n";
+                    + " ▼\n\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_introFirst5 + " ▼\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_introFirst6 + " ▼\n\n\n\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_introFirst7 + " ▼\n";
             }
             if(inputString.Contains("I bit down"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_introSecond1 + "▼\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_introSecond2 + "▼\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_introSecond3 + "▼\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_introSecond4 + "▼\n"
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_introSecond1 + " ▼\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_introSecond2 + " ▼\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_introSecond3 + " ▼\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_introSecond4 + " ▼\n"
                     + LanguageManager.CurrentLanguage.visualnovel.visualnovel_introSecond5
-                    + "▼}\n\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_introSecond6 + "▼\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_introSecond7 + "▼\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_introSecond8 + "▼";
+                    + " ▼}\n\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_introSecond6 + " ▼\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_introSecond7 + " ▼\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_introSecond8 + " ▼";
             }
             //Fallen
             if (inputString.Contains("Oof ow")) {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_fallen1 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_fallen1 + " ▼";
             }
             //Fallen branch
             if (inputString.Contains("I'm just someone"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_fallenResponseFirst + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_fallenResponseFirst + " ▼";
             }
             if (inputString.Contains("Well I just got"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_fallenResponseSecond + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_fallenResponseSecond + " ▼";
             }
             if (inputString.Contains("Oh great"))
             {
                 return LanguageManager.CurrentLanguage.visualnovel.visualnovel_fallenResponseThird1
-                    + "▼\n" + LanguageManager.CurrentLanguage.visualnovel.visualnovel_fallenResponseThird2 + "▼";
+                    + " ▼\n" + LanguageManager.CurrentLanguage.visualnovel.visualnovel_fallenResponseThird2 + " ▼";
             }
 
             if (inputString.Contains("Alright, alright"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_fallenResponseFourth + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_fallenResponseFourth + " ▼";
             }
 
             if (inputString.Contains("UGH?"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_fallenResponseFifth + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_fallenResponseFifth + " ▼";
             }
             //Kind
             if (inputString.Contains("*Sigh*"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_kindFirst1 + "▼\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_kindFirst2 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_kindFirst1 + " ▼\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_kindFirst2 + " ▼";
             }
             if (inputString.Contains("Though, by the"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_kindSecond + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_kindSecond + " ▼";
             }
             if (inputString.Contains("So how about you"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_kindThird + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_kindThird + " ▼";
             }
 
             //Rude
             if (inputString.Contains("Listen up,"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_rudeFirst1 + "▼\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_rudeFirst2 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_rudeFirst1 + " ▼\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_rudeFirst2 + " ▼";
             }
             if (inputString.Contains("By the looks of it"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_rudeSecond + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_rudeSecond + " ▼";
             }
             if (inputString.Contains("So I'll forgive you"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_rudeThird + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_rudeThird + " ▼";
             }
 
             //Middle
             if (inputString.Contains("UGH!"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_middleResponseFirst1 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_middleResponseFirst1 + " ▼";
             }
             if (inputString.Contains("Though in retrospect"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_middleResponseFirst2 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_middleResponseFirst2 + " ▼";
             }
             if (inputString.Contains("Oh well,"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_middleResponseFirst3 + "▼\n" +
-                    LanguageManager.CurrentLanguage.visualnovel.visualnovel_middleResponseFirst4 + "▼\n";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_middleResponseFirst3 + " ▼\n" +
+                    LanguageManager.CurrentLanguage.visualnovel.visualnovel_middleResponseFirst4 + " ▼\n";
             }
             if (inputString.Contains("I'm Mirage.")) {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_middleResponseFirst5 + "▼\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_middleResponseFirst6 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_middleResponseFirst5 + " ▼\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_middleResponseFirst6 + " ▼";
             }
 
             if (inputString.Contains("WHAT?"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_middleResponseSecond1 + "▼\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_middleResponseSecond2 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_middleResponseSecond1 + " ▼\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_middleResponseSecond2 + " ▼";
             }
             if (inputString.Contains("If you DON'T"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_middleResponseSecond3 + "▼\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_middleResponseSecond4 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_middleResponseSecond3 + " ▼\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_middleResponseSecond4 + " ▼";
             }
 
             if (inputString.Contains("Bullshit!"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_middleResponseThird1 + "▼\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_middleResponseThird2 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_middleResponseThird1 + " ▼\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_middleResponseThird2 + " ▼";
             }
             if (inputString.Contains("Though considering"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_middleResponseThird3 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_middleResponseThird3 + " ▼";
             }
 
             //Waiting
             if (inputString.Contains("Wandering around like"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_waitingFirst + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_waitingFirst + " ▼";
             }
             if (inputString.Contains("Since we were"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_waitingSecond + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_waitingSecond + " ▼";
             }
             if (inputString.Contains("Therefore,"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_waitingThird1 + "▼\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_waitingThird2 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_waitingThird1 + " ▼\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_waitingThird2 + " ▼";
             }
 
 
             //First response
             if (inputString.Contains("Suit yourself"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_waitingResponseFirst1 + "▼\n";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_waitingResponseFirst1 + " ▼\n";
             }
             if (inputString.Contains("Couldn't care less"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_waitingResponseFirst2 + "▼\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_waitingResponseFirst3 + "▼\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_waitingResponseFirst4 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_waitingResponseFirst2 + " ▼\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_waitingResponseFirst3 + " ▼\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_waitingResponseFirst4 + " ▼";
             }
 
 
@@ -368,210 +368,210 @@ namespace UltrakULL
             //Second response
             if (inputString.Contains("Hah!"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_waitingResponseSecond1 + "▼\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_waitingResponseSecond2 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_waitingResponseSecond1 + " ▼\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_waitingResponseSecond2 + " ▼";
             }
             if (inputString.Contains("Because nothing"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_waitingResponseThird1 + "▼\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_waitingResponseThird2 + "▼\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_waitingResponseThird3 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_waitingResponseThird1 + " ▼\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_waitingResponseThird2 + " ▼\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_waitingResponseThird3 + " ▼";
             }
 
 
             //Recklessness
             if (inputString.Contains("Yeah?"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_recklessnessFirst + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_recklessnessFirst + " ▼";
             }
             if (inputString.Contains("But yes,"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_recklessnessSecond1 + "▼\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_recklessnessSecond2 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_recklessnessSecond1 + " ▼\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_recklessnessSecond2 + " ▼";
             }
 
             //First response
             if (inputString.Contains("What's the point of making"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_recklessnessResponseFirst1 + "▼\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_recklessnessResponseFirst2 + "▼\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_recklessnessResponseFirst3 + "▼\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_recklessnessResponseFirst4 + "▼\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_recklessnessResponseFirst5 + "▼\n";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_recklessnessResponseFirst1 + " ▼\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_recklessnessResponseFirst2 + " ▼\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_recklessnessResponseFirst3 + " ▼\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_recklessnessResponseFirst4 + " ▼\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_recklessnessResponseFirst5 + " ▼\n";
             }
 
             //Second response
             if (inputString.Contains("Don't flatter yourself"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_recklessnessResponseSecond1 + "▼\n" + LanguageManager.CurrentLanguage.visualnovel.visualnovel_recklessnessResponseSecond2 + "▼"; 
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_recklessnessResponseSecond1 + " ▼\n" + LanguageManager.CurrentLanguage.visualnovel.visualnovel_recklessnessResponseSecond2 + " ▼"; 
             }
 
             if (inputString.Contains("Everything."))
             {
-               return LanguageManager.CurrentLanguage.visualnovel.visualnovel_recklessnessResponseThird + "▼";
+               return LanguageManager.CurrentLanguage.visualnovel.visualnovel_recklessnessResponseThird + " ▼";
             }
 
             //Nihilism
             if (inputString.Contains("I mean really"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism1 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism1 + " ▼";
             }
             if (inputString.Contains("The human mind,"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism2 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism2 + " ▼";
             }
             if (inputString.Contains("We can only ever"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism3 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism3 + " ▼";
             }
             if (inputString.Contains("Death is"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism4 + "▼\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism5 + "▼\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism6 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism4 + " ▼\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism5 + " ▼\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism6 + " ▼";
             }
             if (inputString.Contains("It doesn't matter"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism7 + "▼\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism8 + "▼\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism9 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism7 + " ▼\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism8 + " ▼\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism9 + " ▼";
             }
             if (inputString.Contains("Human intelligence"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism10 + "▼\n"
-                + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism11 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism10 + " ▼\n"
+                + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism11 + " ▼";
             }
             if (inputString.Contains("Our intelligence"))
             {
-                    return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism12 + "▼";
+                    return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism12 + " ▼";
             }
             if (inputString.Contains("It's an over-extension"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism13 + "▼\n"
-                 + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism14 + "▼\n";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism13 + " ▼\n"
+                 + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism14 + " ▼\n";
             }
             if (inputString.Contains("Much like the Irish"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism15 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism15 + " ▼";
             }
             if (inputString.Contains("The human mind is an"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism16 + "▼\n" +
-                    LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism17 + "▼\n";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism16 + " ▼\n" +
+                    LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism17 + " ▼\n";
             }
             if (inputString.Contains("Existential dread"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism18 + "▼\n"
-                 + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism19 + "▼\n"
-                 + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism20 + "▼\n"
-                 + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism21 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism18 + " ▼\n"
+                 + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism19 + " ▼\n"
+                 + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism20 + " ▼\n"
+                 + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism21 + " ▼";
             }
             if (inputString.Contains("We are unable"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism22 + "▼\n"
-                 + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism23 + "▼\n"
-                 + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism24 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism22 + " ▼\n"
+                 + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism23 + " ▼\n"
+                 + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism24 + " ▼";
             }
             if (inputString.Contains("We create distractions"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism25 + "▼\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism26 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism25 + " ▼\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism26 + " ▼";
             }
             if (inputString.Contains("We sublimate it"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism27 + "▼\n"
-                 + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism28 + "▼\n"
-                 + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism29 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism27 + " ▼\n"
+                 + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism28 + " ▼\n"
+                 + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism29 + " ▼";
             }
             if (inputString.Contains("But these ways"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism30 + "▼\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism31 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism30 + " ▼\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism31 + " ▼";
             }
             if (inputString.Contains("In the end"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism32 + "▼\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism33 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism32 + " ▼\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism33 + " ▼";
             }
 
             if (inputString.Contains("Huh?"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism34 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism34 + " ▼";
             }
             if (inputString.Contains("How could it not be?"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism35 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism35 + " ▼";
             }
             if (inputString.Contains("But still"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism36 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism36 + " ▼";
             }
             if (inputString.Contains("I do understand"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism37 + "▼\n"
-                  + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism38 + "▼\n"
-                  + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism39 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism37 + " ▼\n"
+                  + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism38 + " ▼\n"
+                  + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism39 + " ▼";
             }
             if (inputString.Contains("I see."))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism40 + "▼\n"
-                + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism41 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism40 + " ▼\n"
+                + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism41 + " ▼";
             }
             if (inputString.Contains("I understand it logically"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism42 + "▼\n"
-                + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism43 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism42 + " ▼\n"
+                + LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilism43 + " ▼";
             }
 
             //Conclusion
             if (inputString.Contains("Well I'll be damned"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusion1 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusion1 + " ▼";
             }
             if (inputString.Contains("Guess you got a good"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusion2 + "▼\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusion3 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusion2 + " ▼\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusion3 + " ▼";
             }
             if (inputString.Contains("Man..."))
             {
-                return  LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusion4 + "▼\n"
-                + LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusion5 + "▼\n"
-                + LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusion6 + "▼\n"
-                + LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusion7 + "▼";
+                return  LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusion4 + " ▼\n"
+                + LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusion5 + " ▼\n"
+                + LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusion6 + " ▼\n"
+                + LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusion7 + " ▼";
 
             }
             if (inputString.Contains("Thank you."))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusion8 + "▼\n";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusion8 + " ▼\n";
             }
 
             if (inputString.Contains("You've given me a lot"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusion9 + "▼\n"
-                + LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusion10 + "▼\n";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusion9 + " ▼\n"
+                + LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusion10 + " ▼\n";
             }
             if (inputString.Contains("Say..."))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusion11 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusion11 + " ▼";
             }
             if (inputString.Contains("Oh, you sneaky"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusionResponseFirst1 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusionResponseFirst1 + " ▼";
             }
             if (inputString.Contains("But alright"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusionResponseFirst2 + "▼\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusionResponseFirst3 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusionResponseFirst2 + " ▼\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusionResponseFirst3 + " ▼";
             }
             if (inputString.Contains("Alright, suit yourself"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusionResponseSecond1 + "▼\n"
-                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusionResponseSecond2 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusionResponseSecond1 + " ▼\n"
+                    + LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusionResponseSecond2 + " ▼";
             }
             if (inputString.Contains("See you around"))
             {
-                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusionResponseSecond3 + "▼";
+                return LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusionResponseSecond3 + " ▼";
             }
 
             return (inputString);

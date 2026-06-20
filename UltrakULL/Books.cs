@@ -16,7 +16,7 @@ namespace UltrakULL
 			case "Level 2-2":
 				return "<b>" + LanguageManager.CurrentLanguage.books.books_lustSecond1 + "</b>\n\n<i>" + LanguageManager.CurrentLanguage.books.books_lustSecond2 + LanguageManager.CurrentLanguage.books.books_lustSecond3 + LanguageManager.CurrentLanguage.books.books_lustSecond4 + "</i>\n\n<b>" + LanguageManager.CurrentLanguage.books.books_lustSecond5 + "</b>";
 			case "Level 4-2":
-				return "<b>" + LanguageManager.CurrentLanguage.books.books_greedSecond1 + "</b>\n\n<i>" + LanguageManager.CurrentLanguage.books.books_greedSecond2 + "\n\n" + LanguageManager.CurrentLanguage.books.books_greedSecond3 + "\n\n" + LanguageManager.CurrentLanguage.books.books_greedSecond4 + "\n\n" + LanguageManager.CurrentLanguage.books.books_greedSecond5 + "</i>\n\n<b>" + LanguageManager.CurrentLanguage.books.books_greedSecond6 + "</b>";
+				return "<b>" + LanguageManager.CurrentLanguage.books.books_greedSecond1 + "</b>\n\n\n<i>" + LanguageManager.CurrentLanguage.books.books_greedSecond2 + "\n\n" + LanguageManager.CurrentLanguage.books.books_greedSecond3 + "\n\n" + LanguageManager.CurrentLanguage.books.books_greedSecond4 + "\n\n" + LanguageManager.CurrentLanguage.books.books_greedSecond5 + "</i>\n\n\n<b>" + LanguageManager.CurrentLanguage.books.books_greedSecond6 + "</b>";
 			case "Level 4-3":
 				return LanguageManager.CurrentLanguage.books.books_greedThird1 + "\n\n" + LanguageManager.CurrentLanguage.books.books_greedThird2 + "\n\n" + LanguageManager.CurrentLanguage.books.books_greedThird3 + "\n\n" + LanguageManager.CurrentLanguage.books.books_greedThird4;
 			case "Level 5-2":
@@ -42,9 +42,13 @@ namespace UltrakULL
 				}
 				return "<i>" + LanguageManager.CurrentLanguage.books.books_violenceSecondAmbush1 + "\n\n\n" + LanguageManager.CurrentLanguage.books.books_violenceSecondAmbush2 + "\n\n\n\n\n" + LanguageManager.CurrentLanguage.books.books_violenceSecondAmbush1 + "\n\n\n" + LanguageManager.CurrentLanguage.books.books_violenceSecondAmbush3 + "\n\n\n\n\n" + LanguageManager.CurrentLanguage.books.books_violenceSecondAmbush1 + "\n\n\n" + LanguageManager.CurrentLanguage.books.books_violenceSecondAmbush4 + "</i>";
 			case "Level 7-4":
-                    return "<size=23><color=red>" + LanguageManager.CurrentLanguage.books.books_violenceFourth1 + "\n\n\n" + LanguageManager.CurrentLanguage.books.books_violenceFourth2 + "\n\n\n" + LanguageManager.CurrentLanguage.books.books_violenceFourth3 + "\n\n\n" + LanguageManager.CurrentLanguage.books.books_violenceFourth4 + "\n\n\n<size=20><color=white>" + LanguageManager.CurrentLanguage.books.books_violenceFourth5 + "</color></size>";
-                case "Level 7-S":
+                    return "<size=23><color=red>" + LanguageManager.CurrentLanguage.books.books_violenceFourth1 + "\n\n\n" + LanguageManager.CurrentLanguage.books.books_violenceFourth2 + "\n\n\n" + LanguageManager.CurrentLanguage.books.books_violenceFourth3 + "\n\n\n" + LanguageManager.CurrentLanguage.books.books_violenceFourth4 + "\n\n\n\n<size=20><color=white>" + LanguageManager.CurrentLanguage.books.books_violenceFourth5 + "</color></size>";
+            case "Level 7-S":
+				if (originalText.Contains("SORRY, GONE FISHIN"))
+				{
 				return LanguageManager.CurrentLanguage.books.books_violenceSecret_Slate1 + "\n\n" + LanguageManager.CurrentLanguage.books.books_violenceSecret_Slate2;
+				}
+				return (originalText);
 			case "Level 8-2":
 				if (originalText.Contains("Layer 8: Fraud has become exactly what I had dreamed it would be"))
 				{
@@ -56,7 +60,7 @@ namespace UltrakULL
 				}
 				if (originalText.Contains("I SEE ICY ULYSSES FROZEN"))
 				{
-					return "<size=23><color=red>" + LanguageManager.CurrentLanguage.books.books_fraudSecond3_1 + "\n\n" + LanguageManager.CurrentLanguage.books.books_fraudSecond3_2 + "\n\n" + LanguageManager.CurrentLanguage.books.books_fraudSecond3_3 + "\n\n" + LanguageManager.CurrentLanguage.books.books_fraudSecond3_4 + "\n<nobr>" + LanguageManager.CurrentLanguage.books.books_fraudSecond3_5 + "<br>" + LanguageManager.CurrentLanguage.books.books_fraudSecond3_6 + "<br>" + LanguageManager.CurrentLanguage.books.books_fraudSecond3_7 + "</nobr></color></size>\n\n\n<size=20>" + LanguageManager.CurrentLanguage.books.books_fraudSecond3_8 + "</size>";
+					return "<size=23><color=red>" + LanguageManager.CurrentLanguage.books.books_fraudSecond3_1 + "\n\n" + LanguageManager.CurrentLanguage.books.books_fraudSecond3_2 + "\n\n" + LanguageManager.CurrentLanguage.books.books_fraudSecond3_3 + "\n\n" + LanguageManager.CurrentLanguage.books.books_fraudSecond3_4 + "\n<nobr>" + LanguageManager.CurrentLanguage.books.books_fraudSecond3_5 + "<br>" + LanguageManager.CurrentLanguage.books.books_fraudSecond3_6 + "<br>" + LanguageManager.CurrentLanguage.books.books_fraudSecond3_7 + "</nobr></color></size>\n\n\n\n<size=20>" + LanguageManager.CurrentLanguage.books.books_fraudSecond3_8 + "</size>";
 				}
 				return originalText;
 			case "Level 8-3":
@@ -66,7 +70,7 @@ namespace UltrakULL
 				}
 				if (originalText.Contains("ATAVISTIC ANTAGONIST"))
 				{
-					return "<size=23><color=red>" + LanguageManager.CurrentLanguage.books.books_fraudThird2_1 + "\n\n" + LanguageManager.CurrentLanguage.books.books_fraudThird2_2 + "\n\n" + LanguageManager.CurrentLanguage.books.books_fraudThird2_3 + "\n\n" + LanguageManager.CurrentLanguage.books.books_fraudThird2_4 + "\n\n" + LanguageManager.CurrentLanguage.books.books_fraudThird2_5 + "\n" + LanguageManager.CurrentLanguage.books.books_fraudThird2_6 + "</color></size>\n\n\n<size=20>" + LanguageManager.CurrentLanguage.books.books_fraudThird2_7 + "</size>";
+					return "<size=23><color=red>" + LanguageManager.CurrentLanguage.books.books_fraudThird2_1 + "\n\n" + LanguageManager.CurrentLanguage.books.books_fraudThird2_2 + "\n\n" + LanguageManager.CurrentLanguage.books.books_fraudThird2_3 + "\n\n" + LanguageManager.CurrentLanguage.books.books_fraudThird2_4 + "\n\n" + LanguageManager.CurrentLanguage.books.books_fraudThird2_5 + "\n" + LanguageManager.CurrentLanguage.books.books_fraudThird2_6 + "</color></size>\n\n\n\n<size=20>" + LanguageManager.CurrentLanguage.books.books_fraudThird2_7 + "</size>";
 				}
 				return originalText;
 			default:

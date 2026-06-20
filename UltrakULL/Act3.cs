@@ -62,7 +62,7 @@ namespace UltrakULL
 						((TMP_Text)val).text = LanguageManager.CurrentLanguage.act3.act3_violenceSecond_payloadControlLower;
 					}
 				}
-				((TMP_Text)textMeshProUGUI13).text = LanguageManager.CurrentLanguage.act3.act3_violenceSecond_payloadControlError1 + "<size=12>\n" + LanguageManager.CurrentLanguage.act3.act3_violenceSecond_payloadControlError2;
+				((TMP_Text)textMeshProUGUI13).text = LanguageManager.CurrentLanguage.act3.act3_violenceSecond_payloadControlError1 + "<size=10>\n" + LanguageManager.CurrentLanguage.act3.act3_violenceSecond_payloadControlError2;
 				((TMP_Text)textMeshProUGUI14).text = LanguageManager.CurrentLanguage.act3.act3_violenceSecond_payloadControlHell;
 			}
 			else if (currentSceneName.Contains("7-3"))
@@ -73,7 +73,7 @@ namespace UltrakULL
 				TextMeshProUGUI textMeshProUGUI17 = CommonFunctions.GetTextMeshProUGUI(CommonFunctions.GetGameObjectChild(CommonFunctions.GetGameObjectChild(gameObjectChild4, "PostActivation"), "Text (TMP) (1)"));
 				((TMP_Text)textMeshProUGUI15).text = LanguageManager.CurrentLanguage.act3.act3_violenceThird_becomeMarked;
 				((TMP_Text)textMeshProUGUI16).text = LanguageManager.CurrentLanguage.act3.act3_violenceThird_becomeMarkedButton;
-				((TMP_Text)textMeshProUGUI17).text = LanguageManager.CurrentLanguage.act3.act3_violenceThird_starOfTheShow;
+				((TMP_Text)textMeshProUGUI17).text = "<color=red>" + LanguageManager.CurrentLanguage.act3.act3_violenceThird_starOfTheShow + "</color>";
 			}
 			else if (currentSceneName.Contains("7-4"))
 			{

@@ -40,15 +40,15 @@ namespace UltrakULL
 
             if (fullMessage.Contains("PUNCH"))
             {
-                return (LanguageManager.CurrentLanguage.tutorial.tutorial_punch1 + " '<color=orange>" + input + "</color>' " + LanguageManager.CurrentLanguage.tutorial.tutorial_punch2);
+                return (LanguageManager.CurrentLanguage.tutorial.tutorial_punch1 + "<color=orange>" + input + "</color>" + LanguageManager.CurrentLanguage.tutorial.tutorial_punch2);
             }
             else if (fullMessage.Contains("SLIDE"))
             {
-                return (LanguageManager.CurrentLanguage.tutorial.tutorial_slide1 + " '<color=orange>" + input + "</color>' " + LanguageManager.CurrentLanguage.tutorial.tutorial_slide2);
+                return (LanguageManager.CurrentLanguage.tutorial.tutorial_slide1 + "<color=orange>" + input + "</color>" + LanguageManager.CurrentLanguage.tutorial.tutorial_slide2);
             }
             else if (fullMessage.Contains("DASH"))
             {
-                return (LanguageManager.CurrentLanguage.tutorial.tutorial_dash1 + " '<color=#00DFFF>" + input + "</color>' " + LanguageManager.CurrentLanguage.tutorial.tutorial_dash2 + "\n" + LanguageManager.CurrentLanguage.tutorial.tutorial_dash3);
+                return (LanguageManager.CurrentLanguage.tutorial.tutorial_dash1 + "<color=#00DFFF>" + input + "</color>" + LanguageManager.CurrentLanguage.tutorial.tutorial_dash2 + "\n" + LanguageManager.CurrentLanguage.tutorial.tutorial_dash3);
             }
             else if (fullMessage.Contains("HEALTH"))
             {
@@ -60,7 +60,7 @@ namespace UltrakULL
             }
             else if (fullMessage.Contains("SHOCKWAVE"))
             {
-                return (LanguageManager.CurrentLanguage.tutorial.tutorial_shockwave1 + " '<color=orange>" + input + "</color>' " + LanguageManager.CurrentLanguage.tutorial.tutorial_shockwave2 + "\n" + LanguageManager.CurrentLanguage.tutorial.tutorial_shockwave3);
+                return (LanguageManager.CurrentLanguage.tutorial.tutorial_shockwave1 + "<color=orange>" + input + "</color>" + LanguageManager.CurrentLanguage.tutorial.tutorial_shockwave2 + "\n" + LanguageManager.CurrentLanguage.tutorial.tutorial_shockwave3);
             }
             else if (fullMessage.Contains("ORBS"))
             {
@@ -277,8 +277,8 @@ namespace UltrakULL
                 TextMeshProUGUI calibrationControllerAutoAimPercent = GetTextMeshProUGUI(GetGameObjectChild(calibrationControllerAutoAimAmount, "Text"));
                 calibrationControllerAutoAimPercent.text = LanguageManager.CurrentLanguage.options.assists_autoAimPercent;
                 SliderValueToText autoAimSlider = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(calibrationControllerAutoAimAmount, "Slider Button(Clone)"), "Slider"), "Text").GetComponentInChildren<SliderValueToText>();
-                autoAimSlider.ifMin = LanguageManager.CurrentLanguage.options.assists_autoAimPercentMinimum;
-                autoAimSlider.ifMax = LanguageManager.CurrentLanguage.options.assists_autoAimPercentMaximum;
+                autoAimSlider.ifMin = "0";
+                autoAimSlider.ifMax = "100";
 
                 TextMeshProUGUI calibrationAssistDone = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(calibrationControllerWindow, "Done"), "Text"));
                 calibrationAssistDone.text = LanguageManager.CurrentLanguage.shop.shop_colorsDone;
@@ -317,7 +317,7 @@ namespace UltrakULL
 
                 + "+" + LanguageManager.CurrentLanguage.tutorial.tutorial_calibrationComplete1 + "_ \n"
                 + "+" + LanguageManager.CurrentLanguage.tutorial.tutorial_calibrationComplete2 + "_ \n"
-                + "(±" + LanguageManager.CurrentLanguage.tutorial.tutorial_introReminder1 + " _" + LanguageManager.CurrentLanguage.tutorial.tutorial_introReminder2 + ")½ \n\n"
+                + "(±" + LanguageManager.CurrentLanguage.tutorial.tutorial_introReminder1 + " _" + LanguageManager.CurrentLanguage.tutorial.tutorial_introReminder2 + " )½ \n\n"
 
                 + "+" + LanguageManager.CurrentLanguage.tutorial.tutorial_systemsOperational + "_½ \n"
                 + LanguageManager.CurrentLanguage.tutorial.tutorial_introLoadStatus + "§";

@@ -72,7 +72,7 @@ namespace UltrakULL
 
             if (fullMessage.Contains("ALTERNATE NAILGUN"))
             {
-                return LanguageManager.CurrentLanguage.act2.act2_greedFourth_alternateNailgun;
+                return "<color=orange>" + LanguageManager.CurrentLanguage.act2.act2_greedFourth_alternateNailgun;
             }
 
             if (fullMessage.Contains("You're"))
@@ -81,12 +81,12 @@ namespace UltrakULL
             }
             if (fullMessage.Contains("Hold"))
             {
-                _previousMessage = LanguageManager.CurrentLanguage.act2.act2_greedFourth_whiplash1 + " <color=orange>" + input + "</color> " + LanguageManager.CurrentLanguage.act2.act2_greedFourth_whiplash2;
-                return LanguageManager.CurrentLanguage.act2.act2_greedFourth_whiplash1 + " <color=orange>" + input + "</color> " + LanguageManager.CurrentLanguage.act2.act2_greedFourth_whiplash2;
+                _previousMessage = "<color=#00FF00>" + LanguageManager.CurrentLanguage.act2.act2_greedFourth_whiplash1 + "<color=orange>" + input + "</color>" + LanguageManager.CurrentLanguage.act2.act2_greedFourth_whiplash2;
+                return LanguageManager.CurrentLanguage.act2.act2_greedFourth_whiplash1 + "<color=orange>" + input + "</color>" + LanguageManager.CurrentLanguage.act2.act2_greedFourth_whiplash2;
             }
             if (fullMessage.Contains("HEAVY"))
             {
-                _previousMessage = LanguageManager.CurrentLanguage.act2.act2_greedFourth_whiplash3;
+                _previousMessage = "<color=#00FF00>" + LanguageManager.CurrentLanguage.act2.act2_greedFourth_whiplash3;
                 return LanguageManager.CurrentLanguage.act2.act2_greedFourth_whiplash3;
             }
            
@@ -98,7 +98,7 @@ namespace UltrakULL
             string fullMessage = message + message2;
             if (fullMessage.Contains("HOLD"))
             {
-                return (LanguageManager.CurrentLanguage.act2.act2_greedSecret_holdToJump1 + " [<color=orange>" + input + "</color>]" + LanguageManager.CurrentLanguage.act2.act2_greedSecret_holdToJump2);
+                return (LanguageManager.CurrentLanguage.act2.act2_greedSecret_holdToJump1 + "<color=orange>" + input + "</color>" + LanguageManager.CurrentLanguage.act2.act2_greedSecret_holdToJump2);
             }
 
             return ("Unimplemented string");
@@ -113,7 +113,7 @@ namespace UltrakULL
             }
             if (fullMessage.Contains("SENTRIES"))
             {
-                return (LanguageManager.CurrentLanguage.act2.act2_wrathFirst_sentry);
+                return ("<color=#00FF00>" + LanguageManager.CurrentLanguage.act2.act2_wrathFirst_sentry);
             }
             if (fullMessage.Contains("drained"))
             {
@@ -121,12 +121,12 @@ namespace UltrakULL
             }
             if (fullMessage.Contains("REDUCE")) 
             {
-                return LanguageManager.CurrentLanguage.act2.act2_wrathFirst_whiplashHardDamage1 + "\n" // Renamed to act2_wrathFirst_whiplashHardDamage1 because message moved from 4-4 to 5-1
+                return "<color=#00FF00>" + LanguageManager.CurrentLanguage.act2.act2_wrathFirst_whiplashHardDamage1 + "\n" // Renamed to act2_wrathFirst_whiplashHardDamage1 because message moved from 4-4 to 5-1
                 + LanguageManager.CurrentLanguage.act2.act2_wrathFirst_whiplashHardDamage2; // Renamed to act2_wrathFirst_whiplashHardDamage2 because message moved from 4-4 to 5-1
             }
             if (fullMessage.Contains("UNDERWATER"))
             {
-                return (LanguageManager.CurrentLanguage.act2.act2_wrathFirst_whiplashUnderwater);
+                return ("<color=#00FF00>" + LanguageManager.CurrentLanguage.act2.act2_wrathFirst_whiplashUnderwater);
             }
             if (fullMessage.Contains("A door opens."))
             {
@@ -140,15 +140,15 @@ namespace UltrakULL
             string fullMessage = message + message2;
             if (fullMessage.Contains("JAKITO"))
             {
-                return (LanguageManager.CurrentLanguage.act2.act2_wrathSecond_jakito1);
+                return "<color=red>" + LanguageManager.CurrentLanguage.act2.act2_wrathSecond_jakito1 + "</color>";
             }
             if (fullMessage.Contains("THANK"))
             {
-                return (LanguageManager.CurrentLanguage.act2.act2_wrathSecond_jakito2);
+                return "<color=red>" + LanguageManager.CurrentLanguage.act2.act2_wrathSecond_jakito2 + "</color>";
             }
             if (fullMessage.Contains("NO"))
             {
-                return (LanguageManager.CurrentLanguage.act2.act2_wrathSecond_jakito3);
+                return "<color=red>" + LanguageManager.CurrentLanguage.act2.act2_wrathSecond_jakito3 + "</color>";
             }
             if (fullMessage.Contains("Hark"))
             {
@@ -167,11 +167,11 @@ namespace UltrakULL
 
             if (fullMessage.Contains("Indirect"))
             {
-                return (LanguageManager.CurrentLanguage.act2.act2_wrathThird_rocketLauncher);
+                return ("<color=#40E7FF>" + LanguageManager.CurrentLanguage.act2.act2_wrathThird_rocketLauncher);
             }
             if (fullMessage.Contains("FALLING"))
             {
-                return (LanguageManager.CurrentLanguage.act2.act2_wrathThird_rocketLauncherMidair);
+                return ("<color=#40E7FF>" + LanguageManager.CurrentLanguage.act2.act2_wrathThird_rocketLauncherMidair);
             }
             if (fullMessage.Contains("Soldiers"))
             {

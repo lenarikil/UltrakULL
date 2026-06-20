@@ -11,13 +11,13 @@ namespace UltrakULL
             string fullMessage = message + message2;
             if (fullMessage.Contains("ITEMS"))
             {
-                PreviousHudMessage = LanguageManager.CurrentLanguage.act1.act1_limboFirst_items1 + " '<color=orange>" + input + "</color>'" + LanguageManager.CurrentLanguage.act1.act1_limboFirst_items2;
-                return LanguageManager.CurrentLanguage.act1.act1_limboFirst_items1 + " \"<color=orange>" + input + "</color>\"" + LanguageManager.CurrentLanguage.act1.act1_limboFirst_items2;
+                PreviousHudMessage = LanguageManager.CurrentLanguage.act1.act1_limboFirst_items1 + "<color=orange>" + input + "</color>" + LanguageManager.CurrentLanguage.act1.act1_limboFirst_items2;
+                return LanguageManager.CurrentLanguage.act1.act1_limboFirst_items1 + "<color=orange>" + input + "</color>" + LanguageManager.CurrentLanguage.act1.act1_limboFirst_items2;
             }
             if (fullMessage.Contains("NAILGUN"))
             {
-                PreviousHudMessage = LanguageManager.CurrentLanguage.act1.act1_limboFirst_nailgun1 + " '<color=orange>" + input + "</color>' " + LanguageManager.CurrentLanguage.act1.act1_limboFirst_nailgun2 + "\n" + LanguageManager.CurrentLanguage.act1.act1_limboFirst_nailgun3;
-                return LanguageManager.CurrentLanguage.act1.act1_limboFirst_nailgun1 + " '<color=orange>" + input + "</color>'" + LanguageManager.CurrentLanguage.act1.act1_limboFirst_nailgun2 + "\n" + LanguageManager.CurrentLanguage.act1.act1_limboFirst_nailgun3;
+                PreviousHudMessage = "<color=#40E7FF>" + LanguageManager.CurrentLanguage.act1.act1_limboFirst_nailgun1 + "<color=orange>" + input + "</color>" + LanguageManager.CurrentLanguage.act1.act1_limboFirst_nailgun2 + "\n" + LanguageManager.CurrentLanguage.act1.act1_limboFirst_nailgun3;
+                return LanguageManager.CurrentLanguage.act1.act1_limboFirst_nailgun1 + "<color=orange>" + input + "</color>" + LanguageManager.CurrentLanguage.act1.act1_limboFirst_nailgun2 + "\n" + LanguageManager.CurrentLanguage.act1.act1_limboFirst_nailgun3;
             }
 
             //Band-aid fix
@@ -63,12 +63,12 @@ namespace UltrakULL
 
             if (fullMessage.Contains("ALTERNATE REVOLVER"))
             {
-                return LanguageManager.CurrentLanguage.act1.act1_limboFourth_alternateRevolver;
+                return "<color=orange>" + LanguageManager.CurrentLanguage.act1.act1_limboFourth_alternateRevolver;
             }
 
             if (fullMessage.Contains("EQUIPPED"))
             {
-                return LanguageManager.CurrentLanguage.act1.act1_limboFourth_newArm + " '<color=orange>" + input + "</color>'";
+                return LanguageManager.CurrentLanguage.act1.act1_limboFourth_newArm1 + "<color=orange>" + input + "</color>" + LanguageManager.CurrentLanguage.act1.act1_limboFourth_newArm2;
             }
 
             return ("Unimplemented string");
@@ -90,7 +90,7 @@ namespace UltrakULL
             string fullMessage = message + message2;
             if (fullMessage.Contains("KNUCKLE"))
             {
-                return (LanguageManager.CurrentLanguage.act1.act1_lustFirst_knuckleblaster1 + " '<color=orange>"+input+"</color>' " + LanguageManager.CurrentLanguage.act1.act1_lustFirst_knuckleblaster2);
+                return ("<color=red>" + LanguageManager.CurrentLanguage.act1.act1_lustFirst_knuckleblaster1 + "<color=orange>"+input+"</color>" + LanguageManager.CurrentLanguage.act1.act1_lustFirst_knuckleblaster2);
             }
             if (fullMessage.Contains("DASH"))
             {
@@ -105,11 +105,11 @@ namespace UltrakULL
             string fullMessage = message + message2;
             if (fullMessage.Contains("FEEDBACKER"))
             {
-                return LanguageManager.CurrentLanguage.act1.act1_lustSecond_feedbacker1 + "\n" + LanguageManager.CurrentLanguage.act1.act1_lustSecond_feedbacker2 + " '<color=orange>" + input + "</color>'.";
+                return LanguageManager.CurrentLanguage.act1.act1_lustSecond_feedbacker1 + "\n" + LanguageManager.CurrentLanguage.act1.act1_lustSecond_feedbacker2 + "<color=orange>" + input + "</color>" + LanguageManager.CurrentLanguage.act1.act1_lustSecond_feedbacker3;
             }
             if (fullMessage.Contains("RAILCANNON"))
             {
-                return (LanguageManager.CurrentLanguage.act1.act1_lustSecond_railcannon);
+                return ("<color=#40E7FF>" + LanguageManager.CurrentLanguage.act1.act1_lustSecond_railcannon);
             }
             if (fullMessage.Contains("CHECKPOINTS"))
             {

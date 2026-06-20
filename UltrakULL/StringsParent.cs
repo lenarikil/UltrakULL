@@ -313,15 +313,15 @@ namespace UltrakULL
             }
             if (currentSceneName.Contains("5-4"))
 			{
-				return EnsureTranslation(LanguageManager.CurrentLanguage.levelTips.leveltips_wrathFourth1, LanguageManager.CurrentLanguage.levelTips.leveltips_wrathFourth2, "\n", tipDescriptionText);
+				return EnsureTranslation(LanguageManager.CurrentLanguage.levelTips.leveltips_wrathFourth1, LanguageManager.CurrentLanguage.levelTips.leveltips_wrathFourth2, "\n\n", tipDescriptionText);
 			}
 			if (currentSceneName.Contains("6-1"))
 			{
-				return EnsureTranslation(LanguageManager.CurrentLanguage.levelTips.leveltips_heresyFirst1, LanguageManager.CurrentLanguage.levelTips.leveltips_heresyFirst2, "\n", tipDescriptionText);
+				return EnsureTranslation(LanguageManager.CurrentLanguage.levelTips.leveltips_heresyFirst1, LanguageManager.CurrentLanguage.levelTips.leveltips_heresyFirst2, "\n\n", tipDescriptionText);
 			}
 			if (currentSceneName.Contains("6-2"))
 			{
-				return EnsureTranslation(LanguageManager.CurrentLanguage.levelTips.leveltips_heresySecond1, LanguageManager.CurrentLanguage.levelTips.leveltips_heresySecond2, "\n", tipDescriptionText);
+				return EnsureTranslation(LanguageManager.CurrentLanguage.levelTips.leveltips_heresySecond1, LanguageManager.CurrentLanguage.levelTips.leveltips_heresySecond2, "\n\n", tipDescriptionText);
 			}
 			if (currentSceneName.Contains("7-1"))
 			{
@@ -421,7 +421,7 @@ namespace UltrakULL
 			}
 			if (currentSceneName.Contains("P-1"))
 			{
-				return EnsureTranslation(LanguageManager.CurrentLanguage.levelTips.leveltips_primeFirst1, LanguageManager.CurrentLanguage.levelTips.leveltips_primeFirst2, "\n\n", tipDescriptionText);
+				return EnsureTranslation(LanguageManager.CurrentLanguage.levelTips.leveltips_primeFirst1, LanguageManager.CurrentLanguage.levelTips.leveltips_primeFirst2, "\n\n\n", tipDescriptionText);
 			}
 			if (currentSceneName.Contains("P-2"))
 			{

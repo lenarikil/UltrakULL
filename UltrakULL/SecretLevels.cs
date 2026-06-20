@@ -143,13 +143,13 @@ namespace UltrakULL
                     {
                         testamentPanelText.text =
                             LanguageManager.CurrentLanguage.secretLevels.secretLevels_prelude_testamentTitle
-                            + "\n\n" +
+                            + "\n\n\n" +
                             LanguageManager.CurrentLanguage.secretLevels.secretLevels_prelude_testament1
-                            + "\n\n" + 
+                            + "\n\n\n" + 
                             LanguageManager.CurrentLanguage.secretLevels.secretLevels_prelude_testament2
-                            + "\n\n" +
+                            + "\n\n\n" +
                             LanguageManager.CurrentLanguage.secretLevels.secretLevels_prelude_testament3
-                            + "\n\n" +
+                            + "\n\n\n" +
                             LanguageManager.CurrentLanguage.secretLevels.secretLevels_prelude_testament4;
 
                         //testamentPanelTitle.text = LanguageManager.CurrentLanguage.secretLevels.secretLevels_prelude_testamentTitle;
@@ -163,11 +163,11 @@ namespace UltrakULL
                             + "\n\n" +
 
                             LanguageManager.CurrentLanguage.secretLevels.secretLevels_first_testament1
-                            + "\n\n" +
+                            + "\n\n\n" +
                             LanguageManager.CurrentLanguage.secretLevels.secretLevels_first_testament2
-                            + "\n\n" +
+                            + "\n\n\n" +
                             LanguageManager.CurrentLanguage.secretLevels.secretLevels_first_testament3
-                            + "\n\n" +
+                            + "\n\n\n" +
                             LanguageManager.CurrentLanguage.secretLevels.secretLevels_first_testament4;
 
                        // testamentPanelTitle.text = LanguageManager.CurrentLanguage.secretLevels.secretLevels_first_testamentTitle;
@@ -179,7 +179,7 @@ namespace UltrakULL
                         if (!(testamentPanelText4S1 == null))
                         {
                             testamentPanelText4S1.text =
-                            LanguageManager.CurrentLanguage.secretLevels.secretLevels_fourth_testamentTitle + "\n\n" +
+                            LanguageManager.CurrentLanguage.secretLevels.secretLevels_fourth_testamentTitle + "\n\n\n" +
 
                             LanguageManager.CurrentLanguage.secretLevels.secretLevels_fourth_testament1 + "\n" +
                             LanguageManager.CurrentLanguage.secretLevels.secretLevels_fourth_testament2 + "\n\n" +
@@ -188,7 +188,7 @@ namespace UltrakULL
                             LanguageManager.CurrentLanguage.secretLevels.secretLevels_fourth_testament4 + "\n" +
                             LanguageManager.CurrentLanguage.secretLevels.secretLevels_fourth_testament5 + "\n\n" +
 
-                            LanguageManager.CurrentLanguage.secretLevels.secretLevels_fourth_testament6 + "\n" +
+                            LanguageManager.CurrentLanguage.secretLevels.secretLevels_fourth_testament6 + "\n\n\n" +
                             LanguageManager.CurrentLanguage.secretLevels.secretLevels_fourth_testament7;
 
                             //testamentPanelTitle.text = LanguageManager.CurrentLanguage.secretLevels.secretLevels_fourth_testamentTitle;
@@ -196,7 +196,7 @@ namespace UltrakULL
                         if (!(testamentPanelText4S2 == null))
                         {
                             testamentPanelText4S2.text =
-                            LanguageManager.CurrentLanguage.secretLevels.secretLevels_fourth_testamentTitle + "\n\n" +
+                            LanguageManager.CurrentLanguage.secretLevels.secretLevels_fourth_testamentTitle + "\n\n\n" +
 
                             LanguageManager.CurrentLanguage.secretLevels.secretLevels_fourth_testament1 + "\n" +
                             LanguageManager.CurrentLanguage.secretLevels.secretLevels_fourth_testament2 + "\n\n" +
@@ -205,7 +205,7 @@ namespace UltrakULL
                             LanguageManager.CurrentLanguage.secretLevels.secretLevels_fourth_testament4 + "\n" +
                             LanguageManager.CurrentLanguage.secretLevels.secretLevels_fourth_testament5 + "\n\n" +
 
-                            LanguageManager.CurrentLanguage.secretLevels.secretLevels_fourth_testament6 + "\n" +
+                            LanguageManager.CurrentLanguage.secretLevels.secretLevels_fourth_testament6 + "\n\n\n" +
                             LanguageManager.CurrentLanguage.secretLevels.secretLevels_fourth_testament7;
 
                             //testamentPanelTitle.text = LanguageManager.CurrentLanguage.secretLevels.secretLevels_fourth_testamentTitle;
@@ -215,17 +215,17 @@ namespace UltrakULL
                 case "Level 5-S":
                     {
                         testamentPanelText.text =
-                                LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testamentTitle + "\n\n" +
+                                LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testamentTitle + "\n\n\n" +
                                 LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testament1 + "\n" +
-                                LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testament2 + "\n\n" +
+                                LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testament2 + "\n\n\n" +
 
                                 LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testament3 + "\n" +
                                 LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testament4 + "\n" +
                                 LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testament5 + "\n" +
-                                LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testament6 + "\n" +
+                                LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testament6 + "\n\n\n" +
 
                                 LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testament7 + "\n" +
-                                LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testament8 + "\n\n" +
+                                LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testament8 + "\n\n\n" +
 
                                 LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testament9 + "\n" +
                                 LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testament10 + "\n" +
@@ -239,7 +239,7 @@ namespace UltrakULL
                 case "Level 7-S":
                     {
                         testamentPanelText.text =
-                                LanguageManager.CurrentLanguage.secretLevels.secretLevels_seventh_testamentTitle + "\n\n" +
+                                LanguageManager.CurrentLanguage.secretLevels.secretLevels_seventh_testamentTitle + "\n\n\n" +
 
                                 LanguageManager.CurrentLanguage.secretLevels.secretLevels_seventh_testament1 + "\n\n" +
 

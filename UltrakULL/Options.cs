@@ -419,8 +419,8 @@ namespace UltrakULL
             assistAutoAimAmountText.text = LanguageManager.CurrentLanguage.options.assists_autoAimPercent;
 
             SliderValueToText autoAimSlider = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(assistContent, "Auto Aim Amount"), "Slider Button(Clone)"), "Slider"), "Text").GetComponentInChildren<SliderValueToText>();
-            autoAimSlider.ifMin = LanguageManager.CurrentLanguage.options.assists_autoAimPercentMinimum;
-            autoAimSlider.ifMax = LanguageManager.CurrentLanguage.options.assists_autoAimPercentMaximum;
+            autoAimSlider.ifMin = "0";
+            autoAimSlider.ifMax = "100";
 
             TextMeshProUGUI assistEnemySilhouettesTitle = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(assistContent, "Enemy Silhouettes"), "Text"));
             assistEnemySilhouettesTitle.text = LanguageManager.CurrentLanguage.options.assists_enemySilhouettesOutlines;
@@ -994,7 +994,7 @@ namespace UltrakULL
         private void PatchSteamLeaderboard(GameObject optionMenu)
         {
             TextMeshProUGUI steamLeaderboardTitle = GetTextMeshProUGUI(GetGameObjectChild(optionMenu, "Title"));
-            steamLeaderboardTitle.text = LanguageManager.CurrentLanguage.options.steamLeaderboard_title;
+            steamLeaderboardTitle.text = "--" + LanguageManager.CurrentLanguage.options.steamLeaderboard_title + "--";
 
             TextMeshProUGUI steamLeaderboardRefreshButton = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(optionMenu, "Refresh Button"), "Text"));
             steamLeaderboardRefreshButton.text = LanguageManager.CurrentLanguage.options.steamLeaderboard_refreshButton;

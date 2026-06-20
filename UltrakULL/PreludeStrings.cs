@@ -18,7 +18,7 @@ namespace UltrakULL
 
             if (fullMessage.Contains("REVOLVER"))
             {
-                return (LanguageManager.CurrentLanguage.prelude.prelude_first_revolverPierce1 + " '<color=orange>" + input + "</color>'" + LanguageManager.CurrentLanguage.prelude.prelude_first_revolverPierce2);
+                return ("<color=#40E7FF>" + LanguageManager.CurrentLanguage.prelude.prelude_first_revolverPierce1 + "<color=orange>" + input + "</color>" + LanguageManager.CurrentLanguage.prelude.prelude_first_revolverPierce2);
             }
             if (fullMessage.Contains("DEFLECT"))
             {
@@ -31,7 +31,7 @@ namespace UltrakULL
             }
             if (fullMessage.Contains("GROUND SLAM"))
             {
-                return (LanguageManager.CurrentLanguage.prelude.prelude_first_groundSlam1 + "'<color=orange>" + input + "</color>'" + LanguageManager.CurrentLanguage.prelude.prelude_first_groundSlam2);
+                return (LanguageManager.CurrentLanguage.prelude.prelude_first_groundSlam1 + "(<color=orange>" + input + "</color>)" + LanguageManager.CurrentLanguage.prelude.prelude_first_groundSlam2);
             }
             return ("Unimplemented string");
         }
@@ -50,7 +50,7 @@ namespace UltrakULL
             }
             if (fullMessage.Contains("EQUIPPED"))
             {
-                return (LanguageManager.CurrentLanguage.prelude.prelude_second_changeEquipped + "'<color=orange>" + input + "</color>.'");
+                return (LanguageManager.CurrentLanguage.prelude.prelude_second_changeEquipped1 + "<color=orange>" + input + "</color>" + LanguageManager.CurrentLanguage.prelude.prelude_second_changeEquipped2);
             }
             return ("Unimplemented string");
         }
@@ -66,11 +66,11 @@ namespace UltrakULL
             }
             if (fullMessage.Contains("explosive"))
             {
-                return LanguageManager.CurrentLanguage.prelude.prelude_third_shotgun1 + "'<color=orange>" + input + "</color>'" + LanguageManager.CurrentLanguage.prelude.prelude_third_shotgun2 + "\n" + LanguageManager.CurrentLanguage.prelude.prelude_third_shotgun3;
+                return "<color=#40E7FF>" + LanguageManager.CurrentLanguage.prelude.prelude_third_shotgun1 + "<color=orange>" + input + "</color>" + LanguageManager.CurrentLanguage.prelude.prelude_third_shotgun2 + "\n" + LanguageManager.CurrentLanguage.prelude.prelude_third_shotgun3;
             }
             if (fullMessage.Contains("pierces"))
             {
-                return LanguageManager.CurrentLanguage.prelude.prelude_third_shotgunPierce;
+                return "<color=#40E7FF>" + LanguageManager.CurrentLanguage.prelude.prelude_third_shotgunPierce;
             }
             return ("Unimplemented string");
         }

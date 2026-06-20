@@ -83,13 +83,13 @@ namespace UltrakULL
                 + LanguageManager.CurrentLanguage.intermission.act1_intermission_second4 + " ▼" + LanguageManager.CurrentLanguage.intermission.act1_intermission_second5 + " ▼"
                 + LanguageManager.CurrentLanguage.intermission.act1_intermission_second4 + " ▼" + LanguageManager.CurrentLanguage.intermission.act1_intermission_second4 + " ▼\n"
                 + LanguageManager.CurrentLanguage.intermission.act1_intermission_second6 + " ▼\n" + LanguageManager.CurrentLanguage.intermission.act1_intermission_second7 + " ▼"
-                + LanguageManager.CurrentLanguage.intermission.act1_intermission_second8 + " ▼" + LanguageManager.CurrentLanguage.intermission.act1_intermission_second9 + " ▼\n\n"
+                + LanguageManager.CurrentLanguage.intermission.act1_intermission_second8 + " ▼\n" + LanguageManager.CurrentLanguage.intermission.act1_intermission_second9 + " ▼\n\n"
                 + LanguageManager.CurrentLanguage.intermission.act1_intermission_second10 + " ▼" + LanguageManager.CurrentLanguage.intermission.act1_intermission_second11 + " ▼";
 
             this.act1IntermissionThird =
                 LanguageManager.CurrentLanguage.intermission.act1_intermission_third1 + " ▼" + LanguageManager.CurrentLanguage.intermission.act1_intermission_third2 + " ▼"
                 + LanguageManager.CurrentLanguage.intermission.act1_intermission_third3 + " ▼\n\n"
-                + LanguageManager.CurrentLanguage.intermission.act1_intermission_third4 + " ▼" + LanguageManager.CurrentLanguage.intermission.act1_intermission_third5 + " ▼";
+                + LanguageManager.CurrentLanguage.intermission.act1_intermission_third4 + " ▼\n" + LanguageManager.CurrentLanguage.intermission.act1_intermission_third5 + " ▼";
 
             //Act 2
             this.act2IntermissionFirst =
@@ -156,7 +156,7 @@ namespace UltrakULL
 
             this.act2IntermissionSixth =
                 LanguageManager.CurrentLanguage.intermission.act2_intermission_sixth1
-                + " ▼\n\n" + LanguageManager.CurrentLanguage.intermission.act2_intermission_sixth2 + " ▼" + LanguageManager.CurrentLanguage.intermission.act2_intermission_sixth3
+                + " ▼\n\n" + LanguageManager.CurrentLanguage.intermission.act2_intermission_sixth2 + " ▼\n" + LanguageManager.CurrentLanguage.intermission.act2_intermission_sixth3
                 + " ▼";
         }
     }
