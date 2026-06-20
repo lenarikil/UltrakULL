@@ -105,7 +105,7 @@ namespace UltrakULL.Harmony_Patches
                 ___fishCaughtText.resizeTextForBestFit = true;
                 
                 Text fishSizeText = GetTextfromGameObject(___fishSizeContainer);
-                fishSizeText.text = LanguageManager.CurrentLanguage.fishing.fish_size;
+                fishSizeText.text = "<b>" + LanguageManager.CurrentLanguage.fishing.fish_size + "</b>";
                 fishSizeText.resizeTextForBestFit = true;
             }
         }
