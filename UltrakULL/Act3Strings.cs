@@ -19,7 +19,7 @@ namespace UltrakULL
 			string text = message + message2;
 			if (text.Contains("Swap arms with"))
 			{
-				return LanguageManager.CurrentLanguage.act3.act3_violenceSecond_guttermanTutorial1 + "<color=orange>" + input + "</color>" + LanguageManager.CurrentLanguage.act3.act3_violenceSecond_guttermanTutorial1;
+				return LanguageManager.CurrentLanguage.act3.act3_violenceSecond_guttermanTutorial1 + "<color=orange>" + input + "</color>" + LanguageManager.CurrentLanguage.act3.act3_violenceSecond_guttermanTutorial2;
 			}
 			if (text.Contains("You should probably"))
 			{
