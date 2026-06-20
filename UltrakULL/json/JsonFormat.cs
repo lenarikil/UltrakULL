@@ -810,6 +810,7 @@ namespace UltrakULL.json
         public string enemyBios_providence_strategy1;
         public string enemyBios_providence_strategy2;
         public string enemyBios_providence_strategy3;
+		public string enemyBios_providence_strategy4;
 
         // Power
         public string enemyBios_power_1;
@@ -827,9 +828,8 @@ namespace UltrakULL.json
         public string enemyBios_geryon_3;
         public string enemyBios_geryon_4;
         public string enemyBios_geryon_strategy1;
-        
-        public string enemyBios_geryon_strategy3;
         public string enemyBios_geryon_strategy2;
+        public string enemyBios_geryon_strategy3;
 
         // Mirror Reaper
         public string enemyBios_mirrorReaper_1;
@@ -839,6 +839,7 @@ namespace UltrakULL.json
         public string enemyBios_mirrorReaper_strategy1;
         public string enemyBios_mirrorReaper_strategy2;
         public string enemyBios_mirrorReaper_strategy3;
+		public string enemyBios_mirrorReaper_strategy4;
 
         // Deathcatcher
         public string enemyBios_deathcatcher_1;
@@ -1655,7 +1656,6 @@ namespace UltrakULL.json
         public string books_fraudThird2_7;
 
         public string books_audioError;
-
     }
 
     public class PauseMenu
@@ -2375,8 +2375,6 @@ namespace UltrakULL.json
         public string assists_minor;
         public string assists_autoAim;
         public string assists_autoAimPercent;
-        public string assists_autoAimPercentMinimum;
-        public string assists_autoAimPercentMaximum;
         public string assists_enemySilhouettes;
         public string assists_enemySilhouettesOutlines;
         public string assists_enemySilhouettesDistance;
@@ -3027,6 +3025,7 @@ namespace UltrakULL.json
         public string museum_bookLucasVarney1;
         public string museum_bookLucasVarney2;
         public string museum_bookLucasVarney3;
+		public string museum_bookLucasVarney4;
         
         public string museum_bookBenMoir1;
         public string museum_bookBenMoir2;
@@ -3082,6 +3081,7 @@ namespace UltrakULL.json
         public string museum_bookVVizard2;
         public string museum_bookVVizard3;
         public string museum_bookVVizard4;
+		public string museum_bookVVizard5;
         
         public string museum_bookAdditionalMusic1;
         public string museum_bookAdditionalMusic2;
