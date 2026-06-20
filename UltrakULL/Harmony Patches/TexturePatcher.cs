@@ -593,10 +593,17 @@ namespace UltrakULL.Harmony_Patches
                 {
                     string regionName = kvp.Key;
                     var (region, replacementTexture) = kvp.Value;
-                    
-                    ReplaceTextureRegion(modifiedTexture, region, replacementTexture);
-                    anyRegionFound = true;
-                    Logging.Message($"[TexturePatcher] Replaced region '{regionName}' in atlas '{batchTextureName}'");
+
+                    try
+                    {
+                        ReplaceTextureRegion(modifiedTexture, region, replacementTexture, regionName);
+                        anyRegionFound = true;
+                        Logging.Message($"[TexturePatcher] Replaced region '{regionName}' in atlas '{batchTextureName}'");
+                    }
+                    catch (Exception ex)
+                    {
+                        Logging.Error($"[TexturePatcher] Failed to replace region '{regionName}' in atlas '{batchTextureName}': {ex.Message}");
+                    }
                 }
 
                 // If at least one region was replaced, add modified atlas
@@ -944,19 +951,43 @@ namespace UltrakULL.Harmony_Patches
             callback(template, replacement);
         }
 
-        private static void ReplaceTextureRegion(Texture2D targetTexture, Rect region, Texture2D replacementTexture)
+        private static void ReplaceTextureRegion(Texture2D targetTexture, Rect region, Texture2D replacementTexture, string regionName)
         {
             int startX = (int)region.x;
             int startY = (int)region.y;
             int width = (int)region.width;
             int height = (int)region.height;
 
-            // Use Color32 for better efficiency
-            Color32[] replacementPixels = replacementTexture.GetPixels32();
+            Color32[] replacementPixels = GetRegionPixels(replacementTexture, width, height, regionName);
 
             // Set pixels in target texture
             targetTexture.SetPixels32(startX, startY, width, height, replacementPixels);
             targetTexture.Apply();
+        }
+
+        private static Color32[] GetRegionPixels(Texture2D replacementTexture, int width, int height, string regionName)
+        {
+            Color32[] sourcePixels = replacementTexture.GetPixels32();
+            if (replacementTexture.width == width && replacementTexture.height == height)
+                return sourcePixels;
+
+            Logging.Warn($"[TexturePatcher] Resizing batch replacement '{regionName}' from {replacementTexture.width}x{replacementTexture.height} to {width}x{height}");
+
+            Color32[] resizedPixels = new Color32[width * height];
+            for (int y = 0; y < height; y++)
+            {
+                int sourceY = Mathf.Min((y * replacementTexture.height) / height, replacementTexture.height - 1);
+                int targetRow = y * width;
+                int sourceRow = sourceY * replacementTexture.width;
+
+                for (int x = 0; x < width; x++)
+                {
+                    int sourceX = Mathf.Min((x * replacementTexture.width) / width, replacementTexture.width - 1);
+                    resizedPixels[targetRow + x] = sourcePixels[sourceRow + sourceX];
+                }
+            }
+
+            return resizedPixels;
         }
 
         private static IEnumerator LoadTextureFromPath(string filePath, Action<Texture2D> callback)
