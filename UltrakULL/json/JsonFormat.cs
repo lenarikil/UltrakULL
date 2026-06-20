@@ -2600,7 +2600,8 @@ namespace UltrakULL.json
 
         public string prelude_second_shop;
         public string prelude_second_doorClip;
-        public string prelude_second_changeEquipped;
+        public string prelude_second_changeEquipped1;
+		public string prelude_second_changeEquipped2;
 
         public string prelude_third_needShotgun;
         public string prelude_third_shotgun1;
@@ -2676,7 +2677,8 @@ namespace UltrakULL.json
         public string act1_limboFourth_hank1;
         public string act1_limboFourth_hank2;
         public string act1_limboFourth_alternateRevolver;
-        public string act1_limboFourth_newArm;
+        public string act1_limboFourth_newArm1;
+		public string act1_limboFourth_newArm2;
 
         public string act1_limboSecret_noclipSkip;
 
@@ -2688,6 +2690,7 @@ namespace UltrakULL.json
 
         public string act1_lustSecond_feedbacker1;
         public string act1_lustSecond_feedbacker2;
+		public string act1_lustSecond_feedbacker3;
         public string act1_lustSecond_railcannon;
         public string act1_lustSecond_checkPoints;
 
@@ -2749,7 +2752,8 @@ namespace UltrakULL.json
     {
         public string act3_violenceFirst_doorOpens;
 
-        public string act3_violenceSecond_guttermanTutorial;
+        public string act3_violenceSecond_guttermanTutorial1;
+		public string act3_violenceSecond_guttermanTutorial2;
         public string act3_violenceSecond_guttermanTutorialNoKB;
         public string act3_violenceSecond_biggerBoom;
 
