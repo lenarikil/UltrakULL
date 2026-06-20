@@ -90,8 +90,8 @@ namespace UltrakULL
                     LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_lockYes1 + "\n\n"
                     + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_lockYes2 + "\n\n"
                     + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_lockYes3 + "\n\n"
-                    + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_lockYes4 + "\n\n"
-                    + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_lockYes5;
+                    + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_lockYes4 + "\n\n<i>"
+                    + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_lockYes5 + "</i>";
 
                 //secondLockWarning.fontSize = 18;
 

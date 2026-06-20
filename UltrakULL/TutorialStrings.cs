@@ -277,8 +277,8 @@ namespace UltrakULL
                 TextMeshProUGUI calibrationControllerAutoAimPercent = GetTextMeshProUGUI(GetGameObjectChild(calibrationControllerAutoAimAmount, "Text"));
                 calibrationControllerAutoAimPercent.text = LanguageManager.CurrentLanguage.options.assists_autoAimPercent;
                 SliderValueToText autoAimSlider = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(calibrationControllerAutoAimAmount, "Slider Button(Clone)"), "Slider"), "Text").GetComponentInChildren<SliderValueToText>();
-                autoAimSlider.ifMin = LanguageManager.CurrentLanguage.options.assists_autoAimPercentMinimum;
-                autoAimSlider.ifMax = LanguageManager.CurrentLanguage.options.assists_autoAimPercentMaximum;
+                autoAimSlider.ifMin = "0";
+                autoAimSlider.ifMax = "100";
 
                 TextMeshProUGUI calibrationAssistDone = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(calibrationControllerWindow, "Done"), "Text"));
                 calibrationAssistDone.text = LanguageManager.CurrentLanguage.shop.shop_colorsDone;
@@ -317,7 +317,7 @@ namespace UltrakULL
 
                 + "+" + LanguageManager.CurrentLanguage.tutorial.tutorial_calibrationComplete1 + "_ \n"
                 + "+" + LanguageManager.CurrentLanguage.tutorial.tutorial_calibrationComplete2 + "_ \n"
-                + "(±" + LanguageManager.CurrentLanguage.tutorial.tutorial_introReminder1 + " _" + LanguageManager.CurrentLanguage.tutorial.tutorial_introReminder2 + ")½ \n\n"
+                + "(±" + LanguageManager.CurrentLanguage.tutorial.tutorial_introReminder1 + " _" + LanguageManager.CurrentLanguage.tutorial.tutorial_introReminder2 + " )½ \n\n"
 
                 + "+" + LanguageManager.CurrentLanguage.tutorial.tutorial_systemsOperational + "_½ \n"
                 + LanguageManager.CurrentLanguage.tutorial.tutorial_introLoadStatus + "§";
