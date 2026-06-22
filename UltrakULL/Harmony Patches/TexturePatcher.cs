@@ -379,6 +379,7 @@ namespace UltrakULL.Harmony_Patches
                     { "Level 2-3", new Dictionary<string, (string, string)> { { "watercontrol1", ("watercontrol1", "texture") }, { "watercontrol2", ("watercontrol2", "texture") } } },
                     { "Level 4-3", new Dictionary<string, (string, string)> { { "traitor", ("traitor", "texture") } } },
                     { "Level 5-1", new Dictionary<string, (string, string)> { { "WaterProcessingAttention", ("WaterProcessingAttention", "texture") } } },
+                    { "Level 5-S", new Dictionary<string, (string, string)> { { "Bait Label", ("Bait Label", "texture") } } },
                     { "Level 7-2", new Dictionary<string, (string, string)> { { "exit", ("exit", "texture") }, { "T_Excavator", ("T_Excavator", "texture") } } },
                     { "Level 7-3", new Dictionary<string, (string, string)> { { "marble_inverted 3", ("marble_inverted 3", "texture") } } },
                     { "Level 7-4", new Dictionary<string, (string, string)> { { "HotPipeSign", ("HotPipeSign", "texture") }, { "T_Cent_PlantRoom", ("T_Cent_PlantRoom", "texture") }, { "electricitybox", ("electricitybox", "texture") } } },
