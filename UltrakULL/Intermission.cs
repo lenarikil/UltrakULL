@@ -21,7 +21,7 @@ namespace UltrakULL
             GameObject act1EndObject = GetGameObjectChild(GetGameObjectChild(intermissionObject, "Act End Message"), "Sound 1");
 
             Text act1EndText = GetTextfromGameObject(GetGameObjectChild(act1EndObject, "Text"));
-            act1EndText.text = LanguageManager.CurrentLanguage.intermission.act1_intermission_endof + "\n\n" + LanguageManager.CurrentLanguage.intermission.act1_intermission_insertAct2;
+            act1EndText.text = LanguageManager.CurrentLanguage.intermission.act1_intermission_endof + "\n\n\n\n" + LanguageManager.CurrentLanguage.intermission.act1_intermission_insertAct2;
             
             Text act1EndMenu = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(act1EndObject, "Menu"), "Text"));
             act1EndMenu.text = LanguageManager.CurrentLanguage.intermission.act1_intermission_returnToMenu;
