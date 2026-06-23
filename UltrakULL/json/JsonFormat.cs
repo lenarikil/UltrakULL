@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Reflection;
 
 namespace UltrakULL.json
@@ -3538,6 +3539,8 @@ namespace UltrakULL.json
 
         public string violenceScreenText1;
         public string violenceScreenText2;
+
+        public Dictionary<string, Dictionary<string, string>> teleportLevels;
     }
 
     public class InputStrings

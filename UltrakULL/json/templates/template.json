@@ -2911,7 +2911,8 @@
     "earlyAccessEnd2": "",
     "earlyAccessEnd3": "",
     "violenceScreenText1": "",
-    "violenceScreenText2": ""
+    "violenceScreenText2": "",
+    "teleportLevels": {}
   },
   "inputStrings": {
     "input_space": "Space",

@@ -2915,7 +2915,8 @@
     "earlyAccessEnd2": "The final layer, TREACHERY, is currently still under development",
     "earlyAccessEnd3": "For news on its progress, follow us on",
     "violenceScreenText1": "<size=65>This game contains scenes\nof explicit violence and gore.</size>",
-    "violenceScreenText2": "<size=65>This game contains scenes\nof explicit <color=red>violence</color> and <color=red>gore</color>.</size>"
+    "violenceScreenText2": "<size=65>This game contains scenes\nof explicit <color=red>violence</color> and <color=red>gore</color>.</size>",
+    "teleportLevels": {}
   },
   "inputStrings": {
     "input_space": "Space",
