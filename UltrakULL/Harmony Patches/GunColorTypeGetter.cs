@@ -45,12 +45,12 @@ namespace UltrakULL.Harmony_Patches
             {
                 if (code.opcode == OpCodes.Ldstr && (string)code.operand == "<color=#FF4343>P</color>")
                 {
-                    code.operand = $"<color=#FF4343>{LanguageManager.CurrentLanguage.shop.shop_moneyCount}</color>";
+                    code.operand = $"<color=#FF4343>" + LanguageManager.CurrentLanguage.shop.shop_moneyCount + "</color>";
                 }
 
                 if (code.opcode == OpCodes.Ldstr && (string)code.operand == "<color=red>1,000,000 P</color>")
                 {
-                    code.operand = $"<color=red>1,000,000 {LanguageManager.CurrentLanguage.shop.shop_moneyCount}</color>";
+                    code.operand = $"1,000,000<color=#FF4343> " + LanguageManager.CurrentLanguage.shop.shop_moneyCount + "</color>";
                 }
 
                 yield return code;
