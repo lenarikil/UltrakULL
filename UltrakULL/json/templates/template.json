@@ -2912,7 +2912,348 @@
     "earlyAccessEnd3": "",
     "violenceScreenText1": "",
     "violenceScreenText2": "",
-    "teleportLevels": {}
+    "teleportLevels": {
+      "Level 0-1": {
+        "First Room": "",
+        "Boss Checkpoint": "",
+        " Projectile Zombies Room": "",
+        " Combo Hallway": "",
+        " Glass Intro": "",
+        " Projectile Arena": ""
+      },
+      "Level 0-2": {
+        "First Room": "",
+        " Swordsmachine Hallway": "",
+        " Crusher Hallway": "",
+        " Swordsmachine Arena Hallway": ""
+      },
+      "Level 0-3": {
+        "First Room": "",
+        " First Encounter": "",
+        " Menacing Room": "",
+        " Windtunnel": "",
+        " Second Encounter": ""
+      },
+      "Level 0-4": {
+        "First Room": "",
+        " Pipes Hallway": "",
+        " Stairs Hallway": ""
+      },
+      "Level 0-5": {
+        "First Room": "",
+        " Smallway": ""
+      },
+      "Level 0-S": {
+        "First Room": ""
+      },
+      "Level 1-1": {
+        "First Room": "",
+        " Blue Skull Room": "",
+        " Hall": "",
+        " Corner Hallway": "",
+        " Castle Entrance Corridor": ""
+      },
+      "Level 1-2": {
+        "First Room": "",
+        " Upper Way": "",
+        " Upper Way (2)": "",
+        " Castle Entrance": ""
+      },
+      "Level 1-3": {
+        "First Room": "",
+        " Courtyard": "",
+        " Blue Hallway": "",
+        " Final Arena": "",
+        " Second Arena": "",
+        " Courtyard (2)": "",
+        "B1-D Lava Hallway": "",
+        " Secret Fight": "",
+        " Tall Room": ""
+      },
+      "Level 1-4": {
+        "First Room": "",
+        " Main Hall": "",
+        " Arena": ""
+      },
+      "Level 1-S": {
+        "First Room": ""
+      },
+      "Level 2-1": {
+        "First Room": "",
+        " Outdoors Arenas": "",
+        " Tower 1": ""
+      },
+      "Level 2-2": {
+        "First Room": "",
+        " Generator Room": "",
+        " Second District": "",
+        " First District": "",
+        " Laser Walkway": ""
+      },
+      "Level 2-3": {
+        "First Room": "",
+        " Arena 2": "",
+        "1-2 Connector": "",
+        " Final Arena": "",
+        "1-2 Connector (2)": "",
+        "3-2 Connector": ""
+      },
+      "Level 2-4": {
+        "First Room": "",
+        " First Encounter": "",
+        " Second Encounter": ""
+      },
+      "Level 2-S": {
+        "First Room": ""
+      },
+      "Level 3-1": {
+        "First Room": "",
+        " Uphill Battle": "",
+        " Big Arena": "",
+        " Mouth Tunnel": "",
+        " Stairways": "",
+        " Bridge Arena": ""
+      },
+      "Level 3-2": {
+        "First Room": "",
+        " Heart Chamber": ""
+      },
+      "Level 4-1": {
+        "First Room": "",
+        " Staircase Arena": "",
+        " Platforms": "",
+        " Tower": "",
+        " Interior Hallway 2": "",
+        " Virtue Arena": ""
+      },
+      "Level 4-2": {
+        "First Room": "",
+        " Boss Arena": "",
+        " Temple Entrance": "",
+        " More Platforming": "",
+        " Solarium": ""
+      },
+      "Level 4-3": {
+        "First Room": "",
+        " Traitor Hallway": "",
+        "Stairs Hallway": "",
+        " Generator Room Hallway": ""
+      },
+      "Level 4-4": {
+        "First Room": "",
+        " Boss Entrance": ""
+      },
+      "Level 4-S": {
+        "First Room": "",
+        " Basics": "",
+        " Basics (2)": "",
+        " Basics (3)": "",
+        " Inside": "",
+        " Inside (2)": "",
+        " Distant Sidescroller": "",
+        " Boulder Run": ""
+      },
+      "Level 5-1": {
+        "First Room": "",
+        " Water Processing Chamber": "",
+        " Main Cave": "",
+        "Tunnel C": "",
+        " Elevator": "",
+        "Tunnel A": "",
+        "Tunnel B": ""
+      },
+      "Level 5-2": {
+        "First Room": "",
+        " Broken Pier": "",
+        " Fort": "",
+        " Dark Hallway": ""
+      },
+      "Level 5-3": {
+        "First Room": "",
+        " Dual Wield Arena (Sunken)": "",
+        " Staircase (Sunken)": "",
+        " L Hallway": "",
+        " Lounge Bar": "",
+        " Residence Corridor": "",
+        " Hologram Room": ""
+      },
+      "Level 5-4": {
+        "First Room": "",
+        "Surface": ""
+      },
+      "Level 5-S": {
+        "First Room": ""
+      },
+      "Level 6-1": {
+        "First Room": "",
+        " City Skyline": "",
+        " Chapel (Entrance)": "",
+        " Hall of Sacreligious Remains": "",
+        " Crossroads": "",
+        " Lava Chasm": ""
+      },
+      "Level 6-2": {
+        "First Room": "",
+        " Organ Hall": ""
+      },
+      "Level 7-1": {
+        "First Room": "",
+        " Underground Tunnels": "",
+        " Pillar Hall": "",
+        "Mannequin Room": "",
+        "Walkway Arena": ""
+      },
+      "Level 7-2": {
+        "First Room": "",
+        " Corner Staircase": "",
+        " Outdoors Start": "",
+        " Tram Station": "",
+        " Bomb Station": "",
+        " Forgotten Archive": ""
+      },
+      "Level 7-3": {
+        "First Room": "",
+        " Forest Path": "",
+        " Central Plaza Upper": "",
+        " Circular Garden": "",
+        " Grand Hall": ""
+      },
+      "Level 7-4": {
+        "First Room": "",
+        "Leg": "",
+        "Front": "",
+        "Back": "",
+        "Interior": "",
+        "Brain": ""
+      },
+      "Level 7-S": {
+        "First Room": "",
+        "Lounge": "",
+        "Library": "",
+        "Courtyard": "",
+        "Fake Exit": ""
+      },
+      "Level 8-1": {
+        "First Room": "",
+        " TV Room / Hotel Hallway": "",
+        "  Fountain Room": "",
+        " Stretch Room": "",
+        "Outside": "",
+        " Busted Hotel Rooms": "",
+        " Fake Floor Arena": "",
+        "building Arena": ""
+      },
+      "Level 8-2": {
+        "First Room": "",
+        " Mirror Reaper Arena": "",
+        "Shaped Hallway": "",
+        " Supermarket Shutters": "",
+        "Down Hallway": "",
+        " Hub": "",
+        " Storage Room": "",
+        " Island": "",
+        " Crossroad": ""
+      },
+      "Level 8-3": {
+        "First Room": "",
+        " Space Tree": "",
+        " Space Mass": "",
+        " Space Streets": "",
+        "Space": "",
+        " Shifting Hallway": "",
+        " Fallway": "",
+        " Heart Chamber": "",
+        " Garage Loop": "",
+        " Split Color Door": "",
+        " Dimensional Cave": "",
+        " Folded Hallway": "",
+        " Clockwork Crushers": "",
+        " Clockwork Climb": ""
+      },
+      "Level 8-4": {
+        "First Room": "",
+        "Elevator": ""
+      },
+      "Level 8-S": {
+        "First Room": ""
+      },
+      "Level 9-1": {
+        "First Room": ""
+      },
+      "Level 9-2": {
+        "First Room": ""
+      },
+      "Level P-1": {
+        "First Room": "",
+        " Inner Sanctum": ""
+      },
+      "Level P-2": {
+        "First Room": "",
+        "Intro": "",
+        " Bridge Street": "",
+        " Idol Arena": "",
+        " Last Arena": "",
+        " Boss Arena": ""
+      },
+      "Level P-3": {
+        "First Room": ""
+      },
+      "Level 0-E": {
+        "First Room": "",
+        " First Encounter": "",
+        " Fans Staircase": "",
+        " Combo Hallway": "",
+        " Tube Hallways": "",
+        " Crossroads": "",
+        " Projectile Zombies Room": "",
+        " Projectile Arena": "",
+        " Boss Arena": "",
+        " Lava Foundry": "",
+        " Menacing Room": "",
+        " Hallway": "",
+        " Crossroads (2)": ""
+      },
+      "Level 1-E": {
+        "First Room": "",
+        " Opener": "",
+        " Waterfall Arena / Altar Field": "",
+        " Prelude Hallway": "",
+        " Waterfall Arena / Altar Field (2)": "",
+        " Castle Entrance": "",
+        " Lava Staircase": "",
+        " Stairs Hallway / Castle Entrance": ""
+      },
+      "Level 2-E": {
+        "First Room": ""
+      },
+      "Level 3-E": {
+        "First Room": ""
+      },
+      "Level 4-E": {
+        "First Room": ""
+      },
+      "Level 5-E": {
+        "First Room": ""
+      },
+      "Level 6-E": {
+        "First Room": ""
+      },
+      "Level 7-E": {
+        "First Room": ""
+      },
+      "Level 8-E": {
+        "First Room": ""
+      },
+      "Level 9-E": {
+        "First Room": ""
+      },
+      "Endless": {
+        "First Room": ""
+      },
+      "CreditsMuseum2": {
+        "First Room": ""
+      }
+    }
   },
   "inputStrings": {
     "input_space": "Space",
