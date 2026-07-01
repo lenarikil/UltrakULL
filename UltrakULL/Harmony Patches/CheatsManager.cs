@@ -14,12 +14,6 @@ namespace UltrakULL.Harmony_Patches
     [HarmonyPatch(typeof(CheatsManager))]
     public static class CheatsManagerPatch
     {
-        [HarmonyPatch("OnDestroy"), HarmonyPrefix]
-        public static bool OnDestroy_Prefix()
-        {
-            return false;
-        }
-
         [HarmonyPatch("StartRebind"), HarmonyPostfix]
         public static void StartRebind_Postfix(Dictionary<ICheat, CheatMenuItem> ___menuItems, ref ICheat cheat) 
         {
