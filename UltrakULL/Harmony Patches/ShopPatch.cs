@@ -76,12 +76,12 @@ namespace UltrakULL.Harmony_Patches
         [HarmonyPatch("Awake"), HarmonyPostfix]
         public static void AwakePatch(Button ___altButton, bool ___altVersion)
         {
-            ___altButton.GetComponentInChildren<TMP_Text>().SetText(___altVersion ? LanguageManager.CurrentLanguage.shop.shop_colorsStandard : LanguageManager.CurrentLanguage.shop.shop_colorsAlternative, true);
+            ___altButton.GetComponentInChildren<TMP_Text>().SetText(___altVersion ? LanguageManager.CurrentLanguage.shop.shop_colorsStandard : LanguageManager.CurrentLanguage.shop.shop_colorsAlternate, true);
         }
         [HarmonyPatch(nameof(GunColorTypeGetter.ToggleAlternate)), HarmonyPostfix]
         public static void ToggleAlternatePostfix(Button ___altButton, bool ___altVersion)
         {
-            ___altButton.GetComponentInChildren<TMP_Text>().SetText(___altVersion ? LanguageManager.CurrentLanguage.shop.shop_colorsStandard : LanguageManager.CurrentLanguage.shop.shop_colorsAlternative, true);
+            ___altButton.GetComponentInChildren<TMP_Text>().SetText(___altVersion ? LanguageManager.CurrentLanguage.shop.shop_colorsStandard : LanguageManager.CurrentLanguage.shop.shop_colorsAlternate, true);
         }
     }
 }

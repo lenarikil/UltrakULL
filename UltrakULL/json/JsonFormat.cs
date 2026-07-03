@@ -214,6 +214,7 @@ namespace UltrakULL.json
         public string cybergrind_themesDark;
         public string cybergrind_themesCustom;
         public string cybergrind_themesModify;
+		//public string cybergrind_themesDefault;
 
         public string cybergrind_themesCustomGrid;
         public string cybergrind_themesCustomGridGlow;
@@ -1907,7 +1908,7 @@ namespace UltrakULL.json
         public string shop_colorsCustom;
         public string shop_colorsDone;
         public string shop_colorsStandard;
-        public string shop_colorsAlternative;
+        public string shop_colorsAlternate;
         public string shop_colorsCustomUnlockPrompt;
 
 
@@ -3539,8 +3540,8 @@ namespace UltrakULL.json
 
         public string violenceScreenText1;
         public string violenceScreenText2;
-
-        public Dictionary<string, Dictionary<string, string>> teleportLevels;
+		
+		public Dictionary<string, Dictionary<string, string>> teleportLevels;
     }
 
     public class InputStrings
