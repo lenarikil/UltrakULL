@@ -2229,6 +2229,7 @@ namespace UltrakULL.json
         public string controls_weaponTitle;
         public string controls_primaryFire;
         public string controls_secondaryFire;
+        public string controls_changeVariation;
         public string controls_nextVariation;
         public string controls_previousVariation;
         public string controls_revolver;

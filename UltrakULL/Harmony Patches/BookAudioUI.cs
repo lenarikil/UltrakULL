@@ -366,10 +366,14 @@ namespace UltrakULL.Harmony_Patches
             errorText.alignment = TextAlignmentOptions.Center;
             errorText.color = new Color(1f, 0.3f, 0.3f);
             string errorKey = LanguageManager.CurrentLanguage?.books?.books_audioError;
-            errorText.text = string.IsNullOrEmpty(errorKey)
-                ? "ERROR: IMPOSSIBLE TO BUILD A SPEECH PATTERN"
-                : errorKey;
-
+            if (errorKey == null)
+            {
+                errorText.text = "ERROR: IMPOSSIBLE TO BUILD A SPEECH PATTERN";
+            }
+            else
+            {
+                errorText.text = errorKey;
+            }
             errorObj.SetActive(true);
 
             LayoutRebuilder.ForceRebuildLayoutImmediate(rootRect);

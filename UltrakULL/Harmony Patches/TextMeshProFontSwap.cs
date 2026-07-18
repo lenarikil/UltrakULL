@@ -12,6 +12,36 @@ namespace UltrakULL.Harmony_Patches
 {
 	public class TextMeshProFontSwap
 	{
+		private static bool IsBossBarText(TMP_Text tmpText)
+		{
+			if (tmpText == null)
+				return false;
+
+			Transform current = tmpText.transform;
+			while (current != null)
+			{
+				if (current.GetComponent<HealthBar>() != null)
+					return true;
+
+				string n = current.name;
+				if (n.IndexOf("HP Text", StringComparison.OrdinalIgnoreCase) >= 0)
+				{
+					if (current.GetComponentInParent<HealthBar>() != null)
+						return true;
+				}
+
+				if (n.IndexOf("Boss Health", StringComparison.OrdinalIgnoreCase) >= 0)
+					return true;
+
+				if (n.IndexOf("Health After Image", StringComparison.OrdinalIgnoreCase) >= 0)
+					return true;
+
+				current = current.parent;
+			}
+
+			return false;
+		}
+
 		private static class TMPFontLogger
 		{
 			private static HashSet<string> loggedFonts = new HashSet<string>();
@@ -97,8 +127,11 @@ namespace UltrakULL.Harmony_Patches
 					TMP_Text[] array = ___textElements;
 					foreach (TMP_Text val in array)
 					{
-						if (((Component)val.transform.parent).GetComponent<HealthBar>() != null && ((Component)val).gameObject.name.Equals("HP Text"))
+						if (IsBossBarText(val))
 						{
+							TMP_FontAsset bossFont = Core.CustomMainFontTMP ?? Core.GlobalFontTMP;
+							if (bossFont != null)
+								val.font = bossFont;
 							val.fontSharedMaterial = (isOverlaid ? ___overlayTextMaterial : ___normalTextMaterial);
 							continue;
 						}
@@ -164,8 +197,13 @@ namespace UltrakULL.Harmony_Patches
             if (__instance.text != null && __instance.text.Contains("■") && __instance.text.Contains("|"))
                 return;
 
-            if (((Component)((TMP_Text)__instance).transform.parent).GetComponent<HealthBar>() != null && ((Component)__instance).gameObject.name.Equals("HP Text"))
+            if (IsBossBarText((TMP_Text)__instance))
             {
+                TMP_FontAsset bossFont = Core.CustomMainFontTMP ?? Core.GlobalFontTMP;
+                if (bossFont != null && ((TMP_Text)__instance).font != bossFont)
+                {
+                    ((TMP_Text)__instance).font = bossFont;
+                }
                 return;
             }
 

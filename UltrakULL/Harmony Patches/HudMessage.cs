@@ -31,18 +31,20 @@ namespace UltrakULL.Harmony_Patches
         [HarmonyPrefix]
         public static bool SendHudMessage_Prefix(ref string newmessage,ref string newinput,ref string newmessage2, int delay = 0, bool silent = false)
         {
-            if (!isUsingEnglish())
+            if (!CommonFunctions.isUsingEnglish() && !string.IsNullOrEmpty(newmessage))
             {
-                if ((newmessage != null) && (newmessage2 != null) && (newinput != null))
-                {
-                    newmessage = StringsParent.GetMessage(newmessage, newmessage2, newinput);
-                    newmessage2 = "";
-                    newinput = "";
-                }
-                else
+                string translated = StringsParent.GetMessage(newmessage, newmessage2 ?? string.Empty, newinput ?? string.Empty);
+                if ((newmessage2 == null || newinput == null) && translated == newmessage)
                 {
                     newmessage = HUDMessages.GetHUDToolTip(newmessage);
                 }
+                else
+                {
+                    newmessage = translated;
+                }
+
+                newmessage2 = string.Empty;
+                newinput = string.Empty;
             }
             return true;
         }

@@ -103,16 +103,85 @@ namespace UltrakULL
             if (LocalizedInputs.TryGetValue(key, out string localized))
                 return localized;
 
+            string actionLocalized = GetLocalizedActionName(input);
+            if (!string.IsNullOrEmpty(actionLocalized))
+                return actionLocalized;
+
+            Logging.Warn($"[GetLocalizedInput] Unknown input/action name: '{input}'");
             return input;
         }
 
+        private static string GetLocalizedActionName(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                return null;
+
+            string normalized = input.Replace(" ", "").Replace("_", "").Replace("-", "").ToUpperInvariant();
+            switch (normalized)
+            {
+                case "CHANGEVARIATION":
+                    return LanguageManager.CurrentLanguage.options.controls_changeVariation;
+                case "NEXTVARIATION":
+                    return LanguageManager.CurrentLanguage.options.controls_nextVariation;
+                case "PREVIOUSVARIATION":
+                    return LanguageManager.CurrentLanguage.options.controls_previousVariation;
+                case "NEXTWEAPON":
+                    return LanguageManager.CurrentLanguage.options.controls_nextWeapon;
+                case "PREVIOUSWEAPON":
+                    return LanguageManager.CurrentLanguage.options.controls_previousWeapon;
+                case "CHANGEFIST":
+                case "CHANGEARM":
+                    return LanguageManager.CurrentLanguage.options.controls_changeFist;
+                case "MOVE":
+                    return LanguageManager.CurrentLanguage.options.controls_move;
+                case "DODGE":
+                    return LanguageManager.CurrentLanguage.options.controls_dodge;
+                case "SLIDE":
+                    return LanguageManager.CurrentLanguage.options.controls_slide;
+                case "JUMP":
+                    return LanguageManager.CurrentLanguage.options.controls_jump;
+                case "PRIMARYFIRE":
+                    return LanguageManager.CurrentLanguage.options.controls_primaryFire;
+                case "SECONDARYFIRE":
+                    return LanguageManager.CurrentLanguage.options.controls_secondaryFire;
+                case "REVOLVER":
+                    return LanguageManager.CurrentLanguage.options.controls_revolver;
+                case "SHOTGUN":
+                    return LanguageManager.CurrentLanguage.options.controls_shotgun;
+                case "NAILGUN":
+                    return LanguageManager.CurrentLanguage.options.controls_nailgun;
+                case "RAILCANNON":
+                    return LanguageManager.CurrentLanguage.options.controls_railcannon;
+                case "ROCKETLAUNCHER":
+                    return LanguageManager.CurrentLanguage.options.controls_rocketLauncher;
+                case "SPAWNERARM":
+                    return LanguageManager.CurrentLanguage.options.controls_spawnerArm;
+                case "LASTUSEDWEAPON":
+                    return LanguageManager.CurrentLanguage.options.controls_lastUsedWeapon;
+                case "VARIATIONSLOT1":
+                    return LanguageManager.CurrentLanguage.options.controls_variationSlot1;
+                case "VARIATIONSLOT2":
+                    return LanguageManager.CurrentLanguage.options.controls_variationSlot2;
+                case "VARIATIONSLOT3":
+                    return LanguageManager.CurrentLanguage.options.controls_variationSlot3;
+                case "PUNCH":
+                    return LanguageManager.CurrentLanguage.options.controls_punch;
+                case "HOOK":
+                    return LanguageManager.CurrentLanguage.options.controls_whiplash;
+                case "STATS":
+                    return LanguageManager.CurrentLanguage.sandbox.sandbox_shop_stats;
+                default:
+                    return null;
+            }
+        }
+
         public static bool isUsingEnglish()
-		{
-			return (LanguageManager.CurrentLanguage.metadata.langDisplayName == "English");
-		}
-		
-		public static ColorBlock UkButtonColors = new ColorBlock()
-		{
+        {
+            return (LanguageManager.CurrentLanguage.metadata.langDisplayName == "English");
+        }
+
+        public static ColorBlock UkButtonColors = new ColorBlock()
+        {
 			normalColor = new Color(0, 0, 0, 0.512f),
 			highlightedColor = new Color(1, 1, 1, 0.502f),
 			pressedColor = new Color(1, 0, 0, 1),
