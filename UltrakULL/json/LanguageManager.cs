@@ -58,6 +58,8 @@ namespace UltrakULL.json
             }
 
             LoadSubtitledSourcesConfig();
+
+            RefreshLocalizedInputs();
         }
 
         public static void DumpLastLanguage()
@@ -426,6 +428,7 @@ namespace UltrakULL.json
                 DumpLastLanguage();
 
                 //Patch some leftover components that aren't caught in the main change wave...
+                CommonFunctions.RefreshLocalizedInputs();
                 InjectLanguageButton.updateLanguageButtonText();
                 LoadingTextPatch.updateLoadingText();
 

@@ -976,6 +976,17 @@ namespace UltrakULL
                     try { PatchAdvancedOptions(advancedOptions); } catch (Exception e) { Logging.Error("Failed to patch advanced options."); Logging.Error(e.ToString()); }
                     GameObject steamOptions = GetGameObjectChild(optionsMenu, "Leaderboard Manager");
                     try { PatchSteamLeaderboard(steamOptions); } catch (Exception e) { Logging.Error("Failed to patch steam leaderboard."); Logging.Error(e.ToString()); }
+
+                    GameObject pages = GetGameObjectChild(optionsMenu, "Pages");
+                    if (pages != null)
+                    {
+                        GameObject graphicsPage = GetGameObjectChild(pages, "Graphics");
+                        try { PatchGraphicsOptions(graphicsPage); } catch (Exception e) { Logging.Error("Failed to patch graphics options."); Logging.Error(e.ToString()); }
+                        GameObject audioPage = GetGameObjectChild(pages, "Audio");
+                        try { PatchAudioOptions(audioPage); } catch (Exception e) { Logging.Error("Failed to patch audio options."); Logging.Error(e.ToString()); }
+                        GameObject assistPage = GetGameObjectChild(pages, "Assist");
+                        try { PatchAssistOptions(assistPage); } catch (Exception e) { Logging.Error("Failed to patch assist options."); Logging.Error(e.ToString()); }
+                    }
                 }
                 catch (Exception e)
                 {
