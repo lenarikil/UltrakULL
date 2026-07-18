@@ -188,7 +188,7 @@
     "prelude_second_shop": "Use your <color=orange>POINTS</color> at the SHOP at the start of each level for new equipment.",
     "prelude_second_doorClip": "\"WHAT'S UPDOOR?\"$T. HAKITA",
     "prelude_second_changeEquipped1": "Cycle through <color=orange>EQUIPPED</color> variations with '",
-	"prelude_second_changeEquipped2": "'.",
+    "prelude_second_changeEquipped2": "'.",
     "prelude_third_needShotgun": "INSUFFICIENT FIREPOWER",
     "prelude_third_shotgun1": "SHOTGUN</color>: Press '",
     "prelude_third_shotgun2": "' to fire an explosive.",
@@ -210,7 +210,7 @@
     "act1_limboFourth_hank2": "You decide to name it Hank.",
     "act1_limboFourth_alternateRevolver": "ALTERNATE REVOLVER</color>: Higher damage.\nHammer has to pull back after each shot.",
     "act1_limboFourth_newArm1": "Cycle through <color=orange>EQUIPPED</color> arms with '",
-	"act1_limboFourth_newArm2": "'",
+    "act1_limboFourth_newArm2": "'",
     "act1_limboSecret_noclipSkip": "\"LOOKS LIKE YOU'RE AT WIT'S END\"$T. HAKITA",
     "act1_lustFirst_knuckleblaster1": "KNUCKLE BLASTER</color>: <color=orange>HOLD</color> '",
     "act1_lustFirst_knuckleblaster2": "' to create a <color=orange>SHOCKWAVE</color> that knocks enemies back.",
@@ -219,7 +219,7 @@
     "act1_lustFirst_elevator": "TEST ELEVATORS",
     "act1_lustSecond_feedbacker1": "Only the <color=#40E7FF>FEEDBACKER</color> (<color=#40E7FF>Blue arm</color>) can <color=orange>PARRY PROJECTILES</color>.",
     "act1_lustSecond_feedbacker2": "Swap arms with '",
-	"act1_lustSecond_feedbacker3": "'.",
+    "act1_lustSecond_feedbacker3": "'.",
     "act1_lustSecond_railcannon": "RAILCANNON</color>: <color=orange>RECHARGES</color> even when <color=orange>UNEQUIPPED</color>. Switch weapons to keep fighting between shots.",
     "act1_lustSecond_checkPoints": "<color=#FF52FF>CIRCULAR CHECKPOINTS</color> can be reused to keep your progress.",
     "act1_lustThird_water": "The water has been drained",
@@ -263,7 +263,7 @@
   "act3": {
     "act3_violenceFirst_doorOpens": "A door opens.",
     "act3_violenceSecond_guttermanTutorial1": "The <color=orange>GUTTERMAN SHIELD</color> can be <color=orange>BROKEN</color> with the <color=red>KNUCKLEBLASTER</color>. Swap arms with '",
-	"act3_violenceSecond_guttermanTutorial2": "'.",
+    "act3_violenceSecond_guttermanTutorial2": "'.",
     "act3_violenceSecond_guttermanTutorialNoKB": "The <color=orange>GUTTERMAN SHIELD</color> can be <color=orange>BROKEN</color> with the <color=red>KNUCKLEBLASTER</color>. You should probably re-equip it.",
     "act3_violenceSecond_biggerBoom": "WE'RE GONNA NEED A BIGGER BOOM",
     "act3_violenceSecond_gateControlTitle": "GATE CONTROL",
@@ -2046,7 +2046,7 @@
     "shop_colorsCustom": "Custom",
     "shop_colorsDone": "Done",
     "shop_colorsStandard": "Standard",
-    "shop_colorsAlternative": "Alternate",
+    "shop_colorsAlternate": "Alternate",
     "shop_colorsCustomUnlockPrompt": "Unlock Custom Colors For "
   },
   "levelTips": {
@@ -2916,7 +2916,348 @@
     "earlyAccessEnd3": "For news on its progress, follow us on",
     "violenceScreenText1": "<size=65>This game contains scenes\nof explicit violence and gore.</size>",
     "violenceScreenText2": "<size=65>This game contains scenes\nof explicit <color=red>violence</color> and <color=red>gore</color>.</size>",
-    "teleportLevels": {}
+    "teleportLevels": {
+      "Level 0-1": {
+        "First Room": "First Room",
+        "Boss Checkpoint": "Boss Checkpoint",
+        " Projectile Zombies Room": " Projectile Zombies Room",
+        " Combo Hallway": " Combo Hallway",
+        " Glass Intro": " Glass Intro",
+        " Projectile Arena": " Projectile Arena"
+      },
+      "Level 0-2": {
+        "First Room": "First Room",
+        " Swordsmachine Hallway": " Swordsmachine Hallway",
+        " Crusher Hallway": " Crusher Hallway",
+        " Swordsmachine Arena Hallway": " Swordsmachine Arena Hallway"
+      },
+      "Level 0-3": {
+        "First Room": "First Room",
+        " First Encounter": " First Encounter",
+        " Menacing Room": " Menacing Room",
+        " Windtunnel": " Windtunnel",
+        " Second Encounter": " Second Encounter"
+      },
+      "Level 0-4": {
+        "First Room": "First Room",
+        " Pipes Hallway": " Pipes Hallway",
+        " Stairs Hallway": " Stairs Hallway"
+      },
+      "Level 0-5": {
+        "First Room": "First Room",
+        " Smallway": " Smallway"
+      },
+      "Level 0-S": {
+        "First Room": "First Room"
+      },
+      "Level 1-1": {
+        "First Room": "First Room",
+        " Blue Skull Room": " Blue Skull Room",
+        " Hall": " Hall",
+        " Corner Hallway": " Corner Hallway",
+        " Castle Entrance Corridor": " Castle Entrance Corridor"
+      },
+      "Level 1-2": {
+        "First Room": "First Room",
+        " Upper Way": " Upper Way",
+        " Upper Way (2)": " Upper Way (2)",
+        " Castle Entrance": " Castle Entrance"
+      },
+      "Level 1-3": {
+        "First Room": "First Room",
+        " Courtyard": " Courtyard",
+        " Blue Hallway": " Blue Hallway",
+        " Final Arena": " Final Arena",
+        " Second Arena": " Second Arena",
+        " Courtyard (2)": " Courtyard (2)",
+        "B1-D Lava Hallway": "B1-D Lava Hallway",
+        " Secret Fight": " Secret Fight",
+        " Tall Room": " Tall Room"
+      },
+      "Level 1-4": {
+        "First Room": "First Room",
+        " Main Hall": " Main Hall",
+        " Arena": " Arena"
+      },
+      "Level 1-S": {
+        "First Room": "First Room"
+      },
+      "Level 2-1": {
+        "First Room": "First Room",
+        " Outdoors Arenas": " Outdoors Arenas",
+        " Tower 1": " Tower 1"
+      },
+      "Level 2-2": {
+        "First Room": "First Room",
+        " Generator Room": " Generator Room",
+        " Second District": " Second District",
+        " First District": " First District",
+        " Laser Walkway": " Laser Walkway"
+      },
+      "Level 2-3": {
+        "First Room": "First Room",
+        " Arena 2": " Arena 2",
+        "1-2 Connector": "1-2 Connector",
+        " Final Arena": " Final Arena",
+        "1-2 Connector (2)": "1-2 Connector (2)",
+        "3-2 Connector": "3-2 Connector"
+      },
+      "Level 2-4": {
+        "First Room": "First Room",
+        " First Encounter": " First Encounter",
+        " Second Encounter": " Second Encounter"
+      },
+      "Level 2-S": {
+        "First Room": "First Room"
+      },
+      "Level 3-1": {
+        "First Room": "First Room",
+        " Uphill Battle": " Uphill Battle",
+        " Big Arena": " Big Arena",
+        " Mouth Tunnel": " Mouth Tunnel",
+        " Stairways": " Stairways",
+        " Bridge Arena": " Bridge Arena"
+      },
+      "Level 3-2": {
+        "First Room": "First Room",
+        " Heart Chamber": " Heart Chamber"
+      },
+      "Level 4-1": {
+        "First Room": "First Room",
+        " Staircase Arena": " Staircase Arena",
+        " Platforms": " Platforms",
+        " Tower": " Tower",
+        " Interior Hallway 2": " Interior Hallway 2",
+        " Virtue Arena": " Virtue Arena"
+      },
+      "Level 4-2": {
+        "First Room": "First Room",
+        " Boss Arena": " Boss Arena",
+        " Temple Entrance": " Temple Entrance",
+        " More Platforming": " More Platforming",
+        " Solarium": " Solarium"
+      },
+      "Level 4-3": {
+        "First Room": "First Room",
+        " Traitor Hallway": " Traitor Hallway",
+        "Stairs Hallway": "Stairs Hallway",
+        " Generator Room Hallway": " Generator Room Hallway"
+      },
+      "Level 4-4": {
+        "First Room": "First Room",
+        " Boss Entrance": " Boss Entrance"
+      },
+      "Level 4-S": {
+        "First Room": "First Room",
+        " Basics": " Basics",
+        " Basics (2)": " Basics (2)",
+        " Basics (3)": " Basics (3)",
+        " Inside": " Inside",
+        " Inside (2)": " Inside (2)",
+        " Distant Sidescroller": " Distant Sidescroller",
+        " Boulder Run": " Boulder Run"
+      },
+      "Level 5-1": {
+        "First Room": "First Room",
+        " Water Processing Chamber": " Water Processing Chamber",
+        " Main Cave": " Main Cave",
+        "Tunnel C": "Tunnel C",
+        " Elevator": " Elevator",
+        "Tunnel A": "Tunnel A",
+        "Tunnel B": "Tunnel B"
+      },
+      "Level 5-2": {
+        "First Room": "First Room",
+        " Broken Pier": " Broken Pier",
+        " Fort": " Fort",
+        " Dark Hallway": " Dark Hallway"
+      },
+      "Level 5-3": {
+        "First Room": "First Room",
+        " Dual Wield Arena (Sunken)": " Dual Wield Arena (Sunken)",
+        " Staircase (Sunken)": " Staircase (Sunken)",
+        " L Hallway": " L Hallway",
+        " Lounge Bar": " Lounge Bar",
+        " Residence Corridor": " Residence Corridor",
+        " Hologram Room": " Hologram Room"
+      },
+      "Level 5-4": {
+        "First Room": "First Room",
+        "Surface": "Surface"
+      },
+      "Level 5-S": {
+        "First Room": "First Room"
+      },
+      "Level 6-1": {
+        "First Room": "First Room",
+        " City Skyline": " City Skyline",
+        " Chapel (Entrance)": " Chapel (Entrance)",
+        " Hall of Sacreligious Remains": " Hall of Sacreligious Remains",
+        " Crossroads": " Crossroads",
+        " Lava Chasm": " Lava Chasm"
+      },
+      "Level 6-2": {
+        "First Room": "First Room",
+        " Organ Hall": " Organ Hall"
+      },
+      "Level 7-1": {
+        "First Room": "First Room",
+        " Underground Tunnels": " Underground Tunnels",
+        " Pillar Hall": " Pillar Hall",
+        "Mannequin Room": "Mannequin Room",
+        "Walkway Arena": "Walkway Arena"
+      },
+      "Level 7-2": {
+        "First Room": "First Room",
+        " Corner Staircase": " Corner Staircase",
+        " Outdoors Start": " Outdoors Start",
+        " Tram Station": " Tram Station",
+        " Bomb Station": " Bomb Station",
+        " Forgotten Archive": " Forgotten Archive"
+      },
+      "Level 7-3": {
+        "First Room": "First Room",
+        " Forest Path": " Forest Path",
+        " Central Plaza Upper": " Central Plaza Upper",
+        " Circular Garden": " Circular Garden",
+        " Grand Hall": " Grand Hall"
+      },
+      "Level 7-4": {
+        "First Room": "First Room",
+        "Leg": "Leg",
+        "Front": "Front",
+        "Back": "Back",
+        "Interior": "Interior",
+        "Brain": "Brain"
+      },
+      "Level 7-S": {
+        "First Room": "First Room",
+        "Lounge": "Lounge",
+        "Library": "Library",
+        "Courtyard": "Courtyard",
+        "Fake Exit": "Fake Exit"
+      },
+      "Level 8-1": {
+        "First Room": "First Room",
+        " TV Room / Hotel Hallway": " TV Room / Hotel Hallway",
+        "  Fountain Room": "  Fountain Room",
+        " Stretch Room": " Stretch Room",
+        "Outside": "Outside",
+        " Busted Hotel Rooms": " Busted Hotel Rooms",
+        " Fake Floor Arena": " Fake Floor Arena",
+        "building Arena": "building Arena"
+      },
+      "Level 8-2": {
+        "First Room": "First Room",
+        " Mirror Reaper Arena": " Mirror Reaper Arena",
+        "Shaped Hallway": "Shaped Hallway",
+        " Supermarket Shutters": " Supermarket Shutters",
+        "Down Hallway": "Down Hallway",
+        " Hub": " Hub",
+        " Storage Room": " Storage Room",
+        " Island": " Island",
+        " Crossroad": " Crossroad"
+      },
+      "Level 8-3": {
+        "First Room": "First Room",
+        " Space Tree": " Space Tree",
+        " Space Mass": " Space Mass",
+        " Space Streets": " Space Streets",
+        "Space": "Space",
+        " Shifting Hallway": " Shifting Hallway",
+        " Fallway": " Fallway",
+        " Heart Chamber": " Heart Chamber",
+        " Garage Loop": " Garage Loop",
+        " Split Color Door": " Split Color Door",
+        " Dimensional Cave": " Dimensional Cave",
+        " Folded Hallway": " Folded Hallway",
+        " Clockwork Crushers": " Clockwork Crushers",
+        " Clockwork Climb": " Clockwork Climb"
+      },
+      "Level 8-4": {
+        "First Room": "First Room",
+        "Elevator": "Elevator"
+      },
+      "Level 8-S": {
+        "First Room": "First Room"
+      },
+      "Level 9-1": {
+        "First Room": "First Room"
+      },
+      "Level 9-2": {
+        "First Room": "First Room"
+      },
+      "Level P-1": {
+        "First Room": "First Room",
+        " Inner Sanctum": " Inner Sanctum"
+      },
+      "Level P-2": {
+        "First Room": "First Room",
+        "Intro": "Intro",
+        " Bridge Street": " Bridge Street",
+        " Idol Arena": " Idol Arena",
+        " Last Arena": " Last Arena",
+        " Boss Arena": " Boss Arena"
+      },
+      "Level P-3": {
+        "First Room": "First Room"
+      },
+      "Level 0-E": {
+        "First Room": "First Room",
+        " First Encounter": " First Encounter",
+        " Fans Staircase": " Fans Staircase",
+        " Combo Hallway": " Combo Hallway",
+        " Tube Hallways": " Tube Hallways",
+        " Crossroads": " Crossroads",
+        " Projectile Zombies Room": " Projectile Zombies Room",
+        " Projectile Arena": " Projectile Arena",
+        " Boss Arena": " Boss Arena",
+        " Lava Foundry": " Lava Foundry",
+        " Menacing Room": " Menacing Room",
+        " Hallway": " Hallway",
+        " Crossroads (2)": " Crossroads (2)"
+      },
+      "Level 1-E": {
+        "First Room": "First Room",
+        " Opener": " Opener",
+        " Waterfall Arena / Altar Field": " Waterfall Arena / Altar Field",
+        " Prelude Hallway": " Prelude Hallway",
+        " Waterfall Arena / Altar Field (2)": " Waterfall Arena / Altar Field (2)",
+        " Castle Entrance": " Castle Entrance",
+        " Lava Staircase": " Lava Staircase",
+        " Stairs Hallway / Castle Entrance": " Stairs Hallway / Castle Entrance"
+      },
+      "Level 2-E": {
+        "First Room": "First Room"
+      },
+      "Level 3-E": {
+        "First Room": "First Room"
+      },
+      "Level 4-E": {
+        "First Room": "First Room"
+      },
+      "Level 5-E": {
+        "First Room": "First Room"
+      },
+      "Level 6-E": {
+        "First Room": "First Room"
+      },
+      "Level 7-E": {
+        "First Room": "First Room"
+      },
+      "Level 8-E": {
+        "First Room": "First Room"
+      },
+      "Level 9-E": {
+        "First Room": "First Room"
+      },
+      "Endless": {
+        "First Room": "First Room"
+      },
+      "CreditsMuseum2": {
+        "First Room": "First Room"
+      }
+    }
   },
   "inputStrings": {
     "input_space": "Space",

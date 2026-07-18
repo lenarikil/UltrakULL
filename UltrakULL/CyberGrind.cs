@@ -179,6 +179,9 @@ namespace UltrakULL
 
             TextMeshProUGUI cgTerminalThemesBack = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(cgTerminalThemes.transform.parent.gameObject, "Back Button"), "Text"));
             cgTerminalThemesBack.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_themesCustomBack;
+			//Да почему оно сбрасывает всю ветку themes, я же всё правильно по айди ввёл и сравнил с предыдущими, всё идентично. Ещё я хз как сделать перехват текста, чтобы он заменял отображаемые имена папок на свой текст, ибо они тот же TMP используют для отображения, но у них у всех одинаковый подраздел Folder(Clone), и я также хз как их распределить по содержанию строки как в книгах или сообщениях, а не по подразделу, т.к. во всех случаях они весь раздел сбрасывают
+			//TextMeshProUGUI cgTerminalThemesDefault = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(cgTerminalThemesButton, "Default"), "Text"));
+			//cgTerminalThemesDefault.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_themesDefault;
 
             //Playlist
             GameObject cgMusic = GetGameObjectChild(GetGameObjectChild(cgTerminalMainPanel, "Playlist"),"Panel");
