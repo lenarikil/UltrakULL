@@ -115,12 +115,12 @@ namespace UltrakULL.Harmony_Patches
                             Logging.Info("[AudioDubSlider] EXTRA DUBBING toggled: " + newValue);
                         });
 
-                        if (!(String.IsNullOrWhiteSpace(LanguageManager.CurrentLanguage.options.audio_dubbing_extra)))
-                        { GetTextMeshProUGUI(GetGameObjectChild(extraSlider, "Text")).text = LanguageManager.CurrentLanguage.options.audio_dubbing_extra; }
-                        else { GetTextMeshProUGUI(GetGameObjectChild(extraSlider, "Text")).text = LanguageManager.CurrentLanguage.options.audio_dubbing_extra; }
+                        string extraLabel = LanguageManager.CurrentLanguage?.options?.audio_dubbing_extra;
+                        if (!String.IsNullOrWhiteSpace(extraLabel))
+                        { GetTextMeshProUGUI(GetGameObjectChild(extraSlider, "Text")).text = extraLabel; }
+                        else { GetTextMeshProUGUI(GetGameObjectChild(extraSlider, "Text")).text = "EXTRA AUDIO DUBBING"; }
 
-
-                            Action<bool> updateExtraInteractable = (bool active) =>
+                        Action<bool> updateExtraInteractable = (bool active) =>
                         {
                             extraToggle.interactable = active;
                             CanvasGroup cg = extraSlider.GetComponent<CanvasGroup>();
@@ -130,14 +130,71 @@ namespace UltrakULL.Harmony_Patches
 
                         updateExtraInteractable(dubToggle.isOn);
 
+                        Logging.Info("[AudioDubSlider] Successful creation of the ExtraOption slider");
+
+                        // ---- Book Audio Dubbing ----
+                        GameObject bookSlider = GameObject.Instantiate(originalSlider, AudioPageContainer.transform);
+                        bookSlider.GetComponent<RectTransform>().anchoredPosition = new Vector2(650f, -280f);
+                        bookSlider.name = "BookAudioDubbing";
+
+                        GameObject bookOldToggleObj = GetGameObjectChild(bookSlider, "Toggle(Clone)");
+                        Toggle bookOldToggle = bookOldToggleObj.GetComponent<Toggle>();
+
+                        GameObject bookNewToggleObj = GameObject.Instantiate(bookOldToggleObj, bookOldToggleObj.transform.parent);
+                        bookNewToggleObj.name = "BookAudioToggle";
+                        bookNewToggleObj.SetActive(true);
+
+                        Toggle bookToggle = bookNewToggleObj.GetComponent<Toggle>();
+
+                        GameObject bookOldCheckmark = GetGameObjectChild(GetGameObjectChild(bookOldToggleObj, "Background"), "Checkmark");
+                        GameObject bookOldFakeCheck = GetGameObjectChild(GetGameObjectChild(bookOldToggleObj, "Background"), "FakeCheck");
+                        bookOldCheckmark.SetActive(false);
+                        bookOldFakeCheck.SetActive(false);
+
+                        GameObject bookBackground = GetGameObjectChild(bookNewToggleObj, "Background");
+                        GameObject bookCheckmark = GetGameObjectChild(bookBackground, "Checkmark");
+
+                        bookToggle.targetGraphic = bookBackground.GetComponent<Image>();
+                        bookToggle.graphic = bookCheckmark.GetComponent<Image>();
+
+                        bool isBookAudioActive = Convert.ToBoolean(LanguageManager.configFile.Bind("General", "bookAudioDubbing", "False").Value);
+                        bookToggle.isOn = isBookAudioActive;
+
+                        bookToggle.transition = Selectable.Transition.ColorTint;
+
+                        GameObject.Destroy(GetGameObjectChild(bookSlider, "Reset Button Variant(Clone)"));
+
+                        bookToggle.onValueChanged.AddListener(delegate
+                        {
+                            bool newValue = bookToggle.isOn;
+                            LanguageManager.configFile.Bind("General", "bookAudioDubbing", "False").Value = newValue.ToString();
+                            Logging.Info("[AudioDubSlider] BOOK AUDIO DUBBING toggled: " + newValue);
+                        });
+
+                        string bookLabel = LanguageManager.CurrentLanguage?.options?.audio_bookAudioDubbing;
+                        if (!String.IsNullOrWhiteSpace(bookLabel))
+                        { GetTextMeshProUGUI(GetGameObjectChild(bookSlider, "Text")).text = bookLabel; }
+                        else { GetTextMeshProUGUI(GetGameObjectChild(bookSlider, "Text")).text = "BOOK AUDIO DUBBING"; }
+
+                        Action<bool> updateBookInteractable = (bool active) =>
+                        {
+                            bookToggle.interactable = active;
+                            CanvasGroup cg = bookSlider.GetComponent<CanvasGroup>();
+                            if (cg == null) cg = bookSlider.AddComponent<CanvasGroup>();
+                            cg.alpha = active ? 1f : 0.5f;
+                        };
+
+                        updateBookInteractable(dubToggle.isOn);
+
+                        Logging.Info("[AudioDubSlider] Successful creation of the BookAudioDubbing slider");
+
                         dubToggle.onValueChanged.AddListener(delegate (bool newValue)
                         {
                             LanguageManager.configFile.Bind("General", "activeDubbing", "False").Value = newValue.ToString();
                             Logging.Info("[AudioDubSlider] Dialogue Dub toggled: " + newValue);
                             updateExtraInteractable(newValue);
+                            updateBookInteractable(newValue);
                         });
-
-                        Logging.Info("[AudioDubSlider] Successful creation of the ExtraOption slider");
                     }
                     catch (Exception e)
                     {

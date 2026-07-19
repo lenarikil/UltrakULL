@@ -1208,6 +1208,7 @@
     "audio_muffleMusic": "",
     "audio_dubbing": "",
     "audio_dubbing_extra": "",
+    "audio_bookAudioDubbing": "",
     "hud_type": "",
     "hud_typeNone": "",
     "hud_typeStandard": "",

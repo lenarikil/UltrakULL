@@ -1212,6 +1212,7 @@
     "audio_muffleMusic": "MUFFLE MUSIC WHILE UNDERWATER",
     "audio_dubbing": "AUDIO DUBBING",
     "audio_dubbing_extra": "EXTRA AUDIO DUBBING",
+    "audio_bookAudioDubbing": "BOOK AUDIO DUBBING",
     "hud_type": "HUD TYPE",
     "hud_typeNone": "NONE",
     "hud_typeStandard": "STANDARD",

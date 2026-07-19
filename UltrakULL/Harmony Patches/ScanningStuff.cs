@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using System;
+using HarmonyLib;
 using TMPro;
 using UltrakULL.audio;
 using UltrakULL.json;
@@ -27,10 +28,14 @@ namespace UltrakULL.Harmony_Patches
 
             if (!string.IsNullOrEmpty(bookId))
             {
-                bool isReversed = IsReadingScannedTextReversed();
-                string audioBookId = isReversed ? bookId + "_reversed" : bookId;
-                Logging.Message("[BookAudio] Book opened: " + sceneName + "/" + audioBookId);
-                BookAudioPlayer.Play(sceneName, audioBookId);
+                bool bookAudioEnabled = Convert.ToBoolean(LanguageManager.configFile.Bind("General", "bookAudioDubbing", "False").Value);
+                if (bookAudioEnabled)
+                {
+                    bool isReversed = IsReadingScannedTextReversed();
+                    string audioBookId = isReversed ? bookId + "_reversed" : bookId;
+                    Logging.Message("[BookAudio] Book opened: " + sceneName + "/" + audioBookId);
+                    BookAudioPlayer.Play(sceneName, audioBookId);
+                }
             }
 
             GameObject canvas = GetInactiveRootObject("Canvas");
