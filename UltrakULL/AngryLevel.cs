@@ -11,15 +11,22 @@ namespace UltrakULL
     {
         public static bool IsAngryCustomLevel()
         {
-            Type type = Type.GetType("AngryLevelLoader.Managers.AngrySceneManager, AngryLevelLoader");
-            if (type == null)
-                return false;
+            try
+            {
+                Type type = Type.GetType("AngryLevelLoader.Managers.AngrySceneManager, AngryLevelLoader");
+                if (type == null)
+                    return false;
 
-            var property = type.GetProperty("isInCustomLevel");
-            if (property == null)
-                return false;
+                var property = type.GetProperty("isInCustomLevel");
+                if (property == null)
+                    return false;
 
-            return (bool)property.GetValue(null);
+                return (bool)property.GetValue(null);
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public static void PatchAngry()

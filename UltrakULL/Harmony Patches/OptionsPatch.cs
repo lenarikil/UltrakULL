@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using BepInEx.Bootstrap;
+using HarmonyLib;
 using System;
 using static UltrakULL.CommonFunctions;
 using SettingsMenu.Components;
@@ -32,10 +33,24 @@ namespace UltrakULL.Harmony_Patches
     [HarmonyPatch(typeof(SettingsMenu.Components.SettingsPageBuilder))]
     public static class OptionsPatch
     {
+        private static bool? _noMusicStopParryLoaded = null;
+
+        private static bool IsNoMusicStopParryLoaded()
+        {
+            if (_noMusicStopParryLoaded == null)
+                _noMusicStopParryLoaded = Chainloader.PluginInfos.ContainsKey("com.AquaEther.NoMusicStopParry");
+            return _noMusicStopParryLoaded.Value;
+        }
+
         [HarmonyPatch("BuildPage"), HarmonyPostfix]
         public static void OptionsSetSelectedPostfix(SettingsPageBuilder __instance) {
             try
             {
+                if (IsNoMusicStopParryLoaded())
+                {
+                    Logging.Debug("NoMusicStopParry detected, some option patches may be skipped for compatibility.");
+                }
+
                 Logging.Debug("Patching Option menu...");
                 GameObject optionsObject = __instance.gameObject;
                 switch (__instance.name.ToUpper())
