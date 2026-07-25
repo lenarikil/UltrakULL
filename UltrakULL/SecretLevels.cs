@@ -215,17 +215,17 @@ namespace UltrakULL
                 case "Level 5-S":
                     {
                         testamentPanelText.text =
-                                LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testamentTitle + "\n\n\n" +
+                                LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testamentTitle + "\n\n" + 
                                 LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testament1 + "\n" +
-                                LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testament2 + "\n\n\n" +
+                                LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testament2 + "\n\n" + 
 
                                 LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testament3 + "\n" +
                                 LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testament4 + "\n" +
                                 LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testament5 + "\n" +
-                                LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testament6 + "\n\n\n" +
+                                LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testament6 + "\n\n" + 
 
                                 LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testament7 + "\n" +
-                                LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testament8 + "\n\n\n" +
+                                LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testament8 + "\n\n" +
 
                                 LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testament9 + "\n" +
                                 LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testament10 + "\n" +
