@@ -2286,6 +2286,12 @@ namespace UltrakULL.json
         public string graphics_customColorPalette;
         public string graphics_customPaletteTexture;
         public string graphics_customColorPaletteSelect;
+        public string graphics_paletteGamebotColor;
+        public string graphics_paletteNoir;
+        public string graphics_palettePinkAndPurple;
+        public string graphics_paletteRustic;
+        public string graphics_paletteShake;
+        public string graphics_paletteSinShitty;
 
         public string graphics_colorCompression;
         public string graphics_colorCompressionNone;
