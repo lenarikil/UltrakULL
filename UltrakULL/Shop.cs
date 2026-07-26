@@ -194,7 +194,7 @@ namespace UltrakULL
 
                 GameObject piercerWindow = GetGameObjectChild(GetGameObjectChild(revolverWindow, "Variation Info (Blue)"), "Panel");
                 TextMeshProUGUI piercerWindowTitle = GetTextMeshProUGUI(GetGameObjectChild(piercerWindow.transform.parent.gameObject, "Title"));
-                piercerWindowTitle.text = piercerName.text;
+                piercerWindowTitle.text = piercerName.text.ToUpper();
                 TextMeshProUGUI piercerWindowName = GetTextMeshProUGUI(GetGameObjectChild(piercerWindow, "Name"));
                 piercerWindowName.enableAutoSizing = true;
                 piercerWindowName.fontSizeMax = piercerWindowName.fontSize;
@@ -215,7 +215,7 @@ namespace UltrakULL
                 
                 GameObject marksmanWindow = GetGameObjectChild(GetGameObjectChild(revolverWindow, "Variation Info (Green)"), "Panel");
                 TextMeshProUGUI marksmanWindowTitle = GetTextMeshProUGUI(GetGameObjectChild(marksmanWindow.transform.parent.gameObject, "Title"));
-                marksmanWindowTitle.text = marksmanName.text;
+                marksmanWindowTitle.text = marksmanName.text.ToUpper();
                 TextMeshProUGUI marksmanWindowName = GetTextMeshProUGUI(GetGameObjectChild(marksmanWindow, "Name"));
                 marksmanWindowName.enableAutoSizing = true;
                 marksmanWindowName.fontSizeMax = marksmanWindowName.fontSize;
@@ -237,7 +237,7 @@ namespace UltrakULL
                 
                 GameObject sharpshooterWindow = GetGameObjectChild(GetGameObjectChild(revolverWindow, "Variation Info (Red)"), "Panel");
                 TextMeshProUGUI sharpshooterWindowTitle = GetTextMeshProUGUI(GetGameObjectChild(sharpshooterWindow.transform.parent.gameObject, "Title"));
-                sharpshooterWindowTitle.text = sharpshooterName.text;
+                sharpshooterWindowTitle.text = sharpshooterName.text.ToUpper();
                 TextMeshProUGUI sharpshooterWindowName = GetTextMeshProUGUI(GetGameObjectChild(sharpshooterWindow, "Name"));
                 sharpshooterWindowName.enableAutoSizing = true;
                 sharpshooterWindowName.fontSizeMax = sharpshooterWindowName.fontSize;
@@ -354,7 +354,7 @@ namespace UltrakULL
 
                 GameObject coreEjectWindow = GetGameObjectChild(GetGameObjectChild(shotgunWindow, "Variation Info (Blue)"), "Panel");
                 TextMeshProUGUI coreEjectWindowTitle = GetTextMeshProUGUI(GetGameObjectChild(coreEjectWindow.transform.parent.gameObject, "Title"));
-                coreEjectWindowTitle.text = LanguageManager.CurrentLanguage.shop.shop_shotgunCoreEject;
+                coreEjectWindowTitle.text = LanguageManager.CurrentLanguage.shop.shop_shotgunCoreEject.ToUpper();
                 TextMeshProUGUI coreEjectWindowName = GetTextMeshProUGUI(GetGameObjectChild(coreEjectWindow, "Name"));
                 coreEjectWindowName.enableAutoSizing = true;
                 coreEjectWindowName.fontSizeMax = coreEjectWindowName.fontSize;
@@ -376,7 +376,7 @@ namespace UltrakULL
 
                 GameObject pumpChargeWindow = GetGameObjectChild(GetGameObjectChild(shotgunWindow, "Variation Info (Green)"), "Panel");
                 TextMeshProUGUI pumpChargeWindowTitle = GetTextMeshProUGUI(GetGameObjectChild(pumpChargeWindow.transform.parent.gameObject, "Title"));
-                pumpChargeWindowTitle.text = LanguageManager.CurrentLanguage.shop.shop_shotgunPumpCharge;
+                pumpChargeWindowTitle.text = LanguageManager.CurrentLanguage.shop.shop_shotgunPumpCharge.ToUpper();
                 TextMeshProUGUI pumpChargeWindowName = GetTextMeshProUGUI(GetGameObjectChild(pumpChargeWindow, "Name"));
                 pumpChargeWindowName.enableAutoSizing = true;
                 pumpChargeWindowName.fontSizeMax = pumpChargeWindowName.fontSize;
@@ -397,7 +397,7 @@ namespace UltrakULL
 
                 GameObject sawedOnWindow = GetGameObjectChild(GetGameObjectChild(shotgunWindow, "Variation Info (Red)"), "Panel");
                 TextMeshProUGUI sawedOnWindowTitle = GetTextMeshProUGUI(GetGameObjectChild(sawedOnWindow.transform.parent.gameObject, "Title"));
-                sawedOnWindowTitle.text = LanguageManager.CurrentLanguage.shop.shop_shotgunSawedOn;
+                sawedOnWindowTitle.text = LanguageManager.CurrentLanguage.shop.shop_shotgunSawedOn.ToUpper();
                 TextMeshProUGUI sawedOnWindowName = GetTextMeshProUGUI(GetGameObjectChild(sawedOnWindow, "Name"));
                 sawedOnWindowName.enableAutoSizing = true;
                 sawedOnWindowName.fontSizeMax = sawedOnWindowName.fontSize;
@@ -505,7 +505,7 @@ namespace UltrakULL
 
                 GameObject attractorWindow = GetGameObjectChild(GetGameObjectChild(nailgunWindow, "Variation Info (Blue)"), "Panel");
                 TextMeshProUGUI attractorWindowTitle = GetTextMeshProUGUI(GetGameObjectChild(attractorWindow.transform.parent.gameObject, "Title"));
-                attractorWindowTitle.text = LanguageManager.CurrentLanguage.shop.shop_nailgunMagnet;
+                attractorWindowTitle.text = LanguageManager.CurrentLanguage.shop.shop_nailgunMagnet.ToUpper();
                 TextMeshProUGUI attractorWindowName = GetTextMeshProUGUI(GetGameObjectChild(attractorWindow, "Name"));
                 attractorWindowName.enableAutoSizing = true;
                 attractorWindowName.fontSizeMax = attractorWindowName.fontSize;
@@ -526,7 +526,7 @@ namespace UltrakULL
 
                 GameObject overheatWindow = GetGameObjectChild(GetGameObjectChild(nailgunWindow, "Variation Info (Green)"), "Panel");
                 TextMeshProUGUI overheatWindowTitle = GetTextMeshProUGUI(GetGameObjectChild(overheatWindow.transform.parent.gameObject, "Title"));
-                overheatWindowTitle.text = LanguageManager.CurrentLanguage.shop.shop_nailgunOverheat;
+                overheatWindowTitle.text = LanguageManager.CurrentLanguage.shop.shop_nailgunOverheat.ToUpper();
                 TextMeshProUGUI overheatWindowName = GetTextMeshProUGUI(GetGameObjectChild(overheatWindow, "Name"));
                 overheatWindowName.enableAutoSizing = true;
                 overheatWindowName.fontSizeMax = overheatWindowName.fontSize;
@@ -548,7 +548,7 @@ namespace UltrakULL
 
                 GameObject jumpStartWindow = GetGameObjectChild(GetGameObjectChild(nailgunWindow, "Variation Info (Red)"), "Panel");
                 TextMeshProUGUI jumpStartWindowTitle = GetTextMeshProUGUI(GetGameObjectChild(jumpStartWindow.transform.parent.gameObject, "Title"));
-                jumpStartWindowTitle.text = LanguageManager.CurrentLanguage.shop.shop_nailgunJumpStart;
+                jumpStartWindowTitle.text = LanguageManager.CurrentLanguage.shop.shop_nailgunJumpStart.ToUpper();
                 TextMeshProUGUI jumpStartWindowName = GetTextMeshProUGUI(GetGameObjectChild(jumpStartWindow, "Name"));
                 jumpStartWindowName.enableAutoSizing = true;
                 jumpStartWindowName.fontSizeMax = jumpStartWindowName.fontSize;
@@ -655,7 +655,7 @@ namespace UltrakULL
 
                 GameObject electricWindow = GetGameObjectChild(GetGameObjectChild(railcannonWindow, "Variation Info (Blue)"), "Panel");
                 TextMeshProUGUI electricWindowTitle = GetTextMeshProUGUI(GetGameObjectChild(electricWindow.transform.parent.gameObject, "Title"));
-                electricWindowTitle.text = LanguageManager.CurrentLanguage.shop.shop_railcannonElectric;
+                electricWindowTitle.text = LanguageManager.CurrentLanguage.shop.shop_railcannonElectric.ToUpper();
                 TextMeshProUGUI electricWindowName = GetTextMeshProUGUI(GetGameObjectChild(electricWindow, "Name"));
                 electricWindowName.enableAutoSizing = true;
                 electricWindowName.fontSizeMax = electricWindowName.fontSize;
@@ -677,7 +677,7 @@ namespace UltrakULL
 
                 GameObject screwdriverWindow = GetGameObjectChild(GetGameObjectChild(railcannonWindow, "Variation Info (Green)"), "Panel");
                 TextMeshProUGUI screwdriverWindowTitle = GetTextMeshProUGUI(GetGameObjectChild(screwdriverWindow.transform.parent.gameObject, "Title"));
-                screwdriverWindowTitle.text = LanguageManager.CurrentLanguage.shop.shop_railcannonScrewdriver;
+                screwdriverWindowTitle.text = LanguageManager.CurrentLanguage.shop.shop_railcannonScrewdriver.ToUpper();
                 TextMeshProUGUI screwdriverWindowName = GetTextMeshProUGUI(GetGameObjectChild(screwdriverWindow, "Name"));
                 screwdriverWindowName.enableAutoSizing = true;
                 screwdriverWindowName.fontSizeMax = screwdriverWindowName.fontSize;
@@ -698,7 +698,7 @@ namespace UltrakULL
 
                 GameObject maliciousWindow = GetGameObjectChild(GetGameObjectChild(railcannonWindow, "Variation Info (Red)"), "Panel");
                 TextMeshProUGUI maliciousWindowTitle = GetTextMeshProUGUI(GetGameObjectChild(maliciousWindow.transform.parent.gameObject, "Title"));
-                maliciousWindowTitle.text = LanguageManager.CurrentLanguage.shop.shop_railcannonMalicious;
+                maliciousWindowTitle.text = LanguageManager.CurrentLanguage.shop.shop_railcannonMalicious.ToUpper();
                 TextMeshProUGUI maliciousWindowName = GetTextMeshProUGUI(GetGameObjectChild(maliciousWindow, "Name"));
                 maliciousWindowName.enableAutoSizing = true;
                 maliciousWindowName.fontSizeMax = maliciousWindowName.fontSize;
@@ -805,7 +805,7 @@ namespace UltrakULL
 
                 GameObject freezeframeInfo = GetGameObjectChild(GetGameObjectChild(rocketlauncherWindow, "Variation Info (Blue)"), "Panel");
                 TextMeshProUGUI freezeframeInfoTitle = GetTextMeshProUGUI(GetGameObjectChild(freezeframeInfo.transform.parent.gameObject, "Title"));
-                freezeframeInfoTitle.text = LanguageManager.CurrentLanguage.shop.shop_rocketLauncherFreeze;
+                freezeframeInfoTitle.text = LanguageManager.CurrentLanguage.shop.shop_rocketLauncherFreeze.ToUpper();
                 TextMeshProUGUI freezeframeWindowName = GetTextMeshProUGUI(GetGameObjectChild(freezeframeInfo, "Name"));
                 freezeframeWindowName.enableAutoSizing = true;
                 freezeframeWindowName.fontSizeMax = freezeframeWindowName.fontSize;
@@ -825,7 +825,7 @@ namespace UltrakULL
                 
                 GameObject srsCannonInfo = GetGameObjectChild(GetGameObjectChild(rocketlauncherWindow, "Variation Info (Green)"), "Panel");
                 TextMeshProUGUI srsCannonInfoTitle = GetTextMeshProUGUI(GetGameObjectChild(srsCannonInfo.transform.parent.gameObject, "Title"));
-                srsCannonInfoTitle.text = LanguageManager.CurrentLanguage.shop.shop_rocketLauncherSrsCannon;
+                srsCannonInfoTitle.text = LanguageManager.CurrentLanguage.shop.shop_rocketLauncherSrsCannon.ToUpper();
                 TextMeshProUGUI srsCannonWindowName = GetTextMeshProUGUI(GetGameObjectChild(srsCannonInfo, "Name"));
                 srsCannonWindowName.enableAutoSizing = true;
                 srsCannonWindowName.fontSizeMax = srsCannonWindowName.fontSize;
@@ -847,7 +847,7 @@ namespace UltrakULL
 
                 GameObject fireStarterInfo = GetGameObjectChild(GetGameObjectChild(rocketlauncherWindow, "Variation Info (Red)"), "Panel");
                 TextMeshProUGUI fireStarterInfoTitle = GetTextMeshProUGUI(GetGameObjectChild(fireStarterInfo.transform.parent.gameObject, "Title"));
-                fireStarterInfoTitle.text = LanguageManager.CurrentLanguage.shop.shop_rocketLauncherFireStarter;
+                fireStarterInfoTitle.text = LanguageManager.CurrentLanguage.shop.shop_rocketLauncherFireStarter.ToUpper();
                 TextMeshProUGUI fireStarterInfoName = GetTextMeshProUGUI(GetGameObjectChild(fireStarterInfo, "Name"));
                 fireStarterInfoName.enableAutoSizing = true;
                 fireStarterInfoName.fontSizeMax = fireStarterInfoName.fontSize;
@@ -961,7 +961,7 @@ namespace UltrakULL
 
                 GameObject feedbackerWindow = GetGameObjectChild(GetGameObjectChild(armWindow, "Arm Info (Blue)"), "Panel");
                 TextMeshProUGUI feedbackerWindowTitle = GetTextMeshProUGUI(GetGameObjectChild(feedbackerWindow.transform.parent.gameObject, "Title"));
-                feedbackerWindowTitle.text = LanguageManager.CurrentLanguage.shop.shop_armFeedbacker;
+                feedbackerWindowTitle.text = LanguageManager.CurrentLanguage.shop.shop_armFeedbacker.ToUpper();
                 TextMeshProUGUI feedbackerWindowName = GetTextMeshProUGUI(GetGameObjectChild(feedbackerWindow, "Name"));
                 feedbackerWindowName.enableAutoSizing = true;
                 feedbackerWindowName.fontSizeMax = feedbackerWindowName.fontSize;
@@ -981,7 +981,7 @@ namespace UltrakULL
 
                 GameObject knuckleblasterWindow = GetGameObjectChild(GetGameObjectChild(armWindow, "Arm Info (Red)"), "Panel");
                 TextMeshProUGUI knuckleblasterWindowTitle = GetTextMeshProUGUI(GetGameObjectChild(knuckleblasterWindow.transform.parent.gameObject, "Title"));
-                knuckleblasterWindowTitle.text = LanguageManager.CurrentLanguage.shop.shop_armKnuckleblaster;
+                knuckleblasterWindowTitle.text = LanguageManager.CurrentLanguage.shop.shop_armKnuckleblaster.ToUpper();
                 TextMeshProUGUI knuckleblasterWindowName = GetTextMeshProUGUI(GetGameObjectChild(knuckleblasterWindow, "Name"));
                 knuckleblasterWindowName.enableAutoSizing = true;
                 knuckleblasterWindowName.fontSizeMax = knuckleblasterWindowName.fontSize;
@@ -1001,7 +1001,7 @@ namespace UltrakULL
 
                 GameObject whiplashWindow = GetGameObjectChild(GetGameObjectChild(armWindow, "Arm Info (Green)"), "Panel");
                 TextMeshProUGUI whiplashWindowTitle = GetTextMeshProUGUI(GetGameObjectChild(whiplashWindow.transform.parent.gameObject, "Title"));
-                whiplashWindowTitle.text = LanguageManager.CurrentLanguage.shop.shop_armWhiplash;
+                whiplashWindowTitle.text = LanguageManager.CurrentLanguage.shop.shop_armWhiplash.ToUpper();
                 TextMeshProUGUI whiplashWindowName = GetTextMeshProUGUI(GetGameObjectChild(whiplashWindow, "Name"));
                 whiplashWindowName.enableAutoSizing = true;
                 whiplashWindowName.fontSizeMax = whiplashWindowName.fontSize;

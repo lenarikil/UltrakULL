@@ -660,122 +660,122 @@ namespace UltrakULL
             //colorsPanel.text = "--" + LanguageManager.CurrentLanguage.options.colors_title + "--";
 
             TextMeshProUGUI colorsResetDefaultText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(optionsMenu, "Scroll Rect"), "Contents"), "Default"), "Text"));
-            colorsResetDefaultText.text = LanguageManager.CurrentLanguage.options.colors_reset;
+            colorsResetDefaultText.text = LanguageManager.CurrentLanguage.options.colors_reset.ToUpper();
 
             //HUD Text
             GameObject colorsHudObject = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(optionsMenu, "Scroll Rect"), "Contents"), "HUD");
 
             TextMeshProUGUI colorsHudText = GetTextMeshProUGUI(colorsHudObject);
-            colorsHudText.text = "--" + LanguageManager.CurrentLanguage.options.colors_hud + "--";
+            colorsHudText.text = "--" + LanguageManager.CurrentLanguage.options.colors_hud.ToUpper() + "--";
 
             TextMeshProUGUI colorsHudHealthText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsHudObject, "Health"), "Text"));
-            colorsHudHealthText.text = LanguageManager.CurrentLanguage.options.colors_hudHealth;
+            colorsHudHealthText.text = LanguageManager.CurrentLanguage.options.colors_hudHealth.ToUpper();
 
             TextMeshProUGUI colorsHudHealthNumberText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsHudObject, "HpText"), "Text"));
-            colorsHudHealthNumberText.text = LanguageManager.CurrentLanguage.options.colors_hudHealthNumber;
+            colorsHudHealthNumberText.text = LanguageManager.CurrentLanguage.options.colors_hudHealthNumber.ToUpper();
 
             TextMeshProUGUI colorsHudSoftDamageText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsHudObject, "AfterImage"), "Text"));
-            colorsHudSoftDamageText.text = LanguageManager.CurrentLanguage.options.colors_hudDamage;
+            colorsHudSoftDamageText.text = LanguageManager.CurrentLanguage.options.colors_hudDamage.ToUpper();
 
             TextMeshProUGUI colorsHudHardDamageText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsHudObject, "AntiHp"), "Text"));
-            colorsHudHardDamageText.text = LanguageManager.CurrentLanguage.options.colors_hudHardDamage;
+            colorsHudHardDamageText.text = LanguageManager.CurrentLanguage.options.colors_hudHardDamage.ToUpper();
 
             TextMeshProUGUI colorsHudOverhealText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsHudObject, "Overheal"), "Text"));
-            colorsHudOverhealText.text = LanguageManager.CurrentLanguage.options.colors_hudOverheal;
+            colorsHudOverhealText.text = LanguageManager.CurrentLanguage.options.colors_hudOverheal.ToUpper();
 
             TextMeshProUGUI colorsHudStaminaText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsHudObject, "Stamina"), "Text"));
-            colorsHudStaminaText.text = LanguageManager.CurrentLanguage.options.colors_hudEnergyFull;
+            colorsHudStaminaText.text = LanguageManager.CurrentLanguage.options.colors_hudEnergyFull.ToUpper();
 
             TextMeshProUGUI colorsHudStaminaChargingText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsHudObject, "StaminaCharging"), "Text"));
-            colorsHudStaminaChargingText.text = LanguageManager.CurrentLanguage.options.colors_hudEnergyPartial;
+            colorsHudStaminaChargingText.text = LanguageManager.CurrentLanguage.options.colors_hudEnergyPartial.ToUpper();
 
             TextMeshProUGUI colorsHudStaminaEmptyText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsHudObject, "StaminaEmpty"), "Text"));
-            colorsHudStaminaEmptyText.text = LanguageManager.CurrentLanguage.options.colors_hudEnergyEmpty;
+            colorsHudStaminaEmptyText.text = LanguageManager.CurrentLanguage.options.colors_hudEnergyEmpty.ToUpper();
 
             TextMeshProUGUI colorsHudRailcannonFullText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsHudObject, "RailcannonFull"), "Text"));
-            colorsHudRailcannonFullText.text = LanguageManager.CurrentLanguage.options.colors_railcannonFull;
+            colorsHudRailcannonFullText.text = LanguageManager.CurrentLanguage.options.colors_railcannonFull.ToUpper();
 
             TextMeshProUGUI colorsHudRailcannonChargingText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsHudObject, "RailcannonCharging"), "Text"));
-            colorsHudRailcannonChargingText.text = LanguageManager.CurrentLanguage.options.colors_railcannonPartial;
+            colorsHudRailcannonChargingText.text = LanguageManager.CurrentLanguage.options.colors_railcannonPartial.ToUpper();
 
             TextMeshProUGUI colorsHudVarBlueText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsHudObject, "Blue Variation"), "Text"));
-            colorsHudVarBlueText.text = LanguageManager.CurrentLanguage.options.colors_variationBlue;
+            colorsHudVarBlueText.text = LanguageManager.CurrentLanguage.options.colors_variationBlue.ToUpper();
 
             TextMeshProUGUI colorsHudVarGreenText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsHudObject, "Green Variation"), "Text"));
-            colorsHudVarGreenText.text = LanguageManager.CurrentLanguage.options.colors_variationGreen;
+            colorsHudVarGreenText.text = LanguageManager.CurrentLanguage.options.colors_variationGreen.ToUpper();
 
             TextMeshProUGUI colorsHudVarRedText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsHudObject, "Red Variation"), "Text"));
-            colorsHudVarRedText.text = LanguageManager.CurrentLanguage.options.colors_variationRed;
+            colorsHudVarRedText.text = LanguageManager.CurrentLanguage.options.colors_variationRed.ToUpper();
 
             TextMeshProUGUI colorsHudVarGoldText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsHudObject, "Gold Variation"), "Text"));
-            colorsHudVarGoldText.text = LanguageManager.CurrentLanguage.options.colors_variationGold;
+            colorsHudVarGoldText.text = LanguageManager.CurrentLanguage.options.colors_variationGold.ToUpper();
 
             //Enemy names text
             //Later down the line, could be better to get the names from EnemyBios.
             GameObject colorsEnemiesObject = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(optionsMenu, "Scroll Rect"), "Contents"), "Enemies");
 
             TextMeshProUGUI colorsEnemiesText = GetTextMeshProUGUI(colorsEnemiesObject);
-            colorsEnemiesText.text = "--" + LanguageManager.CurrentLanguage.options.colors_enemies + "--";
+            colorsEnemiesText.text = "--" + LanguageManager.CurrentLanguage.options.colors_enemies.ToUpper() + "--";
 
             TextMeshProUGUI colorsEnemiesFilthText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsEnemiesObject, "Filth"), "Text"));
-            colorsEnemiesFilthText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_filth;
+            colorsEnemiesFilthText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_filth.ToUpper();
 
             TextMeshProUGUI colorsEnemiesStrayText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsEnemiesObject, "Stray"), "Text"));
-            colorsEnemiesStrayText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_stray;
+            colorsEnemiesStrayText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_stray.ToUpper();
 
             TextMeshProUGUI colorsEnemiesMalFaceText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsEnemiesObject, "Malicious Face"), "Text"));
-            colorsEnemiesMalFaceText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_malFace;
+            colorsEnemiesMalFaceText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_malFace.ToUpper();
 
             TextMeshProUGUI colorsEnemiesSchismText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsEnemiesObject, "Schism"), "Text"));
-            colorsEnemiesSchismText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_schism;
+            colorsEnemiesSchismText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_schism.ToUpper();
 
             TextMeshProUGUI colorsEnemiesSwordsmachineText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsEnemiesObject, "Swordsmachine"), "Text"));
-            colorsEnemiesSwordsmachineText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_swordsmachine;
+            colorsEnemiesSwordsmachineText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_swordsmachine.ToUpper();
 
             TextMeshProUGUI colorsEnemiesCerberusText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsEnemiesObject, "Cerberus"), "Text"));
-            colorsEnemiesCerberusText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_cerberus;
+            colorsEnemiesCerberusText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_cerberus.ToUpper();
 
             TextMeshProUGUI colorsEnemiesDroneText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsEnemiesObject, "Drone"), "Text"));
-            colorsEnemiesDroneText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_drone;
+            colorsEnemiesDroneText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_drone.ToUpper();
 
             TextMeshProUGUI colorsEnemiesStreetcleanerText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsEnemiesObject, "Streetcleaner"), "Text"));
-            colorsEnemiesStreetcleanerText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_streetCleaner;
+            colorsEnemiesStreetcleanerText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_streetCleaner.ToUpper();
 
             TextMeshProUGUI colorsEnemiesSoldierText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsEnemiesObject, "Shotgunner"), "Text"));
-            colorsEnemiesSoldierText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_soldier;
+            colorsEnemiesSoldierText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_soldier.ToUpper();
 
             TextMeshProUGUI colorsEnemiesV2Text = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsEnemiesObject, "V2"), "Text"));
-            colorsEnemiesV2Text.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_v2;
+            colorsEnemiesV2Text.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_v2.ToUpper();
 
             TextMeshProUGUI colorsEnemiesMindflayerText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsEnemiesObject, "Mindflayer"), "Text"));
-            colorsEnemiesMindflayerText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_mindFlayer;
+            colorsEnemiesMindflayerText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_mindFlayer.ToUpper();
 
             TextMeshProUGUI colorsEnemiesVirtueText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsEnemiesObject, "Virtue"), "Text"));
-            colorsEnemiesVirtueText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_virtue;
+            colorsEnemiesVirtueText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_virtue.ToUpper();
 
             TextMeshProUGUI colorsEnemiesStalkerText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsEnemiesObject, "Stalker"), "Text"));
-            colorsEnemiesStalkerText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_stalker;
+            colorsEnemiesStalkerText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_stalker.ToUpper();
 
             TextMeshProUGUI colorsEnemiesSisyphusText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsEnemiesObject, "Sisyphus"), "Text"));
-            colorsEnemiesSisyphusText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_insurrectionist;
+            colorsEnemiesSisyphusText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_insurrectionist.ToUpper();
 
             TextMeshProUGUI colorsEnemiesSentryText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsEnemiesObject, "Sentry"), "Text"));
-            colorsEnemiesSentryText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_sentry;
+            colorsEnemiesSentryText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_sentry.ToUpper();
 
             TextMeshProUGUI colorsEnemiesIdolText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsEnemiesObject, "Idol"), "Text"));
-            colorsEnemiesIdolText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_idol;
+            colorsEnemiesIdolText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_idol.ToUpper();
 
             TextMeshProUGUI colorsEnemiesFerrymanText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsEnemiesObject, "Ferryman"), "Text"));
-            colorsEnemiesFerrymanText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_ferryman;
+            colorsEnemiesFerrymanText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_ferryman.ToUpper();
 
             TextMeshProUGUI colorsEnemiesMannequinText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsEnemiesObject, "Mannequin"), "Text"));
-            colorsEnemiesMannequinText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_mannequin;
+            colorsEnemiesMannequinText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_mannequin.ToUpper();
 
             TextMeshProUGUI colorsEnemiesGuttermanText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsEnemiesObject, "Gutterman"), "Text"));
-            colorsEnemiesGuttermanText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_gutterman;
+            colorsEnemiesGuttermanText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_gutterman.ToUpper();
 
             TextMeshProUGUI colorsEnemiesGuttertankText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsEnemiesObject, "Guttertank"), "Text"));
-            colorsEnemiesGuttertankText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_guttertank;
+            colorsEnemiesGuttertankText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_guttertank.ToUpper();
 
         }
         
