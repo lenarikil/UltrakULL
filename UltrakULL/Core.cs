@@ -326,6 +326,8 @@ namespace UltrakULL
                     return null;
                 }
 
+                ApplyStrikeoutMetrics(tmpFont, fontPath, samplingPointSize);
+
                 Logging.Message($"CreateTMPFontFromFile: successfully created TMP font asset '{tmpFont.name}'");
                 return tmpFont;
             }
@@ -335,6 +337,50 @@ namespace UltrakULL
                 Logging.Error(e.ToString());
                 return null;
             }
+        }
+
+        private static void ApplyStrikeoutMetrics(TMP_FontAsset tmpFont, string fontPath, int samplingPointSize = 90)
+        {
+            OpenTypeStrikeoutMetrics metrics;
+            string reason;
+            if (!OpenTypeStrikeoutMetricsReader.TryRead(fontPath, out metrics, out reason))
+            {
+                Logging.Warn($"CreateTMPFontFromFile: keeping TMP strikeout metrics for {Path.GetFileName(fontPath)} because {reason}.");
+                return;
+            }
+
+            var faceInfo = tmpFont.faceInfo;
+            float effectivePointSize = faceInfo.pointSize > 0f ? faceInfo.pointSize : samplingPointSize;
+            float scale = effectivePointSize / metrics.UnitsPerEm;
+
+            // Calculate the center of the strikethrough line using the font's capHeight metric.
+            // capHeight is the height of uppercase letters, which provides a good compromise
+            // between ALL-CAPS text and mixed-case text:
+            //   - For ALL-CAPS: line at 50% of capHeight is near the center of uppercase letters
+            //   - For mixed case: line at 50% of capHeight is slightly above center of lowercase,
+            //     but much better than using ascender (which would be too high for lowercase)
+            // Fallback chain: capHeight -> xHeight -> ascender
+            float referenceHeight;
+            if (metrics.CapHeight > 0)
+                referenceHeight = metrics.CapHeight;
+            else if (metrics.XHeight > 0)
+                referenceHeight = metrics.XHeight;
+            else
+                referenceHeight = metrics.Ascender;
+
+            float centerOffset = (referenceHeight * 0.5f) * scale;
+            float thickness = metrics.Thickness * scale;
+
+            faceInfo.strikethroughOffset = centerOffset;
+            faceInfo.strikethroughThickness = thickness;
+            tmpFont.faceInfo = faceInfo;
+
+            Logging.Message($"CreateTMPFontFromFile: applied strikeout metrics for {Path.GetFileName(fontPath)} " +
+                $"(raw: pos={metrics.Position}, thick={metrics.Thickness}, upem={metrics.UnitsPerEm}, " +
+                $"ascender={metrics.Ascender}, xHeight={metrics.XHeight}, capHeight={metrics.CapHeight}, " +
+                $"facePointSize={faceInfo.pointSize}, samplingPointSize={samplingPointSize}, " +
+                $"effectivePointSize={effectivePointSize}, " +
+                $"offset={faceInfo.strikethroughOffset:F3}, thickness={faceInfo.strikethroughThickness:F3}).");
         }
 
         public static void LoadCustomFonts()
