@@ -22,6 +22,23 @@ namespace UltrakULL.Harmony_Patches.AudioSwaps
             AudioPreloadManager.EnsureCurrentScenePreloaded(delegate { ApplyVoiceSwap(instance); });
         }
 
+        /// <summary>
+        /// Re-applies audio swaps to all existing MinosPrime instances in the scene.
+        /// Called when the language is changed without reloading the scene.
+        /// </summary>
+        public static void RebindExistingInstances()
+        {
+            if (LanguageManager.configFile.Bind("General","activeDubbing","False").Value == "False" || isUsingEnglish())
+                return;
+
+            MinosPrime[] instances = UnityEngine.Object.FindObjectsOfType<MinosPrime>(true);
+            foreach (var instance in instances)
+            {
+                if (instance == null) continue;
+                AudioPreloadManager.EnsureCurrentScenePreloaded(delegate { ApplyVoiceSwap(instance); });
+            }
+        }
+
         private static void ApplyVoiceSwap(MinosPrime __instance)
         {
             if (__instance == null)

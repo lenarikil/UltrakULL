@@ -25,6 +25,27 @@ namespace UltrakULL.Harmony_Patches.AudioSwaps
             });
         }
 
+        /// <summary>
+        /// Re-applies audio swaps to all existing Gabriel instances in the scene.
+        /// Called when the language is changed without reloading the scene.
+        /// </summary>
+        public static void RebindExistingInstances()
+        {
+            if (LanguageManager.configFile.Bind("General","activeDubbing","False").Value == "False" || isUsingEnglish())
+                return;
+
+            Gabriel[] instances = UnityEngine.Object.FindObjectsOfType<Gabriel>(true);
+            foreach (var instance in instances)
+            {
+                if (instance == null) continue;
+                AudioPreloadManager.EnsureCurrentScenePreloaded(delegate
+                {
+                    ApplyVoiceSwap(instance);
+                    ApplyOutroSwap(instance);
+                });
+            }
+        }
+
         private static void ApplyVoiceSwap(Gabriel __instance)
         {
             if (__instance == null)

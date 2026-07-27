@@ -20,6 +20,23 @@ namespace UltrakULL.Harmony_Patches.AudioSwaps
 			AudioPreloadManager.EnsureCurrentScenePreloaded(delegate { ApplyAudioSwap(instance); });
 		}
 
+		/// <summary>
+		/// Re-applies audio swaps to all existing SisyphusPrime instances in the scene.
+		/// Called when the language is changed without reloading the scene.
+		/// </summary>
+		public static void RebindExistingInstances()
+		{
+			if (LanguageManager.configFile.Bind<string>("General", "activeDubbing", "False", (ConfigDescription)null).Value == "False" || CommonFunctions.isUsingEnglish())
+				return;
+
+			SisyphusPrime[] instances = UnityEngine.Object.FindObjectsOfType<SisyphusPrime>(true);
+			foreach (var instance in instances)
+			{
+				if (instance == null) continue;
+				AudioPreloadManager.EnsureCurrentScenePreloaded(delegate { ApplyAudioSwap(instance); });
+			}
+		}
+
 		private static void ApplyAudioSwap(SisyphusPrime __instance)
 		{
 			if (__instance == null)

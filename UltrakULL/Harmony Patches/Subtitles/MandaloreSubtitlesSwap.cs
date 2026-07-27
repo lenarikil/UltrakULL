@@ -9,6 +9,7 @@ using static HarmonyLib.AccessTools;
 using static UltrakULL.CommonFunctions;
 using System.Runtime.CompilerServices;
 using System.Reflection.Emit;
+using System.Reflection;
 
 namespace UltrakULL.Harmony_Patches.Subtitles
 {
@@ -53,27 +54,27 @@ namespace UltrakULL.Harmony_Patches.Subtitles
                 {
                     if (((string)codes[i].operand).Contains("You cannot"))
                     {
-                        codes[i].operand = MandaloreColour + LanguageManager.CurrentLanguage.subtitles.subtitles_mandalore_taunt3 + "</color>";
+                        codes[i].operand = GetSubtitleWithColor("subtitles_mandalore_taunt3", MandaloreColor);
                     }
                     else if (((string)codes[i].operand).Contains("I'm gonna"))
                     {
-                        codes[i].operand = OwlColour + LanguageManager.CurrentLanguage.subtitles.subtitles_mandalore_taunt2 + "</color>";
+                        codes[i].operand = GetSubtitleWithColor("subtitles_mandalore_taunt2", OwlColor);
                     }
                     else if (((string)codes[i].operand).Contains("Why"))
                     {
-                        codes[i].operand = OwlColour + LanguageManager.CurrentLanguage.subtitles.subtitles_mandalore_taunt5 + "</color>";
+                        codes[i].operand = GetSubtitleWithColor("subtitles_mandalore_taunt5", OwlColor);
                     }
                     else if (((string)codes[i].operand).Contains("fucking poison"))
                     {
-                        codes[i].operand = OwlColour + LanguageManager.CurrentLanguage.subtitles.subtitles_mandalore_taunt1 + "</color>";
+                        codes[i].operand = GetSubtitleWithColor("subtitles_mandalore_taunt1", OwlColor);
                     }
                     else if (((string)codes[i].operand).Contains("What"))
                     {
-                        codes[i].operand = MandaloreColour + LanguageManager.CurrentLanguage.subtitles.subtitles_mandalore_intro2 + "</color>";
+                        codes[i].operand = GetSubtitleWithColor("subtitles_mandalore_intro2", MandaloreColor);
                     }
                     else if (((string)codes[i].operand).Contains("Hold still"))
                     {
-                        codes[i].operand = MandaloreColour + LanguageManager.CurrentLanguage.subtitles.subtitles_mandalore_taunt4 + "</color>";
+                        codes[i].operand = GetSubtitleWithColor("subtitles_mandalore_taunt4", MandaloreColor);
                     }
                 }
             }
@@ -90,112 +91,52 @@ namespace UltrakULL.Harmony_Patches.Subtitles
                 {
                     if (((string)codes[i].operand).Contains("now we lost"))
                     {
-                        codes[i].operand = OwlColour + LanguageManager.CurrentLanguage.subtitles.subtitles_mandalore_defeated + "</color>";
+                        codes[i].operand = GetSubtitleWithColor("subtitles_mandalore_defeated", OwlColor);
                     }
                     else if (((string)codes[i].operand).Contains("Full auto"))
                     {
-                        codes[i].operand = WhiteColour + LanguageManager.CurrentLanguage.subtitles.subtitles_mandalore_attack1 + "</color>";
+                        codes[i].operand = GetSubtitleWithColor("subtitles_mandalore_attack1", WhiteColor);
                     } 
                     else if (((string)codes[i].operand).Contains("Fuller auto"))
                     {
-                        codes[i].operand = WhiteColour + LanguageManager.CurrentLanguage.subtitles.subtitles_mandalore_attack2 + "</color>";
+                        codes[i].operand = GetSubtitleWithColor("subtitles_mandalore_attack2", WhiteColor);
                     }
                     else if (((string)codes[i].operand).Contains("Use the salt"))
                     {
-                        codes[i].operand = OwlColour + LanguageManager.CurrentLanguage.subtitles.subtitles_mandalore_phaseChangeThird1 + "</color>";
+                        codes[i].operand = GetSubtitleWithColor("subtitles_mandalore_phaseChangeThird1", OwlColor);
                     }
                     else if (((string)codes[i].operand).Contains("I'm reaching"))
                     {
-                        codes[i].operand = MandaloreColour + LanguageManager.CurrentLanguage.subtitles.subtitles_mandalore_phaseChangeThird2 + "</color>";
+                        codes[i].operand = GetSubtitleWithColor("subtitles_mandalore_phaseChangeThird2", MandaloreColor);
                     }
                     else if (((string)codes[i].operand).Contains("Feel my maximum speed"))
                     {
-                        codes[i].operand = MandaloreColour + LanguageManager.CurrentLanguage.subtitles.subtitles_mandalore_phaseChangeSecond1 + "</color>";
+                        codes[i].operand = GetSubtitleWithColor("subtitles_mandalore_phaseChangeSecond1", MandaloreColor);
                     }
                     else if (((string)codes[i].operand).Contains("Slow down"))
                     {
-                        codes[i].operand = OwlColour + LanguageManager.CurrentLanguage.subtitles.subtitles_mandalore_phaseChangeSecond2 + "</color>";
+                        codes[i].operand = GetSubtitleWithColor("subtitles_mandalore_phaseChangeSecond2", OwlColor);
                     }
                     else if (((string)codes[i].operand).Contains("I increase my speed"))
                     {
-                        codes[i].operand = MandaloreColour + LanguageManager.CurrentLanguage.subtitles.subtitles_mandalore_phaseChangeFirst1 + "</color>";
+                        codes[i].operand = GetSubtitleWithColor("subtitles_mandalore_phaseChangeFirst1", MandaloreColor);
                     }
                     else if (((string)codes[i].operand).Contains("Just fucking"))
                     {
-                        codes[i].operand = OwlColour + LanguageManager.CurrentLanguage.subtitles.subtitles_mandalore_phaseChangeFirst2 + "</color>";
+                        codes[i].operand = GetSubtitleWithColor("subtitles_mandalore_phaseChangeFirst2", OwlColor);
                     }
                 }
             }
             return codes;
         }
-        /*[HarmonyTranspiler]
-        [HarmonyPatch(typeof(Mandalore), "Start")]
-        private static IEnumerable<CodeInstruction> Mandalore_Start(IEnumerable<CodeInstruction> instructions)
+
+        /// <summary>
+        /// Gets a subtitle string from the current language with color tags.
+        /// This is called at runtime (not at IL patch time), so it always uses the current language.
+        /// </summary>
+        private static string GetSubtitleWithColor(string fieldName, string colorHex)
         {
-            var code  = instructions.ToList();
-            var switchOffset = code.FindIndex(instruction => instruction.opcode == Switch);
-
-            // Second argument is an offset from switch IL instruction, it's a constant
-            //NOTE: Don't touch this order. The game won't like it otherwise
-            ReplaceLdstr(switchOffset, 0x03, "subtitles_mandalore_taunt3", MandaloreColor, code); //works
-            ReplaceLdstr(switchOffset, 0x0C, "subtitles_mandalore_taunt2", OwlColor, code); //works
-            ReplaceLdstr(switchOffset, 0x18, "subtitles_mandalore_taunt5", OwlColor, code); //works
-
-            //TODO: Commented out these two lines for now as they're causing crashes. Waiting for Flazhik to investigate and fix.
-            //ReplaceLdstr(switchOffset, 0x22, "subtitles_mandalore_taunt1", OwlColor, code);
-            //ReplaceLdstr(switchOffset, 0x28, "subtitles_mandalore_intro2", MandaloreColor, code);
-
-            //Commented line is the offset when the above two lines are uncommented. Waiting for fix.
-            //ReplaceLdstr(switchOffset, 0x37, "subtitles_mandalore_taunt4", MandaloreColor, code); //works
-            //ReplaceLdstr(switchOffset, 0x2D, "subtitles_mandalore_taunt4", MandaloreColor, code); //works
-
-            return code;
+            return SubtitlesHelper.GetTextWithColor(fieldName, colorHex);
         }
-
-
-        [HarmonyTranspiler]
-        [HarmonyPatch(typeof(Mandalore), "Update")]
-        private static IEnumerable<CodeInstruction> Mandalore_Update(IEnumerable<CodeInstruction> instructions)
-        {
-            var code  = instructions.ToList();
-
-            for (var i = 0; i < code.Count; i++)
-            {
-                if (code[i].opcode != Ldstr)
-                    continue;
-
-                var dialogOption = MandaloreBattleDialogs
-                    .Where(entry => code[i].operand is string str && str.Contains(entry.Key))
-                    .Select(entry => entry.Value)
-                    .FirstOrDefault();
-
-                if (dialogOption == default)
-                    continue;
-
-                ReplaceLdstr(i, 0, dialogOption.Item1, dialogOption.Item2, code);
-                i += ReplacementInstructionsLength - 1;
-            }
-            return code;
-        }
-
-        private static void ReplaceLdstr(int start, int offset, string subtitles, string color, List<CodeInstruction> instructions)
-        {
-            instructions.RemoveAt(start + offset);
-            instructions.InsertRange(start + offset, ReplaceLdstr(subtitles, color));
-        }
-
-        /**
-         * Basically, equivalent to LanguageManager.CurrentLanguage.subtitles.some_subtitles_string + color tags
-         */
-        private static IEnumerable<CodeInstruction> ReplaceLdstr(string subtitles, string color)
-            {
-            return IL(
-            (Ldstr, $"<color=\"#{color}\">"),
-            (Call, Method(typeof(LanguageManager), "get_CurrentLanguage")),
-            (Ldfld, Field(typeof(JsonFormat), "subtitles")),
-            (Ldfld, Field(typeof(json.Subtitles), subtitles)),
-            (Ldstr, "</color>"),
-            (Call, Method(typeof(string), "Concat", new[] { typeof(string), typeof(string), typeof(string) })));
-            }
     }
 }

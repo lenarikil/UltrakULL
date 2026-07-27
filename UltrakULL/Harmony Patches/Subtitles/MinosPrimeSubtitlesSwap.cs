@@ -77,13 +77,13 @@ namespace UltrakULL.Harmony_Patches.Subtitles
 			return list;
 		}
 
-		private static void TraverseCodeAndReplaceSubtitles(string subtitles, List<CodeInstruction> instructions)
+		private static void TraverseCodeAndReplaceSubtitles(string subtitlesKey, List<CodeInstruction> instructions)
 		{
 			for (int i = 0; i < instructions.Count; i++)
 			{
 				if (DisplaySubtitleCall(instructions[i]))
 				{
-					ReplaceLdstr(i - 3, subtitles, instructions);
+					ReplaceLdstr(i - 3, subtitlesKey, instructions);
 					break;
 				}
 			}
@@ -103,15 +103,21 @@ namespace UltrakULL.Harmony_Patches.Subtitles
 			return false;
 		}
 
-		private static void ReplaceLdstr(int offset, string subtitles, List<CodeInstruction> instructions)
+		private static void ReplaceLdstr(int offset, string subtitlesKey, List<CodeInstruction> instructions)
 		{
+			// Preserve branch labels from the original instruction before removing it.
+			List<Label> originalLabels = instructions[offset].labels;
 			instructions.RemoveAt(offset);
-			instructions.InsertRange(offset, ReplaceLdstr(subtitles));
-		}
 
-		private static IEnumerable<CodeInstruction> ReplaceLdstr(string subtitles)
-		{
-			return CommonFunctions.IL((OpCodes.Call, AccessTools.Method(typeof(LanguageManager), "get_CurrentLanguage", (Type[])null, (Type[])null)), (OpCodes.Ldfld, AccessTools.Field(typeof(JsonFormat), "subtitles")), (OpCodes.Ldfld, AccessTools.Field(typeof(UltrakULL.json.Subtitles), subtitles)));
+			CodeInstruction ldstr = new CodeInstruction(OpCodes.Ldstr, subtitlesKey);
+			// Transfer labels to the new Ldstr so any branch targeting this position still works.
+			ldstr.labels.AddRange(originalLabels);
+
+			instructions.InsertRange(offset, new List<CodeInstruction>
+			{
+				ldstr,
+				new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(SubtitlesHelper), nameof(SubtitlesHelper.GetText), new[] { typeof(string) }))
+			});
 		}
 	}
 }

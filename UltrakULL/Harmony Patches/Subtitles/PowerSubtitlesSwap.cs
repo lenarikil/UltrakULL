@@ -35,6 +35,19 @@ namespace UltrakULL.Harmony_Patches.Subtitles
 			}
 		}
 
+		/// <summary>
+		/// Clears all handled clip flags. Should be called when switching languages
+		/// to prevent stale flags from suppressing original subtitles.
+		/// </summary>
+		public static void ClearHandledClips()
+		{
+			lock (CurrentlyHandledPowerClips)
+			{
+				CurrentlyHandledPowerClips.Clear();
+			}
+			Logging.Info("[PowerSubtitlesSwap] Cleared all handled clip flags.");
+		}
+
 		private static bool IsPowerClipBeingHandled(string clipName)
 		{
 			if (string.IsNullOrEmpty(clipName))
@@ -388,36 +401,56 @@ namespace UltrakULL.Harmony_Patches.Subtitles
 			return ReplaceFixedSubtitle(instructions, "power_glaiveThrow");
 		}
 
+		/// <summary>
+		/// Replaces hardcoded subtitle strings in methods that have variant-based subtitles (Intro, Enrage, Taunt, CheapShot).
+		/// Uses SubtitlesHelper.GetText() to fetch the current language's subtitle at runtime.
+		/// Always replaces the Ldstr with a call to SubtitlesHelper.GetText, without checking
+		/// the current language value at IL patch time. This ensures the replacement works
+		/// even if LanguageManager hasn't been initialized yet.
+		/// Explicitly transfers branch labels from the replaced instruction to the new Ldstr.
+		/// </summary>
 		private static IEnumerable<CodeInstruction> ReplaceSubtitleInMethod(IEnumerable<CodeInstruction> instructions, string baseKey)
 		{
 			List<CodeInstruction> list = new List<CodeInstruction>(instructions);
 
-			int num = 0;
 			for (int i = 0; i < list.Count; i++)
 			{
 				if (list[i].opcode == OpCodes.Ldstr && list[i].operand is string text)
 				{
 					int variantIndexFromOriginal = GetVariantIndexFromOriginal(text);
-					string text2 = $"subtitles_{baseKey}_{variantIndexFromOriginal}";
-					string subtitlesFieldSafe = GetSubtitlesFieldSafe(text2);
-					if (!string.IsNullOrEmpty(subtitlesFieldSafe) && subtitlesFieldSafe != text)
+					string subtitleKey = $"subtitles_{baseKey}_{variantIndexFromOriginal}";
+
+					// Preserve branch labels from the original instruction before removing it.
+					List<Label> originalLabels = list[i].labels;
+					list.RemoveAt(i);
+
+					CodeInstruction ldstr = new CodeInstruction(OpCodes.Ldstr, subtitleKey);
+					// Transfer labels to the new Ldstr so any branch targeting this position still works.
+					ldstr.labels.AddRange(originalLabels);
+
+					list.InsertRange(i, new List<CodeInstruction>
 					{
-
-						list[i].operand = subtitlesFieldSafe;
-
-						num++;
-					}
+						ldstr,
+						new CodeInstruction(OpCodes.Call,
+							AccessTools.Method(typeof(SubtitlesHelper), nameof(SubtitlesHelper.GetText), new[] { typeof(string) }))
+					});
+					i++; // Skip the newly inserted Call instruction
 				}
 			}
 
 			return list;
 		}
 
+		/// <summary>
+		/// Replaces hardcoded subtitle strings in methods that have fixed subtitles (Rapier, Greatsword, Spear, etc.).
+		/// Uses SubtitlesHelper.GetText() to fetch the current language's subtitle at runtime.
+		/// Always replaces the Ldstr without checking the current language value at IL patch time.
+		/// Explicitly transfers branch labels from the replaced instruction to the new Ldstr.
+		/// </summary>
 		private static IEnumerable<CodeInstruction> ReplaceFixedSubtitle(IEnumerable<CodeInstruction> instructions, string baseKey)
 		{
 			List<CodeInstruction> list = new List<CodeInstruction>(instructions);
 
-			int num = 0;
 			for (int i = 0; i < list.Count; i++)
 			{
 				if (!(list[i].opcode == OpCodes.Ldstr) || !(list[i].operand is string text))
@@ -425,17 +458,30 @@ namespace UltrakULL.Harmony_Patches.Subtitles
 					continue;
 				}
 
-				if ((!(baseKey == "power_spearThrow") || !(text != "Over here!")) && (!(baseKey == "power_glaiveThrow") || !(text != "Take THIS!")))
+				// For spearThrow and glaiveThrow, only replace the specific matching strings,
+				// leave other Ldstr instructions in those methods untouched.
+				if (baseKey == "power_spearThrow" && text != "Over here!")
+					continue;
+				if (baseKey == "power_glaiveThrow" && text != "Take THIS!")
+					continue;
+
+				string subtitleKey = "subtitles_" + baseKey;
+
+				// Preserve branch labels from the original instruction before removing it.
+				List<Label> originalLabels = list[i].labels;
+				list.RemoveAt(i);
+
+				CodeInstruction ldstr = new CodeInstruction(OpCodes.Ldstr, subtitleKey);
+				// Transfer labels to the new Ldstr so any branch targeting this position still works.
+				ldstr.labels.AddRange(originalLabels);
+
+				list.InsertRange(i, new List<CodeInstruction>
 				{
-					string subtitlesFieldSafe = GetSubtitlesFieldSafe("subtitles_" + baseKey);
-					if (!string.IsNullOrEmpty(subtitlesFieldSafe) && subtitlesFieldSafe != text)
-					{
-
-						list[i].operand = subtitlesFieldSafe;
-
-						num++;
-					}
-				}
+					ldstr,
+					new CodeInstruction(OpCodes.Call,
+						AccessTools.Method(typeof(SubtitlesHelper), nameof(SubtitlesHelper.GetText), new[] { typeof(string) }))
+				});
+				i++; // Skip the newly inserted Call instruction
 			}
 
 			return list;

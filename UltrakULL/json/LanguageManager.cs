@@ -11,6 +11,8 @@ using BepInEx.Logging;
 using Newtonsoft.Json;
 using UltrakULL.audio;
 using UltrakULL.Harmony_Patches;
+using UltrakULL.Harmony_Patches.AudioSwaps;
+using UltrakULL.Harmony_Patches.Subtitles;
 using UnityEngine.SceneManagement;
 using static UltrakULL.CommonFunctions;
 
@@ -423,8 +425,26 @@ namespace UltrakULL.json
                 AudioSwapper.ClearCacheForLanguageChange();
                 AudioPreloadManager.OnLanguageChanged();
 
+                // Clear PowerSubtitlesSwap handled clips to prevent stale flags
+                // from suppressing original subtitles after language change
+                PowerSubtitlesSwap.ClearHandledClips();
+
                 MainPatch.Instance.onSceneLoaded(SceneManager.GetActiveScene(), LoadSceneMode.Single);
                 AudioPreloadManager.PreloadCurrentScene();
+
+                // Re-apply subtitles from SubtitledSourcesConfig to all SubtitledAudioSource objects
+                SubtitledAudioSourcesReplacer.ReplaceSubsAndAudio();
+
+                // Re-apply audio swaps to all existing boss instances
+                AudioPreloadManager.EnsureCurrentScenePreloaded(delegate
+                {
+                    UltrakULL.Harmony_Patches.AudioSwaps.GabrielAudioSwap.RebindExistingInstances();
+                    UltrakULL.Harmony_Patches.AudioSwaps.MinosPrimeAudioSwap.RebindExistingInstances();
+                    UltrakULL.Harmony_Patches.AudioSwaps.SisyphusPrimeAudioSwap.RebindExistingInstances();
+                    UltrakULL.Harmony_Patches.AudioSwaps.MandaloreAudioSwap.RebindExistingInstances();
+                    UltrakULL.Harmony_Patches.AudioSwaps.PowerAudioSwap.RebindExistingInstances();
+                });
+
                 DumpLastLanguage();
 
                 //Patch some leftover components that aren't caught in the main change wave...

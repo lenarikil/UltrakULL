@@ -102,6 +102,30 @@ namespace UltrakULL.Harmony_Patches.AudioSwaps
             return true;
         }
 
+        /// <summary>
+        /// Re-applies audio swaps to all existing Mandalore instances in the scene.
+        /// Called when the language is changed without reloading the scene.
+        /// </summary>
+        public static void RebindExistingInstances()
+        {
+            try
+            {
+                if (LanguageManager.configFile.Bind("General", "activeDubbing", "False").Value == "False" || isUsingEnglish())
+                    return;
+
+                Mandalore[] instances = UnityEngine.Object.FindObjectsOfType<Mandalore>(true);
+                foreach (var instance in instances)
+                {
+                    if (instance == null) continue;
+                    ApplyAudioSwap(instance);
+                }
+            }
+            catch (Exception e)
+            {
+                Logging.Warn("[MandaloreAudioSwap] Exception in RebindExistingInstances: " + e.Message);
+            }
+        }
+
         private static string ResolveClipPath(string clipName, string folder)
         {
             string mappedName;
