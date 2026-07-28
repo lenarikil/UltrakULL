@@ -1,4 +1,6 @@
 ﻿using HarmonyLib;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using UltrakULL.audio;
 using UltrakULL.json;
@@ -11,13 +13,85 @@ namespace UltrakULL.Harmony_Patches.AudioSwaps
     [HarmonyPatch(typeof(MinosPrime),"Start")]
     public class MinosPrimeAudioSwap
     {
+        private static readonly Dictionary<string, AudioClip[]> _savedArrays = new Dictionary<string, AudioClip[]>();
+        private static readonly Dictionary<string, AudioClip> _savedSingles = new Dictionary<string, AudioClip>();
+        private static readonly object _lock = new object();
+
+        private static readonly string[] ArrayFieldNames = {
+            "riderKickVoice", "dropkickVoice", "dropAttackVoice",
+            "boxingVoice", "comboVoice", "hurtVoice"
+        };
+
+        private static void SaveOriginals(MinosPrime instance)
+        {
+            if (instance == null) return;
+            int id = instance.GetInstanceID();
+
+            foreach (string fieldName in ArrayFieldNames)
+            {
+                var field = typeof(MinosPrime).GetField(fieldName);
+                if (field == null) continue;
+                AudioClip[] clips = field.GetValue(instance) as AudioClip[];
+                if (clips == null) continue;
+                string key = $"{id}_{fieldName}";
+                if (!_savedArrays.ContainsKey(key))
+                {
+                    _savedArrays[key] = (AudioClip[])clips.Clone();
+                    Logging.Info($"[MinosPrimeAudioSwap] Saved {clips.Length} original clips for {fieldName} (instance {id})");
+                }
+            }
+
+            string singleKey = $"{id}_phaseChangeVoice";
+            if (!_savedSingles.ContainsKey(singleKey) && instance.phaseChangeVoice != null)
+            {
+                _savedSingles[singleKey] = instance.phaseChangeVoice;
+                Logging.Info($"[MinosPrimeAudioSwap] Saved original phaseChangeVoice '{instance.phaseChangeVoice.name}' (instance {id})");
+            }
+        }
+
+        private static void RestoreOriginals(MinosPrime instance)
+        {
+            if (instance == null) return;
+            int id = instance.GetInstanceID();
+
+            lock (_lock)
+            {
+                foreach (string fieldName in ArrayFieldNames)
+                {
+                    string key = $"{id}_{fieldName}";
+                    if (_savedArrays.TryGetValue(key, out AudioClip[] saved))
+                    {
+                        var field = typeof(MinosPrime).GetField(fieldName);
+                        if (field == null) continue;
+                        AudioClip[] current = field.GetValue(instance) as AudioClip[];
+                        if (current != null && current.Length == saved.Length)
+                        {
+                            Array.Copy(saved, current, saved.Length);
+                            Logging.Info($"[MinosPrimeAudioSwap] Restored {saved.Length} original clips for {fieldName} (instance {id})");
+                        }
+                    }
+                }
+
+                string singleKey = $"{id}_phaseChangeVoice";
+                if (_savedSingles.TryGetValue(singleKey, out AudioClip savedClip))
+                {
+                    instance.phaseChangeVoice = savedClip;
+                    Logging.Info($"[MinosPrimeAudioSwap] Restored phaseChangeVoice '{savedClip.name}' (instance {id})");
+                }
+
+                _savedArrays.Clear();
+                _savedSingles.Clear();
+            }
+        }
+
         [HarmonyPostfix]
         public static void MinosPrime_VoiceSwap(ref MinosPrime __instance)
         {
+            SaveOriginals(__instance);
+
             if(LanguageManager.configFile.Bind("General","activeDubbing","False").Value == "False" || isUsingEnglish())
-            {
                 return;
-            }
+
             MinosPrime instance = __instance;
             AudioPreloadManager.EnsureCurrentScenePreloaded(delegate { ApplyVoiceSwap(instance); });
         }
@@ -28,13 +102,22 @@ namespace UltrakULL.Harmony_Patches.AudioSwaps
         /// </summary>
         public static void RebindExistingInstances()
         {
-            if (LanguageManager.configFile.Bind("General","activeDubbing","False").Value == "False" || isUsingEnglish())
-                return;
-
             MinosPrime[] instances = UnityEngine.Object.FindObjectsOfType<MinosPrime>(true);
+
+            if (LanguageManager.configFile.Bind("General","activeDubbing","False").Value == "False" || isUsingEnglish())
+            {
+                foreach (var instance in instances)
+                {
+                    if (instance == null) continue;
+                    RestoreOriginals(instance);
+                }
+                return;
+            }
+
             foreach (var instance in instances)
             {
                 if (instance == null) continue;
+                SaveOriginals(instance);
                 AudioPreloadManager.EnsureCurrentScenePreloaded(delegate { ApplyVoiceSwap(instance); });
             }
         }

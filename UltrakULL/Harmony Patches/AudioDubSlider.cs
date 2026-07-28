@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using ULTRAKILL;
 using System;
 using UltrakULL.json;
+using UltrakULL.audio;
 using static UltrakULL.CommonFunctions;
 using UltrakULL;
 using SettingsMenu.Components;
@@ -194,6 +195,21 @@ namespace UltrakULL.Harmony_Patches
                             Logging.Info("[AudioDubSlider] Dialogue Dub toggled: " + newValue);
                             updateExtraInteractable(newValue);
                             updateBookInteractable(newValue);
+
+                            if (SceneManager.GetActiveScene().name != "Main Menu")
+                            {
+                                AudioPreloadManager.EnsureCurrentScenePreloaded(delegate
+                                {
+                                    UltrakULL.Harmony_Patches.AudioSwaps.GabrielAudioSwap.RebindExistingInstances();
+                                    UltrakULL.Harmony_Patches.AudioSwaps.GabrielSecondAudioSwap.RebindExistingInstances();
+                                    UltrakULL.Harmony_Patches.AudioSwaps.MinosPrimeAudioSwap.RebindExistingInstances();
+                                    UltrakULL.Harmony_Patches.AudioSwaps.SisyphusPrimeAudioSwap.RebindExistingInstances();
+                                    UltrakULL.Harmony_Patches.AudioSwaps.MandaloreAudioSwap.RebindExistingInstances();
+                                    UltrakULL.Harmony_Patches.AudioSwaps.PowerAudioSwap.RebindExistingInstances();
+                                    UltrakULL.Harmony_Patches.AudioSwaps.PowerIntroSwap.RebindExistingInstances();
+                                    UltrakULL.Harmony_Patches.AudioSwaps.BigJohninatorAudioSwap.RebindExistingInstances();
+                                });
+                            }
                         });
                     }
                     catch (Exception e)

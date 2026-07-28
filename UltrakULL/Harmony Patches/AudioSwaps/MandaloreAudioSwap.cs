@@ -47,6 +47,93 @@ namespace UltrakULL.Harmony_Patches.AudioSwaps
             { "taunt4_mandy", "mandaloreTaunt_HoldStill" },
         };
 
+        private struct VoiceOriginals
+        {
+            public AudioClip secondPhase;
+            public AudioClip thirdPhase;
+            public AudioClip finalPhase;
+            public AudioClip death;
+            public AudioClip[] taunts;
+        }
+
+        private static readonly Dictionary<int, AudioClip> _savedSingleClips = new Dictionary<int, AudioClip>();
+        private static readonly Dictionary<int, Dictionary<int, VoiceOriginals>> _savedVoiceClips = new Dictionary<int, Dictionary<int, VoiceOriginals>>();
+        private static readonly object _lock = new object();
+
+        private static void SaveOriginals(Mandalore instance)
+        {
+            if (instance == null) return;
+            int id = instance.GetInstanceID();
+
+            if (instance.voiceFull != null && !_savedSingleClips.ContainsKey(id * 100 + 0))
+            {
+                _savedSingleClips[id * 100 + 0] = instance.voiceFull;
+                Logging.Info($"[MandaloreAudioSwap] Saved original voiceFull '{instance.voiceFull.name}' (instance {id})");
+            }
+            if (instance.voiceFuller != null && !_savedSingleClips.ContainsKey(id * 100 + 1))
+            {
+                _savedSingleClips[id * 100 + 1] = instance.voiceFuller;
+                Logging.Info($"[MandaloreAudioSwap] Saved original voiceFuller '{instance.voiceFuller.name}' (instance {id})");
+            }
+
+            if (instance.voices == null) return;
+            var voiceDict = new Dictionary<int, VoiceOriginals>();
+            for (int v = 0; v < instance.voices.Length; v++)
+            {
+                if (instance.voices[v] == null) continue;
+                var vo = new VoiceOriginals();
+                if (instance.voices[v].secondPhase != null) vo.secondPhase = instance.voices[v].secondPhase;
+                if (instance.voices[v].thirdPhase != null) vo.thirdPhase = instance.voices[v].thirdPhase;
+                if (instance.voices[v].finalPhase != null) vo.finalPhase = instance.voices[v].finalPhase;
+                if (instance.voices[v].death != null) vo.death = instance.voices[v].death;
+                if (instance.voices[v].taunts != null) vo.taunts = (AudioClip[])instance.voices[v].taunts.Clone();
+                voiceDict[v] = vo;
+                Logging.Info($"[MandaloreAudioSwap] Saved voice[{v}] originals for instance {id}");
+            }
+            if (!_savedVoiceClips.ContainsKey(id))
+                _savedVoiceClips[id] = voiceDict;
+        }
+
+        private static void RestoreOriginals(Mandalore instance)
+        {
+            if (instance == null) return;
+            int id = instance.GetInstanceID();
+
+            lock (_lock)
+            {
+                if (_savedSingleClips.TryGetValue(id * 100 + 0, out AudioClip savedFull))
+                {
+                    instance.voiceFull = savedFull;
+                    Logging.Info($"[MandaloreAudioSwap] Restored voiceFull '{savedFull.name}' (instance {id})");
+                }
+                if (_savedSingleClips.TryGetValue(id * 100 + 1, out AudioClip savedFuller))
+                {
+                    instance.voiceFuller = savedFuller;
+                    Logging.Info($"[MandaloreAudioSwap] Restored voiceFuller '{savedFuller.name}' (instance {id})");
+                }
+                _savedSingleClips.Remove(id * 100 + 0);
+                _savedSingleClips.Remove(id * 100 + 1);
+
+                if (_savedVoiceClips.TryGetValue(id, out var voiceDict) && instance.voices != null)
+                {
+                    foreach (var kvp in voiceDict)
+                    {
+                        int v = kvp.Key;
+                        if (v >= instance.voices.Length || instance.voices[v] == null) continue;
+                        var vo = kvp.Value;
+                        if (vo.secondPhase != null) instance.voices[v].secondPhase = vo.secondPhase;
+                        if (vo.thirdPhase != null) instance.voices[v].thirdPhase = vo.thirdPhase;
+                        if (vo.finalPhase != null) instance.voices[v].finalPhase = vo.finalPhase;
+                        if (vo.death != null) instance.voices[v].death = vo.death;
+                        if (vo.taunts != null && instance.voices[v].taunts != null && vo.taunts.Length == instance.voices[v].taunts.Length)
+                            Array.Copy(vo.taunts, instance.voices[v].taunts, vo.taunts.Length);
+                        Logging.Info($"[MandaloreAudioSwap] Restored voice[{v}] originals (instance {id})");
+                    }
+                    _savedVoiceClips.Remove(id);
+                }
+            }
+        }
+
         [HarmonyTranspiler]
         static IEnumerable<CodeInstruction> MandaloreStartTranspiler(IEnumerable<CodeInstruction> instructions)
         {
@@ -90,6 +177,8 @@ namespace UltrakULL.Harmony_Patches.AudioSwaps
         {
             try
             {
+                SaveOriginals(__instance);
+
                 if (LanguageManager.configFile.Bind("General", "activeDubbing", "False").Value == "False" || isUsingEnglish())
                     return true;
 
@@ -110,13 +199,22 @@ namespace UltrakULL.Harmony_Patches.AudioSwaps
         {
             try
             {
-                if (LanguageManager.configFile.Bind("General", "activeDubbing", "False").Value == "False" || isUsingEnglish())
-                    return;
-
                 Mandalore[] instances = UnityEngine.Object.FindObjectsOfType<Mandalore>(true);
+
+                if (LanguageManager.configFile.Bind("General", "activeDubbing", "False").Value == "False" || isUsingEnglish())
+                {
+                    foreach (var instance in instances)
+                    {
+                        if (instance == null) continue;
+                        RestoreOriginals(instance);
+                    }
+                    return;
+                }
+
                 foreach (var instance in instances)
                 {
                     if (instance == null) continue;
+                    SaveOriginals(instance);
                     ApplyAudioSwap(instance);
                 }
             }
