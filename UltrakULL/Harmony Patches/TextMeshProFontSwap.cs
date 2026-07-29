@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using HarmonyLib;
 using TMPro;
 using UltrakULL.json;
@@ -102,46 +104,197 @@ namespace UltrakULL.Harmony_Patches
 			{
 				if ((objectsFixed.Count <= 0 || !objectsFixed.Contains(___m_CachedPtr)) && Core.TMPFontReady && (!CommonFunctions.isUsingEnglish() || !(CommonFunctions.GetCurrentSceneName() != "Main Menu")))
 				{
-					SwapTMPFont(ref __instance);
+                    SwapTMPFont(ref __instance);
 					objectsFixed.Add(___m_CachedPtr);
 				}
 			}
 		}
 
-		[HarmonyPatch(typeof(HudController))]
+[HarmonyPatch(typeof(HudController))]
 		public static class HudControllerPatch
 		{
-			public static bool isOverlaid = MonoSingleton<PrefsManager>.Instance.GetBool("hudAlwaysOnTop", false);
+			private static readonly FieldInfo m_sharedMaterialField;
 
-			[HarmonyPatch("SetAlwaysOnTop")]
-			[HarmonyPrefix]
-			public static bool SetAlwaysOnTop_Prefix(ref TMP_Text[] ___textElements, bool onTop, Material ___overlayTextMaterial, Material ___normalTextMaterial)
+			static HudControllerPatch()
 			{
+				Type type = typeof(TMP_Text);
+				while (type != null && type != typeof(object))
+				{
+					m_sharedMaterialField = type.GetField("m_sharedMaterial", BindingFlags.NonPublic | BindingFlags.Instance);
+					if (m_sharedMaterialField != null) break;
+					type = type.BaseType;
+				}
+			}
+
+			private static bool? _isOverlaid = null;
+
+			public static bool isOverlaid
+			{
+				get
+				{
+					if (!_isOverlaid.HasValue)
+					{
+						try
+						{
+							_isOverlaid = MonoSingleton<PrefsManager>.Instance.GetBool("hudAlwaysOnTop", false);
+						}
+						catch
+						{
+							_isOverlaid = false;
+						}
+					}
+					return _isOverlaid.Value;
+				}
+				set { _isOverlaid = value; }
+			}
+
+private static Material GetCurrentMaterialSafe(TMP_Text text)
+		{
+			if (text == null)
+				return null;
+			if (m_sharedMaterialField != null)
+			{
+				Material mat = m_sharedMaterialField.GetValue(text) as Material;
+				if (mat != null)
+					return mat;
+			}
+			return text.fontSharedMaterial;
+		}
+
+		private static void CopyUnderlayProps(Material from, Material to)
+		{
+			if (from == null || to == null)
+				return;
+			string[] props = { "_UnderlayColor", "_UnderlayOffset", "_UnderlaySoftness", "_UnderlayDilate" };
+			foreach (var prop in props)
+			{
+				if (from.HasProperty(prop) && to.HasProperty(prop))
+				{
+					if (prop == "_UnderlayColor" || prop == "_UnderlayOffset")
+						to.SetVector(prop, from.GetVector(prop));
+					else
+						to.SetFloat(prop, from.GetFloat(prop));
+				}
+			}
+		}
+
+		private static void ForceRendererUpdate(TMP_Text text, Material mat)
+		{
+			if (text == null || mat == null)
+				return;
+			var canvasRenderer = text.canvasRenderer;
+			if (canvasRenderer != null)
+			{
+				canvasRenderer.materialCount = 1;
+				canvasRenderer.SetMaterial(mat, 0);
+				return;
+			}
+			
+			var meshRenderer = text.GetComponent<MeshRenderer>();
+			if (meshRenderer != null)
+			{
+				Material[] mats = meshRenderer.sharedMaterials;
+				for (int i = 0; i < mats.Length; i++)
+					mats[i] = mat;
+				meshRenderer.sharedMaterials = mats;
+				return;
+			}
+			
+			text.SetMaterialDirty();
+		}
+
+public static void ApplyOverlayZTest(TMP_Text text, bool onTop, Material overlayMat, Material normalMat)
+		{
+			if (text == null)
+				return;
+			Material refMat = onTop ? overlayMat : normalMat;
+			if (refMat == null)
+				return;
+			Material currentMat = GetCurrentMaterialSafe(text);
+			Material newMat = new Material(refMat);
+			newMat.renderQueue = 5000;
+			newMat.SetFloat("_ZTest", onTop ? 8f : 4f);
+			if (currentMat != null && currentMat.HasProperty("_MainTex"))
+			{
+				newMat.SetTexture("_MainTex", currentMat.GetTexture("_MainTex"));
+			}
+			CopyUnderlayProps(currentMat, newMat);
+			
+			text.fontMaterial = newMat;
+			
+			ForceRendererUpdate(text, newMat);
+		}
+
+		[HarmonyPatch("SetAlwaysOnTop")]
+		[HarmonyPrefix]
+		public static bool SetAlwaysOnTop_Prefix(ref TMP_Text[] ___textElements, bool onTop, Material ___overlayTextMaterial, Material ___normalTextMaterial)
+		{
+			try
+			{
+				isOverlaid = onTop;
+
+				HealthBar[] healthBars = UnityEngine.Object.FindObjectsOfType<HealthBar>();
+				Speedometer[] speedometers = UnityEngine.Object.FindObjectsOfType<Speedometer>();
+
+foreach (HealthBar hb in healthBars)
+				{
+					if (hb == null || hb.hpText == null)
+						continue;
+					ApplyOverlayZTest(hb.hpText, onTop, ___overlayTextMaterial, ___normalTextMaterial);
+				}
+
+				foreach (Speedometer spd in speedometers)
+				{
+					if (spd == null || spd.textMesh == null)
+						continue;
+					ApplyOverlayZTest(spd.textMesh, onTop, ___overlayTextMaterial, ___normalTextMaterial);
+				}
+
 				if (CommonFunctions.isUsingEnglish())
 				{
 					return true;
 				}
-				isOverlaid = onTop;
-				if (___textElements.Length != 0)
+
+				if (___textElements != null && ___textElements.Length != 0)
 				{
 					TMP_Text[] array = ___textElements;
 					foreach (TMP_Text val in array)
 					{
-						if (IsBossBarText(val))
-						{
-							TMP_FontAsset bossFont = Core.CustomMainFontTMP ?? Core.GlobalFontTMP;
-							if (bossFont != null)
-								val.font = bossFont;
-							val.fontSharedMaterial = (isOverlaid ? ___overlayTextMaterial : ___normalTextMaterial);
+						if (val == null)
 							continue;
-						}
-						TextMeshProUGUI __instance = ((Component)val).GetComponent<TextMeshProUGUI>();
-						SwapTMPFont(ref __instance, isOverlaid, editOverlayStatus: true);
+						ApplyOverlayZTest(val, onTop, ___overlayTextMaterial, ___normalTextMaterial);
 					}
 				}
-				return false;
+}
+			catch (Exception e)
+			{
+				Logging.Warn("Failed to apply Always On Top font swap");
+				Logging.Warn(e.ToString());
 			}
+			return false;
 		}
+
+		public static void ReapplyOverlayToAll()
+		{
+			var hud = HudController.Instance;
+			if (hud == null) return;
+
+			foreach (var hb in UnityEngine.Object.FindObjectsOfType<HealthBar>())
+			{
+				if (hb?.hpText != null) ApplyOverlayZTest(hb.hpText, true, hud.overlayTextMaterial, hud.normalTextMaterial);
+				// HP Symbol ("+" sign)
+				var hpSymbol = hb.transform.GetComponentsInChildren<TextMeshProUGUI>(true)
+					.FirstOrDefault(t => t != null && (t.name.IndexOf("HP Symbol", StringComparison.OrdinalIgnoreCase) >= 0 || t.name.IndexOf("Plus", StringComparison.OrdinalIgnoreCase) >= 0));
+				if (hpSymbol != null) ApplyOverlayZTest(hpSymbol, true, hud.overlayTextMaterial, hud.normalTextMaterial);
+			}
+
+			foreach (var spd in UnityEngine.Object.FindObjectsOfType<Speedometer>())
+				if (spd?.textMesh != null) ApplyOverlayZTest(spd.textMesh, true, hud.overlayTextMaterial, hud.normalTextMaterial);
+
+			if (!CommonFunctions.isUsingEnglish() && hud.textElements != null)
+				foreach (var t in hud.textElements) if (t != null) ApplyOverlayZTest(t, true, hud.overlayTextMaterial, hud.normalTextMaterial);
+		}
+	}
 
 		[HarmonyPatch(typeof(SubtitleController))]
 		public static class SubtitleFontSwapper
@@ -544,12 +697,80 @@ namespace UltrakULL.Harmony_Patches
                 ApplyTerminalFontScale(tmp);
             }
         }
-        public static void ClearFontSwapCache()
-        {
-            TerminalFontScale = LanguageManager.CurrentLanguage.metadata.tmFontSize;
-            OriginalFontSizes.Clear();
-            //TextMeshProFontSwapper.ClearCache();
-            //TMPFontUtils.ClearMaterialCache();
-        }
-    }
+public static void ClearFontSwapCache()
+		{
+			TerminalFontScale = LanguageManager.CurrentLanguage.metadata.tmFontSize;
+			OriginalFontSizes.Clear();
+			//TextMeshProFontSwapper.ClearCache();
+			//TMPFontUtils.ClearMaterialCache();
+		}
+
+		[HarmonyPatch(typeof(HealthBar), "Start")]
+		public static class HealthBarOverlayPatch
+		{
+			[HarmonyPostfix]
+			public static void Start_Postfix(HealthBar __instance)
+			{
+				if (__instance == null || !HudControllerPatch.isOverlaid)
+					return;
+				var hud = HudController.Instance;
+				if (hud == null)
+					return;
+				
+				if (__instance.hpText != null)
+					HudControllerPatch.ApplyOverlayZTest(__instance.hpText, true, hud.overlayTextMaterial, hud.normalTextMaterial);
+				
+				// Find and patch HP Symbol ("+" sign) - child TMP_Text in hierarchy
+				var hpSymbol = __instance.transform.GetComponentsInChildren<TextMeshProUGUI>(true)
+					.FirstOrDefault(t => t != null && (t.name.IndexOf("HP Symbol", StringComparison.OrdinalIgnoreCase) >= 0 || t.name.IndexOf("Plus", StringComparison.OrdinalIgnoreCase) >= 0));
+				if (hpSymbol != null)
+					HudControllerPatch.ApplyOverlayZTest(hpSymbol, true, hud.overlayTextMaterial, hud.normalTextMaterial);
+			}
+		}
+
+		[HarmonyPatch(typeof(Speedometer), "OnEnable")]
+		public static class SpeedometerOnEnableOverlayPatch
+		{
+			[HarmonyPostfix]
+			public static void OnEnable_Postfix(Speedometer __instance)
+			{
+				if (__instance?.textMesh != null && HudControllerPatch.isOverlaid)
+				{
+					var hud = HudController.Instance;
+					if (hud != null)
+						HudControllerPatch.ApplyOverlayZTest(__instance.textMesh, true, hud.overlayTextMaterial, hud.normalTextMaterial);
+				}
+				if (HudControllerPatch.isOverlaid && !__instance.gameObject.activeSelf)
+					__instance.gameObject.SetActive(true);
+			}
+		}
+
+		[HarmonyPatch(typeof(Speedometer), "OnPrefChanged")]
+		public static class SpeedometerPrefOverlayPatch
+		{
+			[HarmonyPostfix]
+			public static void OnPrefChanged_Postfix(Speedometer __instance, string id, object value)
+			{
+				if (id == "speedometer" && HudControllerPatch.isOverlaid && __instance?.textMesh != null)
+				{
+					var hud = HudController.Instance;
+					if (hud != null)
+						HudControllerPatch.ApplyOverlayZTest(__instance.textMesh, true, hud.overlayTextMaterial, hud.normalTextMaterial);
+				}
+			}
+		}
+
+		[HarmonyPatch(typeof(HudController), "OnPrefChanged")]
+		public static class HudControllerPrefOverlayPatch
+		{
+			[HarmonyPostfix]
+			public static void OnPrefChanged_Postfix(HudController __instance, string key, object value)
+			{
+				if (key == "hudType" && HudControllerPatch.isOverlaid)
+				{
+					HudControllerPatch.ReapplyOverlayToAll();
+				}
+			}
+		}
+	}
 }
