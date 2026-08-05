@@ -118,10 +118,10 @@ namespace UltrakULL
                 calibrationAudioMusic.text = LanguageManager.CurrentLanguage.options.audio_musicVolume;
 
                 TextMeshProUGUI calibrationAudioDone = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(calibrationAudioWindow, "Bone (1)"), "Text"));
-                calibrationAudioDone.text = LanguageManager.CurrentLanguage.shop.shop_colorsDone;
+                calibrationAudioDone.text = LanguageManager.CurrentLanguage.tutorial.tutorial_calibrationDone;
                 
                 TextMeshProUGUI calibrationAudioDoneAlt = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(calibrationAudioWindow, "Done"), "Text"));
-                calibrationAudioDoneAlt.text = LanguageManager.CurrentLanguage.shop.shop_colorsDone;
+                calibrationAudioDoneAlt.text = LanguageManager.CurrentLanguage.tutorial.tutorial_calibrationDone;
 
                 SliderValueToText calibrationAudioMasterSlider = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(calibrationAudioWindow, "Master Volume (1)"), "Button"), "Slider (1)"), "Text (2)").GetComponentInChildren<SliderValueToText>();
 				calibrationAudioMasterSlider.ifMin = LanguageManager.CurrentLanguage.tutorial.tutorial_audioCalibrationSliderOFF;
@@ -281,7 +281,7 @@ namespace UltrakULL
                 autoAimSlider.ifMax = "100";
 
                 TextMeshProUGUI calibrationAssistDone = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(calibrationControllerWindow, "Done"), "Text"));
-                calibrationAssistDone.text = LanguageManager.CurrentLanguage.shop.shop_colorsDone;
+                calibrationAssistDone.text = LanguageManager.CurrentLanguage.tutorial.tutorial_calibrationDone;
 
                 TextMeshProUGUI calibrationControllerAutoAimReminder = GetTextMeshProUGUI(GetGameObjectChild(calibrationControllerWindow, "Text (2)"));
                 calibrationControllerAutoAimReminder.text = LanguageManager.CurrentLanguage.tutorial.tutorial_controllerCalibrationTooltip;
