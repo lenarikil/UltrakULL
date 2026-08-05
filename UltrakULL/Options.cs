@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UltrakULL.Harmony_Patches;
@@ -411,7 +411,7 @@ namespace UltrakULL
                 GameObject assistContent = GetGameObjectChild(GetGameObjectChild(optionsMenu, "Scroll Rect"), "Contents");
                 if (assistContent == null) return;
 
-                SetText(GetGameObjectChild(GetGameObjectChild(assistContent, "-- Minor Assists --"), "Text"), "--" + LanguageManager.CurrentLanguage.options.assists_minor + "--");
+                SetText(GetGameObjectChild(GetGameObjectChild(assistContent, "-- Minor Assists --"), "Text"), "-- " + LanguageManager.CurrentLanguage.options.assists_minor + " --");
                 SetText(GetGameObjectChild(GetGameObjectChild(assistContent, "Auto Aim"), "Text"), LanguageManager.CurrentLanguage.options.assists_autoAim);
                 SetText(GetGameObjectChild(GetGameObjectChild(assistContent, "Auto Aim Amount"), "Text"), LanguageManager.CurrentLanguage.options.assists_autoAimPercent);
 
@@ -442,8 +442,8 @@ namespace UltrakULL
                     TextMeshProUGUI assistsMajorTitle = GetTextMeshProUGUI(GetGameObjectChild(assistsMajorTitleObject, "Text"));
                     if (assistsMajorTitle != null)
                     {
-                        assistsMajorTitle.text = "--" + LanguageManager.CurrentLanguage.options.assists_major + "--";
-                        assistsMajorTitle.fontSize = 20;
+                        assistsMajorTitle.text = "-- " + LanguageManager.CurrentLanguage.options.assists_major + " --";
+                        assistsMajorTitle.fontSize = 24;
                     }
                     SetText(GetGameObjectChild(GetGameObjectChild(assistsMajorTitleObject, "Enable Group"), "Text"), LanguageManager.CurrentLanguage.options.assists_majorActivate);
                 }
@@ -526,7 +526,7 @@ namespace UltrakULL
             GameObject hudContent = GetGameObjectChild(GetGameObjectChild(optionsMenu, "Scroll Rect"), "Contents");
 
             TextMeshProUGUI hudTitle = GetTextMeshProUGUI(GetGameObjectChild(hudContent.transform.GetChild(0).gameObject, "Text"));
-            hudTitle.text = "--" + LanguageManager.CurrentLanguage.options.category_general + "--";
+            hudTitle.text = "-- " + LanguageManager.CurrentLanguage.options.category_general + " --";
 
             TextMeshProUGUI hudTypeText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(hudContent, "HUD Type"), "Text"));
             hudTypeText.text = LanguageManager.CurrentLanguage.options.hud_type;
@@ -565,7 +565,7 @@ namespace UltrakULL
             iconsDropdownListText[1].text = LanguageManager.CurrentLanguage.sandbox.sandbox_shop_pitr;
 
             TextMeshProUGUI hudElements = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(hudContent, "-- Elements --"), "Text"));
-            hudElements.text = "--" + LanguageManager.CurrentLanguage.options.hud_hudElements + "--";
+            hudElements.text = "-- " + LanguageManager.CurrentLanguage.options.hud_hudElements + " --";
 
             TextMeshProUGUI weaponIconText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(hudContent, "Weapon Icon"), "Text"));
             weaponIconText.text = LanguageManager.CurrentLanguage.options.hud_weaponIcon;
@@ -596,7 +596,7 @@ namespace UltrakULL
             //Crosshair settings
 
             TextMeshProUGUI crosshairTitle = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(hudContent, "-- Crosshair --"),"Text"));
-            crosshairTitle.text = "--" + LanguageManager.CurrentLanguage.options.crosshair_title + "--";
+            crosshairTitle.text = "-- " + LanguageManager.CurrentLanguage.options.crosshair_title + " --";
 
             TextMeshProUGUI crosshairTypeText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(hudContent, "Type"), "Text"));
             crosshairTypeText.text = LanguageManager.CurrentLanguage.options.crosshair_type;
