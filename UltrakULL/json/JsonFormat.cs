@@ -2537,6 +2537,7 @@ namespace UltrakULL.json
         public string tutorial_calibrationAudio;
         public string tutorial_calibrationVideo;
         public string tutorial_calibrationMechanics;
+		public string tutorial_calibrationDone;
         public string tutorial_calibrationComplete1;
         public string tutorial_calibrationComplete2;
         public string tutorial_introReminder1;
@@ -3631,6 +3632,7 @@ namespace UltrakULL.json
         public string sandbox_shop_mapBorder;
 
         public string sandbox_shop_iconsTitle;
+		public string sandbox_menu_default;
         public string sandbox_shop_default;
         public string sandbox_shop_pitr;
     }
