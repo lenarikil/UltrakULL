@@ -266,7 +266,7 @@ namespace UltrakULL
                 GameObject graphicsContent = GetGameObjectChild(GetGameObjectChild(optionsMenu, "Scroll Rect"), "Contents");
                 if (graphicsContent == null) return;
 
-                SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "-- General --"), "Text"), "--" + LanguageManager.CurrentLanguage.options.category_general + "--");
+                SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "-- General --"), "Text"), "-- " + LanguageManager.CurrentLanguage.options.category_general + " --");
                 SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "Resolution"), "Text"), LanguageManager.CurrentLanguage.options.graphics_resolution);
                 SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "Fullscreen"), "Text"), LanguageManager.CurrentLanguage.options.graphics_fullscreen);
                 SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "Target Framerate"), "Text"), LanguageManager.CurrentLanguage.options.graphics_maxFps);
@@ -283,7 +283,7 @@ namespace UltrakULL
                 SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "Gamma (Brightness)"), "Text"), LanguageManager.CurrentLanguage.options.graphics_gamma);
                 SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "Use Fallback Shaders (Requires Reload)"), "Text"), LanguageManager.CurrentLanguage.options.graphics_useFallbackShaders);
 
-                SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "-- PSX --"), "Text"), "--" + LanguageManager.CurrentLanguage.options.graphics_filters + "--\n<size=16>"
+                SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "-- PSX --"), "Text"), "-- " + LanguageManager.CurrentLanguage.options.graphics_filters + " --\n<size=16>"
                                             + LanguageManager.CurrentLanguage.options.graphics_filtersDescription + "</size>");
 
                 SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "Downscaling"), "Text"), LanguageManager.CurrentLanguage.options.graphics_pixelisation);
@@ -334,7 +334,7 @@ namespace UltrakULL
                     SetDropdownText(colorCompressionDropdown, 5, LanguageManager.CurrentLanguage.options.graphics_colorCompressionAbsurd);
                 }
 
-                SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "-- Performance --"), "Text"), "--" + LanguageManager.CurrentLanguage.options.graphics_performance + "--");
+                SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "-- Performance --"), "Text"), "-- " + LanguageManager.CurrentLanguage.options.graphics_performance + " --");
                 SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "Simpler Explosions"), "Text"), LanguageManager.CurrentLanguage.options.graphics_performanceSimpleExplosions);
                 SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "Simpler Fire"), "Text"), LanguageManager.CurrentLanguage.options.graphics_performanceSimpleFire);
                 SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "Simpler Spawn Effects"), "Text"), LanguageManager.CurrentLanguage.options.graphics_performanceSimpleSpawn);
@@ -342,7 +342,7 @@ namespace UltrakULL
                 SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "Disable Environmental Hit Particles"), "Text"), LanguageManager.CurrentLanguage.options.graphics_performanceDisableEnviHitParticles);
                 SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "Disable Heat Waves"), "Text"), LanguageManager.CurrentLanguage.options.graphics_performanceDisableHeatWaves);
 
-                SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "-- Gore --"), "Text"), "--" + LanguageManager.CurrentLanguage.options.graphics_gore + "--\n<size=16>"
+                SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "-- Gore --"), "Text"), "-- " + LanguageManager.CurrentLanguage.options.graphics_gore + " --\n<size=16>"
                     + LanguageManager.CurrentLanguage.options.graphics_goreNote + "</size>");
                 SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "Enable Blood & Gore"), "Text"), LanguageManager.CurrentLanguage.options.graphics_goreEnable);
                 SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "Freeze Gore Physics"), "Text"), LanguageManager.CurrentLanguage.options.graphics_goreDisablePhysics);
@@ -666,7 +666,7 @@ namespace UltrakULL
             GameObject colorsHudObject = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(optionsMenu, "Scroll Rect"), "Contents"), "HUD");
 
             TextMeshProUGUI colorsHudText = GetTextMeshProUGUI(colorsHudObject);
-            colorsHudText.text = "--" + LanguageManager.CurrentLanguage.options.colors_hud.ToUpper() + "--";
+            colorsHudText.text = "-- " + LanguageManager.CurrentLanguage.options.colors_hud.ToUpper() + " --";
 
             TextMeshProUGUI colorsHudHealthText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsHudObject, "Health"), "Text"));
             colorsHudHealthText.text = LanguageManager.CurrentLanguage.options.colors_hudHealth.ToUpper();
@@ -715,7 +715,7 @@ namespace UltrakULL
             GameObject colorsEnemiesObject = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(optionsMenu, "Scroll Rect"), "Contents"), "Enemies");
 
             TextMeshProUGUI colorsEnemiesText = GetTextMeshProUGUI(colorsEnemiesObject);
-            colorsEnemiesText.text = "--" + LanguageManager.CurrentLanguage.options.colors_enemies.ToUpper() + "--";
+            colorsEnemiesText.text = "-- " + LanguageManager.CurrentLanguage.options.colors_enemies.ToUpper() + " --";
 
             TextMeshProUGUI colorsEnemiesFilthText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsEnemiesObject, "Filth"), "Text"));
             colorsEnemiesFilthText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_filth.ToUpper();
