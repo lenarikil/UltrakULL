@@ -1226,7 +1226,7 @@
     "hud_typeStandard": "STANDARD",
     "hud_typeClassicColor": "CLASSIC COLOR",
     "hud_typeClassicWhite": "CLASSIC WHITE",
-    "hud_hudElements": " ELEMENTS ",
+    "hud_hudElements": "ELEMENTS",
     "hud_backgroundOpacity": "BACKGROUND OPACITY",
     "hud_backgroundOpacityMinimum": "NONE",
     "hud_backgroundOpacityMaximum": "100% BLACK",
