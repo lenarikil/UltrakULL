@@ -1337,6 +1337,7 @@ namespace UltrakULL.Harmony_Patches
 
                 if (type == "sprite")
                 {
+					loaded.filterMode = FilterMode.Bilinear;
                     float ppu = loaded.height;
                     var sprite = Sprite.Create(
                         loaded,
