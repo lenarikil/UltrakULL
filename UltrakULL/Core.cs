@@ -166,7 +166,7 @@ namespace UltrakULL
 
                 //Title
                 TextMeshProUGUI pauseText = GetTextMeshProUGUI(GetGameObjectChild(pauseMenu, "Text"));
-                pauseText.text = "-- " + LanguageManager.CurrentLanguage.pauseMenu.pause_title + " --";
+                pauseText.text = LanguageManager.CurrentLanguage.pauseMenu.pause_title;
 
                 //Resume
                 TextMeshProUGUI continueText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(pauseMenu, "Resume"), "Text"));
