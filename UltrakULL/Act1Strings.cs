@@ -19,6 +19,19 @@ namespace UltrakULL
                 PreviousHudMessage = LanguageManager.CurrentLanguage.act1.act1_limboFirst_nailgun1 + "<color=orange>" + input + "</color>" + LanguageManager.CurrentLanguage.act1.act1_limboFirst_nailgun2 + "\n" + LanguageManager.CurrentLanguage.act1.act1_limboFirst_nailgun3;
                 return LanguageManager.CurrentLanguage.act1.act1_limboFirst_nailgun1 + "<color=orange>" + input + "</color>" + LanguageManager.CurrentLanguage.act1.act1_limboFirst_nailgun2 + "\n" + LanguageManager.CurrentLanguage.act1.act1_limboFirst_nailgun3;
             }
+            //Fix for view error hud messages, only for 1-1. For some reason, it's the only one level that doesn't show these messages - it show last message instead a error message; on all the other ones, door and punch errors are shown normally.
+			if (fullMessage.Contains("ERROR"))
+			{
+				PreviousHudMessage = "<color=red>" + LanguageManager.CurrentLanguage.misc.hud_itemGrabError + "</color>";
+                return "<color=red>" + LanguageManager.CurrentLanguage.misc.hud_itemGrabError + "</color>";
+            }
+			if (fullMessage.Contains("PUNCH"))
+			{
+				PreviousHudMessage = "<color=red>" + LanguageManager.CurrentLanguage.misc.hud_noArm1 + "</color>\n"
+                    + LanguageManager.CurrentLanguage.misc.hud_noArm2;
+                return "<color=red>" + LanguageManager.CurrentLanguage.misc.hud_noArm1 + "</color>\n"
+                    + LanguageManager.CurrentLanguage.misc.hud_noArm2;
+            }
 
             //Band-aid fix
             return PreviousHudMessage;
