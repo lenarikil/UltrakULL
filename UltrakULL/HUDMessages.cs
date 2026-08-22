@@ -176,8 +176,8 @@ namespace UltrakULL
 
             //Close prompt when reading book
             TextBinds bookPanelBinds = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(canvasObj, "ScanningStuff"), "ReadingScanned"), "Panel"), "Text (1)").GetComponent<TextBinds>();
-            bookPanelBinds.text1 = LanguageManager.CurrentLanguage.books.books_pressToClose1 + " <color=orange>";
-            bookPanelBinds.text2 = "</color> " + LanguageManager.CurrentLanguage.books.books_pressToClose2;
+            bookPanelBinds.text1 = LanguageManager.CurrentLanguage.books.books_pressToClose1 + "<color=orange>";
+            bookPanelBinds.text2 = "</color>" + LanguageManager.CurrentLanguage.books.books_pressToClose2;
 
             if (currentLevel.Contains("7-3")) // Feed It Message
             {
