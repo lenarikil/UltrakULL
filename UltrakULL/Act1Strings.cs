@@ -32,6 +32,13 @@ namespace UltrakULL
                 return "<color=red>" + LanguageManager.CurrentLanguage.misc.hud_noArm1 + "</color>\n"
                     + LanguageManager.CurrentLanguage.misc.hud_noArm2;
             }
+			if (fullMessage.Contains("200"))
+			{
+				PreviousHudMessage = LanguageManager.CurrentLanguage.misc.hud_overhealOrb1 + "\n"
+                    + LanguageManager.CurrentLanguage.misc.hud_overhealOrb2;
+                return LanguageManager.CurrentLanguage.misc.hud_overhealOrb1 + "\n"
+                    + LanguageManager.CurrentLanguage.misc.hud_overhealOrb2;
+            }
 
             //Band-aid fix
             return PreviousHudMessage;
