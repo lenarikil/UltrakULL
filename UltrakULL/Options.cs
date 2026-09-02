@@ -561,7 +561,7 @@ namespace UltrakULL
             TMP_Dropdown iconsDropdown = iconsObject.GetComponentInChildren<TMP_Dropdown>();
             List<TMP_Dropdown.OptionData> iconsDropdownListText = iconsDropdown.options;
 
-            iconsDropdownListText[0].text = LanguageManager.CurrentLanguage.sandbox.sandbox_menu_default;
+            iconsDropdownListText[0].text = LanguageManager.CurrentLanguage.sandbox.sandbox_shop_default.ToUpper();
             iconsDropdownListText[1].text = LanguageManager.CurrentLanguage.sandbox.sandbox_shop_pitr;
 
             TextMeshProUGUI hudElements = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(hudContent, "-- Elements --"), "Text"));
