@@ -2733,8 +2733,6 @@ namespace UltrakULL.json
 
         public string act2_greedSecret_transactionComplete1;
         public string act2_greedSecret_transactionComplete2;
-		public string act2_greedSecret_transactionCompleteOne;
-        public string act2_greedSecret_transactionCompleteSec;
 
         public string act2_greed_secretDoor;
 
@@ -3476,8 +3474,6 @@ namespace UltrakULL.json
         public string endstats_assistsUsed;
         public string endstats_noRestarts;
         public string endstats_restarts;
-		public string endstats_second;
-		public string endstats_many;
         public string endstats_noDamage;
 
         public string weapons_unavailable;
