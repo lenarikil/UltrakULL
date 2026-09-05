@@ -1,4 +1,4 @@
-﻿using UltrakULL.json;
+using UltrakULL.json;
 using static UltrakULL.CommonFunctions;
 
 namespace UltrakULL
@@ -127,7 +127,7 @@ namespace UltrakULL
                 + LanguageManager.CurrentLanguage.intermission.act2_intermission_third7 + " ▼\n\n"
 
                 + LanguageManager.CurrentLanguage.intermission.act2_intermission_third8 + " ▼" + LanguageManager.CurrentLanguage.intermission.act2_intermission_third9 + " ▼" +
-                LanguageManager.CurrentLanguage.intermission.act2_intermission_third10 + "▼";
+                LanguageManager.CurrentLanguage.intermission.act2_intermission_third10 + " ▼";
 
             this.act2IntermissionFourth =
             LanguageManager.CurrentLanguage.intermission.act2_intermission_fourth1 + " ▼" + LanguageManager.CurrentLanguage.intermission.act2_intermission_fourth2
@@ -140,7 +140,7 @@ namespace UltrakULL
             + LanguageManager.CurrentLanguage.intermission.act2_intermission_fourth8 + " \n\n"
 
             + LanguageManager.CurrentLanguage.intermission.act2_intermission_fourth9 + " ▼" + LanguageManager.CurrentLanguage.intermission.act2_intermission_fourth10 + " ▼"
-            + LanguageManager.CurrentLanguage.intermission.act2_intermission_fourth11 + LanguageManager.CurrentLanguage.intermission.act2_intermission_fourth12 + " ▼\n\n"
+            + LanguageManager.CurrentLanguage.intermission.act2_intermission_fourth11 + " " + LanguageManager.CurrentLanguage.intermission.act2_intermission_fourth12 + " ▼\n\n"
 
             + LanguageManager.CurrentLanguage.intermission.act2_intermission_fourth13 + " ▼";
 
@@ -148,7 +148,7 @@ namespace UltrakULL
                 LanguageManager.CurrentLanguage.intermission.act2_intermission_fifth1 + " ▼\n\n"
                 + LanguageManager.CurrentLanguage.intermission.act2_intermission_fifth2 + " ▼" + LanguageManager.CurrentLanguage.intermission.act2_intermission_fifth3 + " ▼\n\n"
 
-                + "...▼\n\n"
+                + "... ▼\n\n"
 
                 + LanguageManager.CurrentLanguage.intermission.act2_intermission_fifth4 + " ▼\n\n"
 

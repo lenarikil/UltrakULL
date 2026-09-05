@@ -390,7 +390,7 @@ namespace UltrakULL.Harmony_Patches
                     { "Level 8-4", new Dictionary<string, (string, string)> { { "SignWarning", ("SignWarning", "texture") }, { "CityoftheDeadSunPoster", ("CityoftheDeadSunPoster", "texture") }, { "devtextureoops", ("devtextureoops", "texture") } } },
                     { "Level 0-E", new Dictionary<string, (string, string)> { { "exit", ("exit", "texture") }, { "abandonhope2", ("abandonhope2", "texture") }, { "SignSecurityInstructions", ("SignSecurityInstructions", "texture") }, { "SignWarning", ("SignWarning", "texture") }, { "SignCoolingChamber", ("SignCoolingChamber", "texture") }, { "SignSecurityLockdown", ("SignSecurityLockdown", "texture") }, { "SignSecurityCheckpoint", ("SignSecurityCheckpoint", "texture") } } },
                     { "uk_construct", new Dictionary<string, (string, string)> { { "garry", ("garry", "sprite") } } },
-                    { "CreditsMuseum2", new Dictionary<string, (string, string)> { { "sign_map_Texture_2", ("sign_map_Texture_К2", "texture") }, { "poster", ("poster", "texture") }, { "Staff only sign_texture", ("Staff only sign_texture", "texture") } } }
+                    { "CreditsMuseum2", new Dictionary<string, (string, string)> { { "sign_map_Texture_2", ("sign_map_Texture_2", "texture") }, { "poster", ("poster", "texture") }, { "Staff only sign_texture", ("Staff only sign_texture", "texture") } } }
             };
 
             initialized = true;
@@ -1337,6 +1337,7 @@ namespace UltrakULL.Harmony_Patches
 
                 if (type == "sprite")
                 {
+					loaded.filterMode = FilterMode.Bilinear;
                     float ppu = loaded.height;
                     var sprite = Sprite.Create(
                         loaded,
