@@ -348,13 +348,13 @@ namespace UltrakULL
 			switch ((int)weaponState)
 			{
 			case 0:
-				return LanguageManager.CurrentLanguage.style.style_weaponFresh + ": 1.50X";
+				return LanguageManager.CurrentLanguage.style.style_weaponFresh + ": 1.50x";
 			case 1:
-				return LanguageManager.CurrentLanguage.style.style_weaponUsed + ": 1.00X";
+				return LanguageManager.CurrentLanguage.style.style_weaponUsed + ": 1.00x";
 			case 2:
-				return LanguageManager.CurrentLanguage.style.style_weaponStale + ": 0.50X";
+				return LanguageManager.CurrentLanguage.style.style_weaponStale + ": 0.50x";
 			case 3:
-				return LanguageManager.CurrentLanguage.style.style_weaponDull + ": 0.00X";
+				return LanguageManager.CurrentLanguage.style.style_weaponDull + ": 0.00x";
 			default:
 				Logging.Warn("Missing weapon states detected");
 				return "Unknown state";
