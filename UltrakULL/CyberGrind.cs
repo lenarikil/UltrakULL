@@ -36,10 +36,10 @@ namespace UltrakULL
 
             //Patch all the strings here.
             Text waveText = GetTextfromGameObject(GetGameObjectChild(cgBoard, "Wave Title"));
-            waveText.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_wave +  ":";
+            waveText.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_wave;
 
             Text enemiesLeftText = GetTextfromGameObject(GetGameObjectChild(cgBoard, "Enemies Left Title"));
-            enemiesLeftText.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_enemiesRemaining + ":";
+            enemiesLeftText.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_enemiesRemaining;
 
         }
 

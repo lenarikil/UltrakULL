@@ -29,6 +29,7 @@ namespace UltrakULL.json
         #region Helper Properties
         public static bool IsRightToLeft { get => CurrentLanguage.metadata.langRTL; }
         public static bool UsingHinduNumbers { get => CurrentLanguage.metadata.langHinduNumbers; }
+        public static float rankHeight { get => CurrentLanguage.metadata.rankHeight; }
         #endregion
 
         public static void InitializeManager()

@@ -35,7 +35,7 @@ namespace UltrakULL
 			}
 			if (text.Contains("ALTERNATE SHOTGUN"))
 			{
-				return "<color=orange>" + LanguageManager.CurrentLanguage.act3.act3_violenceSecond_alternateShotgun;
+				return LanguageManager.CurrentLanguage.act3.act3_violenceSecond_alternateShotgun;
 			}
 			return "Unimplemented string";
 		}

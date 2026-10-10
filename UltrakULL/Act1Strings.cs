@@ -16,12 +16,13 @@ namespace UltrakULL
             }
             if (fullMessage.Contains("NAILGUN"))
             {
-                PreviousHudMessage = "<color=#40E7FF>" + LanguageManager.CurrentLanguage.act1.act1_limboFirst_nailgun1 + "<color=orange>" + input + "</color>" + LanguageManager.CurrentLanguage.act1.act1_limboFirst_nailgun2 + "\n" + LanguageManager.CurrentLanguage.act1.act1_limboFirst_nailgun3;
+                PreviousHudMessage = LanguageManager.CurrentLanguage.act1.act1_limboFirst_nailgun1 + "<color=orange>" + input + "</color>" + LanguageManager.CurrentLanguage.act1.act1_limboFirst_nailgun2 + "\n" + LanguageManager.CurrentLanguage.act1.act1_limboFirst_nailgun3;
                 return LanguageManager.CurrentLanguage.act1.act1_limboFirst_nailgun1 + "<color=orange>" + input + "</color>" + LanguageManager.CurrentLanguage.act1.act1_limboFirst_nailgun2 + "\n" + LanguageManager.CurrentLanguage.act1.act1_limboFirst_nailgun3;
             }
 
-            //Band-aid fix
-            return PreviousHudMessage;
+            //Band-aid fix, nvm it breaks hud messages on level
+            //return PreviousHudMessage;
+			return ("Unimplemented string");
         }
         //1-2 - The Burning World
         private static string Level12(string message, string message2)
@@ -63,7 +64,7 @@ namespace UltrakULL
 
             if (fullMessage.Contains("ALTERNATE REVOLVER"))
             {
-                return "<color=orange>" + LanguageManager.CurrentLanguage.act1.act1_limboFourth_alternateRevolver;
+                return LanguageManager.CurrentLanguage.act1.act1_limboFourth_alternateRevolver;
             }
 
             if (fullMessage.Contains("EQUIPPED"))
@@ -90,7 +91,7 @@ namespace UltrakULL
             string fullMessage = message + message2;
             if (fullMessage.Contains("KNUCKLE"))
             {
-                return ("<color=red>" + LanguageManager.CurrentLanguage.act1.act1_lustFirst_knuckleblaster1 + "<color=orange>"+input+"</color>" + LanguageManager.CurrentLanguage.act1.act1_lustFirst_knuckleblaster2);
+                return (LanguageManager.CurrentLanguage.act1.act1_lustFirst_knuckleblaster1 + "<color=orange>"+input+"</color>" + LanguageManager.CurrentLanguage.act1.act1_lustFirst_knuckleblaster2);
             }
             if (fullMessage.Contains("DASH"))
             {
@@ -109,7 +110,7 @@ namespace UltrakULL
             }
             if (fullMessage.Contains("RAILCANNON"))
             {
-                return ("<color=#40E7FF>" + LanguageManager.CurrentLanguage.act1.act1_lustSecond_railcannon);
+                return (LanguageManager.CurrentLanguage.act1.act1_lustSecond_railcannon);
             }
             if (fullMessage.Contains("CHECKPOINTS"))
             {

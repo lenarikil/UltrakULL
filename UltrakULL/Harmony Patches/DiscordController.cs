@@ -35,7 +35,7 @@ namespace UltrakULL.Harmony_Patches
                     }
                     else if (splitDetails[0] == "WAVE:")
                     {
-                        ___cachedActivity.Details = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_wave + ": " + splitDetails[1];
+                        ___cachedActivity.Details = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_wave + " " + splitDetails[1];
                     }
                 }
                 //To shut up the compiler warning that the exception was declared but never used :D

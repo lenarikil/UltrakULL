@@ -79,7 +79,7 @@ namespace UltrakULL
 
             TextMeshProUGUI sandboxShopTimeOfDayLoading =
                 GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(sandboxShopTimeOfDay, "Panel"), "Loading"), "Title"));
-            sandboxShopTimeOfDayLoading.text = LanguageManager.CurrentLanguage.misc.loading;
+            sandboxShopTimeOfDayLoading.text = LanguageManager.CurrentLanguage.misc.loading + "...";
 
             TextMeshProUGUI sandboxShopTimeOfDayClose = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(sandboxShopTimeOfDay, "Panel"), "Close Button"),"Text"));
             sandboxShopTimeOfDayClose.text = LanguageManager.CurrentLanguage.options.save_close;

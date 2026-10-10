@@ -1296,6 +1296,7 @@ namespace UltrakULL.json
         public string minimumModVersion;
         public bool langHinduNumbers;
         public int tmFontSize = 100;
+		public float rankHeight = 0.0f;
         public FontsMetadata fonts = new FontsMetadata();
     }
 

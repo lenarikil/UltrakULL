@@ -1,4 +1,4 @@
-﻿using HarmonyLib;
+using HarmonyLib;
 using UltrakULL.json;
 using UnityEngine;
 using UnityEngine.UI;
@@ -55,6 +55,33 @@ namespace UltrakULL.Harmony_Patches
 					TextMeshProUGUI componentInChildren3 = __instance.challengeIcon.GetComponentInChildren<TextMeshProUGUI>();
 					componentInChildren3.text = String.Join(" ", LanguageManager.CurrentLanguage.frontend.level_challenge.ToList()); //Challenge not completed
 					componentInChildren3.color = Color.white;
+				}
+
+				//Fix and config to rank height in menu level choose
+				if (__instance.transform != null)
+				{
+					Transform statsTransform = __instance.transform.Find("Stats");
+					if (statsTransform != null)
+					{
+						Transform rankTransform = statsTransform.Find("Rank");
+						if (rankTransform != null)
+						{
+							TextMeshProUGUI rankText = rankTransform.GetComponentInChildren<TextMeshProUGUI>();
+							if (rankText != null)
+							{
+								rankText.verticalAlignment = VerticalAlignmentOptions.Middle;
+								rankText.alignment = TextAlignmentOptions.Center;
+
+								float baseMargin = LanguageManager.rankHeight != 0f ? LanguageManager.rankHeight : 0.0f;
+
+								bool isPrimeLevel = num == 666 || (__instance.transform.parent != null && __instance.transform.parent.name.Contains("Prime"));
+
+								float finalMargin = isPrimeLevel ? (baseMargin + 3.0f) : baseMargin;
+
+								rankText.margin = new Vector4(rankText.margin.x, 0f, rankText.margin.z, finalMargin);
+							}
+						}
+					}
 				}
 			}
 			catch (Exception e)

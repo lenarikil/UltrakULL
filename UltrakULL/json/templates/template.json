@@ -7,7 +7,8 @@
     "langRTL": false,
     "minimumModVersion": "1.3.0",
     "langHinduNumbers": false,
-    "tmFontSize": 0,
+    "tmFontSize": 100,
+    "rankHeight": 0.0,
     "fonts": {
       "MainFont": "",
       "MuseumFont": "",

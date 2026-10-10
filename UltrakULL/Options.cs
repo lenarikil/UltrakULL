@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UltrakULL.Harmony_Patches;
@@ -266,7 +266,7 @@ namespace UltrakULL
                 GameObject graphicsContent = GetGameObjectChild(GetGameObjectChild(optionsMenu, "Scroll Rect"), "Contents");
                 if (graphicsContent == null) return;
 
-                SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "-- General --"), "Text"), "--" + LanguageManager.CurrentLanguage.options.category_general + "--");
+                SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "-- General --"), "Text"), "-- " + LanguageManager.CurrentLanguage.options.category_general + " --");
                 SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "Resolution"), "Text"), LanguageManager.CurrentLanguage.options.graphics_resolution);
                 SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "Fullscreen"), "Text"), LanguageManager.CurrentLanguage.options.graphics_fullscreen);
                 SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "Target Framerate"), "Text"), LanguageManager.CurrentLanguage.options.graphics_maxFps);
@@ -283,7 +283,7 @@ namespace UltrakULL
                 SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "Gamma (Brightness)"), "Text"), LanguageManager.CurrentLanguage.options.graphics_gamma);
                 SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "Use Fallback Shaders (Requires Reload)"), "Text"), LanguageManager.CurrentLanguage.options.graphics_useFallbackShaders);
 
-                SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "-- PSX --"), "Text"), "--" + LanguageManager.CurrentLanguage.options.graphics_filters + "--\n<size=16>"
+                SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "-- PSX --"), "Text"), "-- " + LanguageManager.CurrentLanguage.options.graphics_filters + " --\n<size=16>"
                                             + LanguageManager.CurrentLanguage.options.graphics_filtersDescription + "</size>");
 
                 SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "Downscaling"), "Text"), LanguageManager.CurrentLanguage.options.graphics_pixelisation);
@@ -334,7 +334,7 @@ namespace UltrakULL
                     SetDropdownText(colorCompressionDropdown, 5, LanguageManager.CurrentLanguage.options.graphics_colorCompressionAbsurd);
                 }
 
-                SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "-- Performance --"), "Text"), "--" + LanguageManager.CurrentLanguage.options.graphics_performance + "--");
+                SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "-- Performance --"), "Text"), "-- " + LanguageManager.CurrentLanguage.options.graphics_performance + " --");
                 SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "Simpler Explosions"), "Text"), LanguageManager.CurrentLanguage.options.graphics_performanceSimpleExplosions);
                 SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "Simpler Fire"), "Text"), LanguageManager.CurrentLanguage.options.graphics_performanceSimpleFire);
                 SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "Simpler Spawn Effects"), "Text"), LanguageManager.CurrentLanguage.options.graphics_performanceSimpleSpawn);
@@ -342,7 +342,7 @@ namespace UltrakULL
                 SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "Disable Environmental Hit Particles"), "Text"), LanguageManager.CurrentLanguage.options.graphics_performanceDisableEnviHitParticles);
                 SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "Disable Heat Waves"), "Text"), LanguageManager.CurrentLanguage.options.graphics_performanceDisableHeatWaves);
 
-                SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "-- Gore --"), "Text"), "--" + LanguageManager.CurrentLanguage.options.graphics_gore + "--\n<size=16>"
+                SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "-- Gore --"), "Text"), "-- " + LanguageManager.CurrentLanguage.options.graphics_gore + " --\n<size=16>"
                     + LanguageManager.CurrentLanguage.options.graphics_goreNote + "</size>");
                 SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "Enable Blood & Gore"), "Text"), LanguageManager.CurrentLanguage.options.graphics_goreEnable);
                 SetText(GetGameObjectChild(GetGameObjectChild(graphicsContent, "Freeze Gore Physics"), "Text"), LanguageManager.CurrentLanguage.options.graphics_goreDisablePhysics);
@@ -411,7 +411,7 @@ namespace UltrakULL
                 GameObject assistContent = GetGameObjectChild(GetGameObjectChild(optionsMenu, "Scroll Rect"), "Contents");
                 if (assistContent == null) return;
 
-                SetText(GetGameObjectChild(GetGameObjectChild(assistContent, "-- Minor Assists --"), "Text"), "--" + LanguageManager.CurrentLanguage.options.assists_minor + "--");
+                SetText(GetGameObjectChild(GetGameObjectChild(assistContent, "-- Minor Assists --"), "Text"), "-- " + LanguageManager.CurrentLanguage.options.assists_minor + " --");
                 SetText(GetGameObjectChild(GetGameObjectChild(assistContent, "Auto Aim"), "Text"), LanguageManager.CurrentLanguage.options.assists_autoAim);
                 SetText(GetGameObjectChild(GetGameObjectChild(assistContent, "Auto Aim Amount"), "Text"), LanguageManager.CurrentLanguage.options.assists_autoAimPercent);
 
@@ -442,8 +442,8 @@ namespace UltrakULL
                     TextMeshProUGUI assistsMajorTitle = GetTextMeshProUGUI(GetGameObjectChild(assistsMajorTitleObject, "Text"));
                     if (assistsMajorTitle != null)
                     {
-                        assistsMajorTitle.text = "--" + LanguageManager.CurrentLanguage.options.assists_major + "--";
-                        assistsMajorTitle.fontSize = 20;
+                        assistsMajorTitle.text = "-- " + LanguageManager.CurrentLanguage.options.assists_major + " --";
+                        assistsMajorTitle.fontSize = 24;
                     }
                     SetText(GetGameObjectChild(GetGameObjectChild(assistsMajorTitleObject, "Enable Group"), "Text"), LanguageManager.CurrentLanguage.options.assists_majorActivate);
                 }
@@ -526,7 +526,7 @@ namespace UltrakULL
             GameObject hudContent = GetGameObjectChild(GetGameObjectChild(optionsMenu, "Scroll Rect"), "Contents");
 
             TextMeshProUGUI hudTitle = GetTextMeshProUGUI(GetGameObjectChild(hudContent.transform.GetChild(0).gameObject, "Text"));
-            hudTitle.text = "--" + LanguageManager.CurrentLanguage.options.category_general + "--";
+            hudTitle.text = "-- " + LanguageManager.CurrentLanguage.options.category_general + " --";
 
             TextMeshProUGUI hudTypeText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(hudContent, "HUD Type"), "Text"));
             hudTypeText.text = LanguageManager.CurrentLanguage.options.hud_type;
@@ -561,11 +561,11 @@ namespace UltrakULL
             TMP_Dropdown iconsDropdown = iconsObject.GetComponentInChildren<TMP_Dropdown>();
             List<TMP_Dropdown.OptionData> iconsDropdownListText = iconsDropdown.options;
 
-            iconsDropdownListText[0].text = LanguageManager.CurrentLanguage.sandbox.sandbox_shop_default;
+            iconsDropdownListText[0].text = LanguageManager.CurrentLanguage.sandbox.sandbox_shop_default.ToUpper();
             iconsDropdownListText[1].text = LanguageManager.CurrentLanguage.sandbox.sandbox_shop_pitr;
 
             TextMeshProUGUI hudElements = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(hudContent, "-- Elements --"), "Text"));
-            hudElements.text = "--" + LanguageManager.CurrentLanguage.options.hud_hudElements + "--";
+            hudElements.text = "-- " + LanguageManager.CurrentLanguage.options.hud_hudElements + " --";
 
             TextMeshProUGUI weaponIconText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(hudContent, "Weapon Icon"), "Text"));
             weaponIconText.text = LanguageManager.CurrentLanguage.options.hud_weaponIcon;
@@ -596,7 +596,7 @@ namespace UltrakULL
             //Crosshair settings
 
             TextMeshProUGUI crosshairTitle = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(hudContent, "-- Crosshair --"),"Text"));
-            crosshairTitle.text = "--" + LanguageManager.CurrentLanguage.options.crosshair_title + "--";
+            crosshairTitle.text = "-- " + LanguageManager.CurrentLanguage.options.crosshair_title + " --";
 
             TextMeshProUGUI crosshairTypeText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(hudContent, "Type"), "Text"));
             crosshairTypeText.text = LanguageManager.CurrentLanguage.options.crosshair_type;
@@ -666,7 +666,7 @@ namespace UltrakULL
             GameObject colorsHudObject = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(optionsMenu, "Scroll Rect"), "Contents"), "HUD");
 
             TextMeshProUGUI colorsHudText = GetTextMeshProUGUI(colorsHudObject);
-            colorsHudText.text = "--" + LanguageManager.CurrentLanguage.options.colors_hud.ToUpper() + "--";
+            colorsHudText.text = "-- " + LanguageManager.CurrentLanguage.options.colors_hud.ToUpper() + " --";
 
             TextMeshProUGUI colorsHudHealthText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsHudObject, "Health"), "Text"));
             colorsHudHealthText.text = LanguageManager.CurrentLanguage.options.colors_hudHealth.ToUpper();
@@ -715,7 +715,7 @@ namespace UltrakULL
             GameObject colorsEnemiesObject = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(optionsMenu, "Scroll Rect"), "Contents"), "Enemies");
 
             TextMeshProUGUI colorsEnemiesText = GetTextMeshProUGUI(colorsEnemiesObject);
-            colorsEnemiesText.text = "--" + LanguageManager.CurrentLanguage.options.colors_enemies.ToUpper() + "--";
+            colorsEnemiesText.text = "-- " + LanguageManager.CurrentLanguage.options.colors_enemies.ToUpper() + " --";
 
             TextMeshProUGUI colorsEnemiesFilthText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(colorsEnemiesObject, "Filth"), "Text"));
             colorsEnemiesFilthText.text = LanguageManager.CurrentLanguage.enemyNames.enemyname_filth.ToUpper();
