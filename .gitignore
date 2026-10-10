@@ -385,11 +385,11 @@ nuget.exe
 UltrakULL/UltrakULL.csproj.lscache
 .codeassistant/mcp.json
 UltrakULL/.logs/LogOutput.log
-.kilo/kilo.jsonc
-.kilo/agents/code-reviewer.md
-.kilo/agents/code-simplifier.md
-.kilo/agents/code-skeptic.md
-.kilo/skills/agent-md-refactor/LICENSE
-.kilo/skills/agent-md-refactor/README.md
 .kilo/skills/agent-md-refactor/SKILL.md
+.kilo/skills/agent-md-refactor/README.md
+.kilo/skills/agent-md-refactor/LICENSE
+.kilo/agents/code-skeptic.md
+.kilo/agents/code-simplifier.md
+.kilo/agents/code-reviewer.md
+.kilo/kilo.jsonc
 AGENTS.md
