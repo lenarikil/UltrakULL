@@ -228,6 +228,16 @@ namespace UltrakULL.Harmony_Patches
 								hud.normalTextMaterial,
 								forceManagedShadow: true);
 					}
+					else if (HudControllerPatch.isOverlaid && HudControllerPatch.IsStyleHudText(__instance.transform))
+					{
+						var hud = HudController.Instance;
+						if (hud != null)
+							HudControllerPatch.ApplyOverlayZTest(
+								__instance,
+								true,
+								hud.overlayTextMaterial,
+								hud.normalTextMaterial);
+					}
 				}
 			}
 		}
@@ -587,6 +597,35 @@ Material refMat = onTop ? overlayMat : normalMat;
 			}
 		}
 
+		public static bool IsStyleHudText(Transform target)
+		{
+			return target != null && target.GetComponentInParent<StyleHUD>() != null;
+		}
+
+		// Style meter texts (multiplier, style info, bonus list) live under the
+		// StyleHUD hierarchy. They are not part of HudController.textElements, so
+		// they need the same Always On Top overlay treatment as health/speedometer.
+		public static void ApplyOverlayToStyleHudTexts(
+			bool onTop,
+			Material overlayMat,
+			Material normalMat,
+			HashSet<TMP_Text> processedTexts = null)
+		{
+			foreach (StyleHUD styleHud in UnityEngine.Object.FindObjectsOfType<StyleHUD>())
+			{
+				if (styleHud == null)
+					continue;
+				foreach (TMP_Text text in styleHud.GetComponentsInChildren<TMP_Text>(true))
+				{
+					if (text == null || TMPShadowTwin.IsShadowGraphic(text))
+						continue;
+					if (processedTexts != null && !processedTexts.Add(text))
+						continue;
+					ApplyOverlayZTest(text, onTop, overlayMat, normalMat, forceManagedShadow: false);
+				}
+			}
+		}
+
 		[HarmonyPatch("SetAlwaysOnTop")]
 		[HarmonyPrefix]
 		public static bool SetAlwaysOnTop_Prefix(ref TMP_Text[] ___textElements, bool onTop, Material ___overlayTextMaterial, Material ___normalTextMaterial)
@@ -620,6 +659,8 @@ Material refMat = onTop ? overlayMat : normalMat;
 							forceManagedShadow: true
 						);
 				}
+
+				ApplyOverlayToStyleHudTexts(onTop, ___overlayTextMaterial, ___normalTextMaterial, processedTexts);
 
 				if (___textElements != null && ___textElements.Length != 0)
 				{
@@ -670,6 +711,8 @@ Material refMat = onTop ? overlayMat : normalMat;
 							hud.normalTextMaterial,
 							forceManagedShadow: true
 						);
+
+			ApplyOverlayToStyleHudTexts(onTop, hud.overlayTextMaterial, hud.normalTextMaterial, processedTexts);
 
 			if (!CommonFunctions.isUsingEnglish() && hud.textElements != null)
 				foreach (var t in hud.textElements)
