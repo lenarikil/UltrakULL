@@ -7,6 +7,7 @@ namespace UltrakULL.Harmony_Patches
 	public sealed class TMPOverlayShadowFallback : MonoBehaviour
 	{
 		private Shadow generatedShadow;
+		private Shadow cachedShadow;
 		private TextMeshProUGUI sourceText;
 
 		public static void Set(TextMeshProUGUI text, bool enabled, Vector2 distance)
@@ -64,7 +65,12 @@ namespace UltrakULL.Harmony_Patches
 			if (sourceText == null)
 				sourceText = GetComponent<TextMeshProUGUI>();
 
-			Shadow shadow = generatedShadow != null ? generatedShadow : GetComponent<Shadow>();
+			Shadow shadow = generatedShadow != null ? generatedShadow : cachedShadow;
+			if (shadow == null)
+			{
+				cachedShadow = GetComponent<Shadow>();
+				shadow = cachedShadow;
+			}
 			if (shadow == null)
 				return;
 

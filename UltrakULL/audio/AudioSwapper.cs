@@ -26,6 +26,15 @@ namespace UltrakULL.audio
             public Action<AudioClip> Callback;
         }
 
+        // Holds the result of a background path enumeration so the coroutine can
+        // observe completion without a blocking wait on the main thread.
+        private class PathEnumerationState
+        {
+            public List<string> Paths;
+            public Exception Error;
+            public volatile bool Done;
+        }
+
         private static CoroutineHost coroutineHost;
         private static readonly Dictionary<string, string> resolvedFileCache = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         private static readonly Dictionary<string, AudioClip> clipCache = new Dictionary<string, AudioClip>(StringComparer.OrdinalIgnoreCase);
@@ -114,7 +123,7 @@ namespace UltrakULL.audio
                     return;
                 }
 
-                IEnumerable<string> paths = Directory.GetFiles(folderPath, "*.*", SearchOption.TopDirectoryOnly)
+                IEnumerable<string> paths = Directory.EnumerateFiles(folderPath, "*.*", SearchOption.TopDirectoryOnly)
                     .Where(IsSupportedAudioFile);
                 PreloadPathsAsync(paths, onComplete);
             }
@@ -133,15 +142,52 @@ namespace UltrakULL.audio
                 return;
             }
 
-            List<string> paths = audioPaths
-                .Where(path => !string.IsNullOrEmpty(path))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToList();
+            EnsureHost();
+            coroutineHost.StartCoroutine(PreloadPathsCoroutine(audioPaths, onComplete));
+        }
 
-            if (paths.Count == 0)
+        /// <summary>
+        /// Materializes the path list on a worker thread (directory scans and LINQ can be
+        /// expensive) and then starts clip loading on the main thread.
+        /// </summary>
+        private static IEnumerator PreloadPathsCoroutine(IEnumerable<string> audioPaths, Action onComplete)
+        {
+            var state = new PathEnumerationState();
+
+            System.Threading.ThreadPool.QueueUserWorkItem(_ =>
+            {
+                try
+                {
+                    state.Paths = audioPaths
+                        .Where(path => !string.IsNullOrEmpty(path))
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .ToList();
+                }
+                catch (Exception e)
+                {
+                    state.Error = e;
+                }
+                finally
+                {
+                    state.Done = true;
+                }
+            });
+
+            while (!state.Done)
+                yield return null;
+
+            if (state.Error != null)
+            {
+                Logging.Warn("[AudioSwap] Failed to enumerate audio paths: " + state.Error.Message);
+                onComplete?.Invoke();
+                yield break;
+            }
+
+            List<string> paths = state.Paths;
+            if (paths == null || paths.Count == 0)
             {
                 onComplete?.Invoke();
-                return;
+                yield break;
             }
 
             int remaining = paths.Count;
@@ -198,12 +244,6 @@ namespace UltrakULL.audio
                          ", hasVirtualAudioFilter=" + (virtualFilter != null));
         }
 
-        public static bool TryResolveReplacementPath(string audioFilePath, out string resolvedPath)
-        {
-            resolvedPath = ResolveAudioFilePath(audioFilePath);
-            return !string.IsNullOrEmpty(resolvedPath);
-        }
-
         private static IEnumerator LoadClipCoroutine(string filePath, AudioClip fallback, int generation)
         {
             AudioType type = TryGetAudioType(filePath);
@@ -215,7 +255,8 @@ namespace UltrakULL.audio
             }
 
             string fileUrl = "file://" + filePath;
-            Logging.Message("Async swapping: " + fileUrl);
+            if (Logging.Verbose)
+                Logging.Message("Async swapping: " + fileUrl);
 
             using (var req = UnityWebRequestMultimedia.GetAudioClip(fileUrl, type))
             {
@@ -259,77 +300,6 @@ namespace UltrakULL.audio
                 try { pending.Callback?.Invoke(clip ?? pending.Fallback); }
                 catch (Exception e) { Logging.Warn("[AudioSwap] Completion callback failed: " + e.Message); }
             }
-        }
-
-        /// <summary>
-        /// Synchronous fallback kept for compatibility. Try to avoid calling this on the main thread.
-        /// </summary>
-        public static AudioClip SwapClipWithFile(AudioClip sourceClip, string audioFilePath)
-        {
-            if (isUsingEnglish())
-                return sourceClip;
-
-            string filePath = ResolveAudioFilePath(audioFilePath);
-            if (string.IsNullOrEmpty(filePath))
-            {
-                WarnMissingOnce(audioFilePath);
-                return sourceClip;
-            }
-
-            AudioClip cachedClip;
-            if (clipCache.TryGetValue(filePath, out cachedClip) && cachedClip != null)
-                return cachedClip;
-
-            AudioType type = TryGetAudioType(filePath);
-            if (type == AudioType.UNKNOWN)
-            {
-                Logging.Warn("[AudioSwap] Unsupported audio type: " + filePath);
-                return sourceClip;
-            }
-
-            string fileUrl = "file://" + filePath;
-            Logging.Message("Swapping (sync fallback): " + fileUrl);
-
-            UnityWebRequest req = null;
-            try
-            {
-                req = UnityWebRequestMultimedia.GetAudioClip(fileUrl, type);
-                var op = req.SendWebRequest();
-                while (!op.isDone)
-                    System.Threading.Thread.Sleep(1);
-
-#if UNITY_2020_1_OR_NEWER
-                if (req.result != UnityWebRequest.Result.Success)
-#else
-#pragma warning disable 0618
-                if (req.isNetworkError || req.isHttpError)
-#pragma warning restore 0618
-#endif
-                {
-                    Logging.Warn(req.error + "\n Expected path: " + filePath);
-                }
-                else
-                {
-                    var newClip = DownloadHandlerAudioClip.GetContent(req);
-                    if (newClip != null)
-                    {
-                        clipCache[filePath] = newClip;
-                        sourceClip = newClip;
-                    }
-                }
-            }
-            catch (Exception err)
-            {
-                Logging.Warn("Failed to swap " + audioFilePath);
-                Logging.Warn(err.Message + ", " + err.StackTrace);
-            }
-            finally
-            {
-                if (req != null)
-                    req.Dispose();
-            }
-
-            return sourceClip;
         }
 
         public static AudioType TryGetAudioType(string path)

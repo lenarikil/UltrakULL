@@ -36,7 +36,31 @@ namespace UltrakULL.json
         {
             LoadLanguages();
 
-            configFile = new ConfigFile(Path.Combine(Paths.ConfigPath, "ultrakull", "lastLang.cfg"), true);
+            string configDir = Path.Combine(Paths.ConfigPath, "ultrakull");
+            string configPath = Path.Combine(configDir, "Settings.cfg");
+            string legacyConfigPath = Path.Combine(configDir, "lastLang.cfg");
+
+            // Migrate the previous config name so existing settings survive the rename.
+            string activeConfigPath = configPath;
+            try
+            {
+                if (!File.Exists(configPath) && File.Exists(legacyConfigPath))
+                {
+                    File.Move(legacyConfigPath, configPath);
+                    jsonLogger.Log(LogLevel.Info, "Migrated lastLang.cfg to Settings.cfg");
+                }
+            }
+            catch (Exception ex)
+            {
+                // If the rename fails, keep using the old file so settings are never lost.
+                jsonLogger.Log(LogLevel.Warning, "Failed to migrate lastLang.cfg to Settings.cfg: " + ex.Message);
+                if (File.Exists(legacyConfigPath))
+                    activeConfigPath = legacyConfigPath;
+            }
+
+            configFile = new ConfigFile(activeConfigPath, true);
+
+            UltrakULLConfig.Register(configFile);
 
             string value = configFile.Bind("General", "LastLanguage", "en-GB").Value;
             string dubValue = configFile.Bind("General", "activeDubbing", "False").Value;

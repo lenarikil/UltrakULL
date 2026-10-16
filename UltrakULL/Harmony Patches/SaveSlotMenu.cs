@@ -40,7 +40,7 @@ namespace UltrakULL.Harmony_Patches
                         TextMeshProUGUI dupeSaveText = mergeConsentMessage.GetComponent<TextMeshProUGUI>();
                         dupeSaveText.text = dupeSaveConsentText;
                     }
-                    GameObject quitButtonTextObject = GetGameObjectChild(GetGameObjectChild(mergeConsentMessage, "Button Wrapper"), "Quit Button");
+                    GameObject quitButtonTextObject = mergeConsentMessage.FindPath("Button Wrapper", "Quit Button");
                     try
                     {
                         Text quitButtonText = quitButtonTextObject.GetComponentInChildren<Text>();

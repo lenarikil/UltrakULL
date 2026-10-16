@@ -94,7 +94,7 @@ namespace UltrakULL
         {
             try
             {
-                GameObject deathScreen = GetGameObjectChild(GetGameObjectChild(canvasObj, "BlackScreen"), "YouDiedText");
+                GameObject deathScreen = canvasObj.FindPath("BlackScreen", "YouDiedText");
                 //Need to disable the TextOverride component.
                 Component[] test = deathScreen.GetComponents(typeof(Component));
                 Behaviour bhvr = (Behaviour)test[3];
@@ -103,24 +103,24 @@ namespace UltrakULL
                 //why only EarlyAccessEnd?
                 if (GetCurrentSceneName() == "EarlyAccessEnd")
                 {
-                    GetTextMeshProUGUI(deathScreen).text = LanguageManager.CurrentLanguage.misc.youDied1 + "\n\n\n\n\n" + LanguageManager.CurrentLanguage.misc.youDied2;
+                    deathScreen.TMP().text = LanguageManager.CurrentLanguage.misc.youDied1 + "\n\n\n\n\n" + LanguageManager.CurrentLanguage.misc.youDied2;
                 }
                 else
                 {
                     try
                     {
-                        Text youDiedText = GetTextfromGameObject(deathScreen);
+                        Text youDiedText = deathScreen.Text();
                         youDiedText.text = LanguageManager.CurrentLanguage.misc.youDied1 + "\n\n\n\n\n" + LanguageManager.CurrentLanguage.misc.youDied2;
                     }
                     catch
                     {
                         Logging.Warn("Failed to patch deathScreen");
                         Logging.Warn("trying to get TextMeshProUGUI component.");
-                        GetTextMeshProUGUI(deathScreen).text = LanguageManager.CurrentLanguage.misc.youDied1 + "\n\n\n\n\n" + LanguageManager.CurrentLanguage.misc.youDied2;
+                        deathScreen.TMP().text = LanguageManager.CurrentLanguage.misc.youDied1 + "\n\n\n\n\n" + LanguageManager.CurrentLanguage.misc.youDied2;
                     }
                 }
-                GameObject deathSequence = GetGameObjectChild(GetGameObjectChild(canvasObj, "DeathSequence"), "Text (TMP)");
-                TextMeshProUGUI deathSequenceText = GetTextMeshProUGUI(deathSequence);
+                GameObject deathSequence = canvasObj.FindPath("DeathSequence", "Text (TMP)");
+                TextMeshProUGUI deathSequenceText = deathSequence.TMP();
                 deathSequenceText.text = LanguageManager.CurrentLanguage.misc.DeathSequence;
             }
             catch (Exception e)
@@ -136,52 +136,52 @@ namespace UltrakULL
         {
             string currentLevel = GetCurrentSceneName();
             GameObject player = GameObject.Find("Player");
-            GameObject styleMeter = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(player, "Main Camera"), "HUD Camera"), "HUD"), "StyleCanvas"), "Panel (1)"), "Panel"), "Text (1)"), "Text");
-            TextMeshProUGUI styleMeterMultiplierText = GetTextMeshProUGUI(styleMeter);
+            GameObject styleMeter = player.FindPath("Main Camera", "HUD Camera", "HUD", "StyleCanvas", "Panel (1)", "Panel", "Text (1)", "Text");
+            TextMeshProUGUI styleMeterMultiplierText = styleMeter.TMP();
             styleMeterMultiplierText.text = LanguageManager.CurrentLanguage.style.stylemeter_multiplier;
 
             //Classic HUD
-            GameObject classicHudBw = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(canvasObj, "Crosshair Filler"), "AltHud"), "Filler");
-            GameObject classicHudColor = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(canvasObj, "Crosshair Filler"), "AltHud (2)"), "Filler");
+            GameObject classicHudBw = canvasObj.FindPath("Crosshair Filler", "AltHud", "Filler");
+            GameObject classicHudColor = canvasObj.FindPath("Crosshair Filler", "AltHud (2)", "Filler");
 
-            TextMeshProUGUI classicHudBwHealth = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(classicHudBw, "Health"), "Title"));
-            TextMeshProUGUI classicHudColorHealth = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(classicHudColor, "Health (1)"), "Title"));
+            TextMeshProUGUI classicHudBwHealth = classicHudBw.FindPath("Health", "Title").TMP();
+            TextMeshProUGUI classicHudColorHealth = classicHudColor.FindPath("Health (1)", "Title").TMP();
             classicHudBwHealth.text = LanguageManager.CurrentLanguage.misc.classicHud_health;
             classicHudColorHealth.text = LanguageManager.CurrentLanguage.misc.classicHud_health;
 
-            TextMeshProUGUI classicHudBwStamina = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(classicHudBw, "Stamina"), "Title"));
-            TextMeshProUGUI classicHudColorStamina = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(classicHudColor, "Stamina (1)"), "Title"));
+            TextMeshProUGUI classicHudBwStamina = classicHudBw.FindPath("Stamina", "Title").TMP();
+            TextMeshProUGUI classicHudColorStamina = classicHudColor.FindPath("Stamina (1)", "Title").TMP();
             classicHudBwStamina.text = LanguageManager.CurrentLanguage.misc.classicHud_stamina;
             classicHudColorStamina.text = LanguageManager.CurrentLanguage.misc.classicHud_stamina;
 
-            TextMeshProUGUI classicHudBwWeapon = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(classicHudBw, "Weapon"), "Title"));
-            TextMeshProUGUI classicHudColorWeapon = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(classicHudColor, "Weapon (1)"), "Title"));
+            TextMeshProUGUI classicHudBwWeapon = classicHudBw.FindPath("Weapon", "Title").TMP();
+            TextMeshProUGUI classicHudColorWeapon = classicHudColor.FindPath("Weapon (1)", "Title").TMP();
             classicHudBwWeapon.text = LanguageManager.CurrentLanguage.misc.classicHud_weapon;
             classicHudColorWeapon.text = LanguageManager.CurrentLanguage.misc.classicHud_weapon;
 
-            TextMeshProUGUI classicHudBwArm = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(classicHudBw, "Arm"), "Title"));
-            TextMeshProUGUI classicHudColorArm = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(classicHudColor, "Arm (1)"), "Title"));
+            TextMeshProUGUI classicHudBwArm = classicHudBw.FindPath("Arm", "Title").TMP();
+            TextMeshProUGUI classicHudColorArm = classicHudColor.FindPath("Arm (1)", "Title").TMP();
             classicHudBwArm.text = LanguageManager.CurrentLanguage.misc.classicHud_arm;
             classicHudColorArm.text = LanguageManager.CurrentLanguage.misc.classicHud_arm;
 
-            TextMeshProUGUI classicHudBwRailcannon = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(classicHudBw, "RailcannonMeter (1)"), "Title"));
-            TextMeshProUGUI classicHudColorRailcannon = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(classicHudColor, "RailcannonMeter (2)"), "Title"));
+            TextMeshProUGUI classicHudBwRailcannon = classicHudBw.FindPath("RailcannonMeter (1)", "Title").TMP();
+            TextMeshProUGUI classicHudColorRailcannon = classicHudColor.FindPath("RailcannonMeter (2)", "Title").TMP();
             classicHudBwRailcannon.text = LanguageManager.CurrentLanguage.misc.classicHud_railcannonMeter;
             classicHudColorRailcannon.text = LanguageManager.CurrentLanguage.misc.classicHud_railcannonMeter;
 
-            TextMeshProUGUI classicHudBwSpeedometer = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(classicHudBw, "Speedometer"), "Title"));
-            TextMeshProUGUI classicHudColorSpeedometer = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(classicHudColor, "Speedometer"), "Title"));
+            TextMeshProUGUI classicHudBwSpeedometer = classicHudBw.FindPath("Speedometer", "Title").TMP();
+            TextMeshProUGUI classicHudColorSpeedometer = classicHudColor.FindPath("Speedometer", "Title").TMP();
             classicHudBwSpeedometer.text = LanguageManager.CurrentLanguage.misc.classicHud_speed;
             classicHudColorSpeedometer.text = LanguageManager.CurrentLanguage.misc.classicHud_speed;
 
             //Close prompt when reading book
-            TextBinds bookPanelBinds = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(canvasObj, "ScanningStuff"), "ReadingScanned"), "Panel"), "Text (1)").GetComponent<TextBinds>();
+            TextBinds bookPanelBinds = canvasObj.FindPath("ScanningStuff", "ReadingScanned", "Panel", "Text (1)").GetComponent<TextBinds>();
             bookPanelBinds.text1 = LanguageManager.CurrentLanguage.books.books_pressToClose1 + "<color=orange>";
             bookPanelBinds.text2 = "</color>" + LanguageManager.CurrentLanguage.books.books_pressToClose2;
 
             if (currentLevel.Contains("7-3")) // Feed It Message
             {
-                GameObject feedItMessage = GetGameObjectChild(canvasObj, "Feed It");
+                GameObject feedItMessage = canvasObj.Child("Feed It");
                 feedItMessage.GetComponent<TextMeshProUGUI>().text = "<color=red>" + LanguageManager.CurrentLanguage.act3.act3_violenceThird_feedIt + "</color>";
                 feedItMessage.GetComponent<ScrollingText>().message = "<color=red>" + LanguageManager.CurrentLanguage.act3.act3_violenceThird_feedIt + "</color>";
             }

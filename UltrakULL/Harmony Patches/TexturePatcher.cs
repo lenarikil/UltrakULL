@@ -32,14 +32,44 @@ namespace UltrakULL.Harmony_Patches
 		private static Dictionary<string, Texture2D> batchOriginCache = new Dictionary<string, Texture2D>();
 		private static MonoBehaviour coroutineStarter;
 		private static Dictionary<string, Texture2D> currentReplacements;
+
+		// Remembers resolved texture-name lookups for the current replacement set so the
+		// per-property lookup (and its ToLower() fallback allocation) only runs once per name.
+		private static readonly Dictionary<string, Texture2D> replacementResolutionCache = new Dictionary<string, Texture2D>();
 		private static string currentLevel = string.Empty;
-		private static Coroutine backgroundCheckCoroutine;
 		private static bool isProcessing = false;
 		private static CancellationTokenSource cancellationTokenSource;
 		private static Dictionary<string, Sprite> rankSprites = new Dictionary<string, Sprite>();
 		private static readonly HashSet<int> processedObjectIds = new HashSet<int>();
 		private static readonly HashSet<int> processedRawImages = new HashSet<int>();
 		private static Coroutine backgroundChecker;
+
+		// Time (ms) the scene/UI replacement passes may spend on the main thread
+		// before yielding a frame. Keeps scene loads and late activations smooth.
+		// Defaults are placeholders overwritten by LoadPerformanceConfig (Auto tuning).
+		private static float texturePatchFrameBudgetMs = 8f;
+		private static float initialPassFrameBudgetMs = 24f;
+
+		// Late-activation handling: game events enqueue the objects they activate,
+		// a budgeted drain coroutine patches their subtrees immediately.
+		private static readonly Queue<GameObject> pendingActivationRoots = new Queue<GameObject>();
+		private static bool activationDrainRunning = false;
+		private static bool activationHooksEnabled = true;
+
+		// Background rescan fallback (catches activations the hooks cannot see).
+		private static bool rescanEnabled = true;
+		private static float rescanIntervalSecondsOverride = 0f;
+		private static bool performanceConfigLoaded = false;
+		
+		// Cache for all materials to avoid repeated FindObjectsOfTypeAll (expensive on low-end hardware).
+		private static List<Material> cachedAllMaterials = null;
+		private static bool materialCacheValid = false;
+		
+		// Deferred texture destruction queue to spread GC spikes over multiple frames.
+		// Time-based: destroys 1 texture every N seconds (configurable), completely decoupled from frame budget.
+		private static readonly Queue<Texture2D> pendingTextureDestruction = new Queue<Texture2D>();
+		private static Coroutine destructionDrainCoroutine = null;
+		private static float textureDestructionIntervalSeconds = 3f; // Default: 1 texture per 3 seconds
 		
 		// Emgu CV: disable fallback on type/native DLL load errors
 		private static bool emguCvAvailable = true;
@@ -87,22 +117,6 @@ namespace UltrakULL.Harmony_Patches
 		// Cache for found batch textures: level -> batch name -> texture
 		private static readonly Dictionary<string, Dictionary<string, Texture2D>> batchTextureCache =
 			new Dictionary<string, Dictionary<string, Texture2D>>();
-		
-		// Cache for found regions: texture+template hash -> region
-		private static readonly Dictionary<string, Rect> regionCache =
-			new Dictionary<string, Rect>();
-		
-		// Manual region coordinates from manual_regions.json
-		private static Dictionary<string, Dictionary<string, Rect>> manualRegions =
-			new Dictionary<string, Dictionary<string, Rect>>();
-		
-		// Flag to disable debug output of all textures (very expensive operation)
-		private const bool EnableDebugTextureListing = false;
-		
-		// Optimization: pre-scaling for fast search
-		private const bool UseScaledPreSearch = true;  // Fast search on downscaled texture
-		private const int PreSearchScale = 2;		   // Downscale by 2 for speed
-		private const float PreSearchThreshold = 0.6f;  // Slightly lower for pre-search
 		
 		// Parallel processing: max threads for Emgu CV
 		// Keep 2 for compatibility with minimum requirements (2-core CPU).
@@ -337,6 +351,24 @@ namespace UltrakULL.Harmony_Patches
 		// Loaded custom icon sprites: iconKey -> Sprite
 		private static Dictionary<string, Sprite> customIconSprites = new Dictionary<string, Sprite>();
 
+		// Filenames of replacements that are used in every scene (globals, rank sprites and
+		// icon-pack textures). Their decoded Texture2D objects are kept across scene changes so
+		// that each transition does not re-read and re-decode the same files. Everything else
+		// (level-specific textures, batch atlases) is still released per scene to bound memory.
+		private static readonly HashSet<string> persistentTextureFileNames = BuildPersistentTextureFileNames();
+
+		private static HashSet<string> BuildPersistentTextureFileNames()
+		{
+			var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+			foreach (var entry in globalTextureReplacements.Values)
+				names.Add(entry.filename);
+			foreach (var pack in globalIconReplacements.Values)
+				foreach (string fileName in pack.Values)
+					names.Add(fileName);
+			return names;
+		}
+
+
 
 		private static readonly HashSet<string> ignoredScenes = new HashSet<string>
 		{
@@ -359,6 +391,107 @@ namespace UltrakULL.Harmony_Patches
 			EnsureTexturesFolderExists();
 			InitializeTextureMappings();
 			Logging.Message("[TexturePatcher] Module initialized");
+		}
+
+		/// <summary>
+		/// Reads performance tuning options. Safe to call repeatedly; only loads once
+		/// the shared config file is available. Values set to "Auto" are derived from
+		/// static hardware information (no benchmarking, no load on the machine).
+		/// </summary>
+		private static void LoadPerformanceConfig()
+		{
+			if (performanceConfigLoaded || LanguageManager.configFile == null)
+				return;
+
+			try
+			{
+				var cfg = LanguageManager.configFile;
+
+				ComputeAutoTuning(out float autoBudget, out float autoInterval, out string autoNote);
+
+				string budgetValue = cfg.Bind("Performance", "texturePatchFrameBudgetMs", "Auto").Value;
+				texturePatchFrameBudgetMs = TryParsePositive(budgetValue, out var budget) ? budget : autoBudget;
+
+				string initialValue = cfg.Bind("Performance", "initialPassBudgetMs", "Auto").Value;
+				initialPassFrameBudgetMs = TryParsePositive(initialValue, out var initial)
+					? initial
+					: Math.Min(texturePatchFrameBudgetMs * 3f, 24f);
+
+				activationHooksEnabled = Convert.ToBoolean(cfg.Bind("Performance", "activationHooks", "True").Value);
+
+				rescanEnabled = Convert.ToBoolean(cfg.Bind("Performance", "rescanEnabled", "True").Value);
+
+				string intervalValue = cfg.Bind("Performance", "rescanIntervalSeconds", "Auto").Value;
+				rescanIntervalSecondsOverride = TryParsePositive(intervalValue, out var interval) ? interval : autoInterval;
+
+				string destructionIntervalValue = cfg.Bind("Performance", "textureDestructionIntervalSeconds", "3").Value;
+				textureDestructionIntervalSeconds = TryParsePositive(destructionIntervalValue, out var destructionInterval) ? destructionInterval : 3f;
+
+				performanceConfigLoaded = true;
+				Logging.Message($"[TexturePatcher] Performance config: budget={texturePatchFrameBudgetMs}ms, initial={initialPassFrameBudgetMs}ms, rescan={rescanIntervalSecondsOverride}s, destructionInterval={textureDestructionIntervalSeconds}s, activationHooks={activationHooksEnabled}, rescanEnabled={rescanEnabled} (auto: {autoNote})");
+			}
+			catch (Exception ex)
+			{
+				Logging.Warn($"[TexturePatcher] Failed to load performance config: {ex.Message}");
+			}
+		}
+
+		/// <summary>
+		/// Derives frame budgets from static hardware information only (core count,
+		/// system RAM, video RAM). No benchmark run, no measurable load on the PC.
+		/// </summary>
+		private static void ComputeAutoTuning(out float budgetMs, out float rescanSeconds, out string note)
+		{
+			int cores = 1;
+			int ramMb = 0;
+			int vramMb = 0;
+
+			try { cores = Math.Max(1, Environment.ProcessorCount); } catch { }
+			try { ramMb = SystemInfo.systemMemorySize; } catch { }
+			try { vramMb = SystemInfo.graphicsMemorySize; } catch { }
+
+			int score = 0;
+			if (cores >= 4) score++;
+			if (cores >= 8) score++;
+			if (cores >= 16) score++;
+			if (ramMb >= 8000) score++;
+			if (ramMb >= 16000) score++;
+			if (vramMb >= 4000) score++;
+
+			if (score <= 1)
+			{
+				budgetMs = 5f;
+				rescanSeconds = 1.0f;
+			}
+			else if (score <= 3)
+			{
+				budgetMs = 8f;
+				rescanSeconds = 0.5f;
+			}
+			else if (score <= 5)
+			{
+				budgetMs = 12f;
+				rescanSeconds = 0.35f;
+			}
+			else
+			{
+				budgetMs = 16f;
+				rescanSeconds = 0.25f;
+			}
+
+			note = $"cores={cores}, ram={ramMb}MB, vram={vramMb}MB, score={score}";
+		}
+
+		private static bool TryParsePositive(string value, out float result)
+		{
+			result = 0f;
+			if (string.IsNullOrEmpty(value))
+				return false;
+
+			if (!float.TryParse(value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out result))
+				return false;
+
+			return result > 0f;
 		}
 
 		private static void InitializeTextureMappings()
@@ -405,6 +538,9 @@ namespace UltrakULL.Harmony_Patches
 			cancellationTokenSource?.Dispose();
 			cancellationTokenSource = new CancellationTokenSource();
 
+			pendingActivationRoots.Clear();
+			activationDrainRunning = false;
+
 			if (coroutineStarter == null)
 			{
 				var go = new GameObject("TexturePatcher_CoroutineStarter");
@@ -418,6 +554,8 @@ namespace UltrakULL.Harmony_Patches
 		{
 			if (isProcessing) yield break;
 			isProcessing = true;
+
+			LoadPerformanceConfig();
 
 			string sceneName = GetCurrentSceneName();
 
@@ -445,10 +583,51 @@ namespace UltrakULL.Harmony_Patches
 			Logging.Message($"[TexturePatcher] Processing scene: {sceneName}");
 			yield return null;
 
-			if (currentLevel != sceneName)
+			// Skip full cache reset when entering Main Menu — preserves textures for faster re-entry
+			// Main Menu doesn't need texture patching, so keeping cache warm avoids GC spikes on level exit
+			bool isMainMenu = sceneName == "Main Menu";
+			if (currentLevel != sceneName && !isMainMenu)
 			{
 				ResetInternalState();
 				currentLevel = sceneName;
+			}
+			else if (isMainMenu && currentLevel != sceneName)
+			{
+				// Main Menu: only load global textures + icons, replace UI sprites
+				// Skip level-specific, batch textures, and 3D renderer replacement
+				currentLevel = sceneName;
+				Logging.Message("[TexturePatcher] Main Menu detected — loading global/icon textures only, preserving cache");
+
+				currentReplacements = new Dictionary<string, Texture2D>();
+				yield return LoadTextures(globalTextureReplacements);
+
+				// Load Main Menu specific textures (TextmodeCircuit, TextmodeLogo)
+				var menuSpecific = GetLevelSpecificTextures(sceneName);
+				if (menuSpecific?.Count > 0)
+					yield return LoadTextures(menuSpecific);
+
+				yield return LoadIconSprites();
+
+				if (currentReplacements.Count == 0 && rankSprites.Count == 0 && customIconSprites.Count == 0)
+				{
+					Logging.Warn("[TexturePatcher] No textures or icon sprites loaded for Main Menu");
+					isProcessing = false;
+					yield break;
+				}
+
+				yield return ReplaceUISprites(initialPassFrameBudgetMs);
+
+				if (backgroundChecker != null)
+				{
+					coroutineStarter.StopCoroutine(backgroundChecker);
+					backgroundChecker = null;
+				}
+
+				if (rescanEnabled)
+					backgroundChecker = coroutineStarter.StartCoroutine(BackgroundTextureCheck());
+
+				isProcessing = false;
+				yield break;
 			}
 
 			currentReplacements = new Dictionary<string, Texture2D>();
@@ -474,14 +653,19 @@ namespace UltrakULL.Harmony_Patches
 				yield break;
 			}
 
-			yield return ReplaceTexturesInScene(true);
+			yield return ReplaceTexturesInScene(initialPassFrameBudgetMs);
 			yield return UpdateStyleHUD();
-			ReplaceUISprites();
+			yield return ReplaceUISprites(initialPassFrameBudgetMs);
 
 			if (backgroundChecker != null)
+			{
 				coroutineStarter.StopCoroutine(backgroundChecker);
+				backgroundChecker = null;
+			}
 
-			backgroundChecker = coroutineStarter.StartCoroutine(BackgroundTextureCheck());
+			if (rescanEnabled)
+				backgroundChecker = coroutineStarter.StartCoroutine(BackgroundTextureCheck());
+
 			isProcessing = false;
 		}
 
@@ -621,40 +805,6 @@ namespace UltrakULL.Harmony_Patches
 		}
 
 		/// <summary>
-		/// Fast pre-search on downscaled copy (optional).
-		/// </summary>
-		private static Rect FindTemplateWithEmguCvScaled(Texture2D sourceTexture, Texture2D templateTexture, int scale)
-		{
-			if (scale <= 1 || sourceTexture.width < 512 || sourceTexture.height < 512)
-				return Rect.zero;  // Too little benefit
-
-			try
-			{
-				Texture2D scaledSource = new Texture2D(sourceTexture.width / scale, sourceTexture.height / scale, TextureFormat.RGBA32, false);
-				Texture2D scaledTemplate = new Texture2D(templateTexture.width / scale, templateTexture.height / scale, TextureFormat.RGBA32, false);
-
-				Graphics.ConvertTexture(sourceTexture, scaledSource);
-				Graphics.ConvertTexture(templateTexture, scaledTemplate);
-
-				Rect result = FindTemplateWithEmguCv(scaledSource, scaledTemplate);
-
-				Object.Destroy(scaledSource);
-				Object.Destroy(scaledTemplate);
-
-				// Scale result back
-				if (result != Rect.zero)
-					return new Rect(result.x * scale, result.y * scale, result.width * scale, result.height * scale);
-
-				return Rect.zero;
-			}
-			catch (Exception ex)
-			{
-				Logging.Warn($"[TexturePatcher] Scaled pre-search failed: {ex.Message}");
-				return Rect.zero;
-			}
-		}
-
-		/// <summary>
 		/// Batch atlas region search: Emgu CV MatchTemplate (CcoeffNormed).
 		/// Managed and native parts are in BepInEx/plugins/UltrakULL/ (see CopyEmguToPluginFolder in csproj).
 		/// </summary>
@@ -761,11 +911,6 @@ namespace UltrakULL.Harmony_Patches
 					/* ignore */
 				}
 			}
-		}
-
-		private static Rect FindTemplateInTexture(Texture2D sourceTexture, Texture2D templateTexture)
-		{
-			return FindTemplateWithEmguCv(sourceTexture, templateTexture);
 		}
 
 		/// <summary>
@@ -1069,17 +1214,20 @@ namespace UltrakULL.Harmony_Patches
 
 		private static void ResetInternalState()
 		{
-			ClearTextureCache();
+			ClearTransientTextureCache();
 			ClearRankSprites();
 			processedObjectIds.Clear();
 			processedRawImages.Clear();
 			currentReplacements = null;
+			replacementResolutionCache.Clear();
 			currentLevel = null;
 			isProcessing = false;
 			
 			// Clear caches on level change
 			batchTextureCache.Clear();
-			regionCache.Clear();
+			// Invalidate material cache so it's rebuilt for the new scene
+			materialCacheValid = false;
+			cachedAllMaterials = null;
 		}
 		
 		/// <summary>
@@ -1197,9 +1345,22 @@ namespace UltrakULL.Harmony_Patches
 		}
 
 
+		// Returns cached list of all materials. Invalidated on scene change.
+		private static List<Material> GetAllMaterialsCached()
+		{
+			if (!materialCacheValid || cachedAllMaterials == null)
+			{
+				var allMaterials = Object.FindObjectsOfTypeAll(typeof(Material)).Cast<Material>();
+				cachedAllMaterials = new List<Material>(allMaterials);
+				materialCacheValid = true;
+				Logging.Debug($"[TexturePatcher] Material cache rebuilt: {cachedAllMaterials.Count} materials");
+			}
+			return cachedAllMaterials;
+		}
+
 		private static Texture2D FindBatchTextureInMaterials(string batchTextureName)
 		{
-			var allMaterials = Object.FindObjectsOfTypeAll(typeof(Material)).Cast<Material>();
+			var allMaterials = GetAllMaterialsCached();
 			foreach (var mat in allMaterials)
 			{
 				if (mat == null)
@@ -1229,7 +1390,7 @@ namespace UltrakULL.Harmony_Patches
 
 		private static Texture2D FindBatchTextureFromBatchMaterialEnvironment()
 		{
-			var allMaterials = Object.FindObjectsOfTypeAll(typeof(Material)).Cast<Material>();
+			var allMaterials = GetAllMaterialsCached();
 			int materialCount = 0;
 			int batchMaterialsCount = 0;
 
@@ -1271,16 +1432,16 @@ namespace UltrakULL.Harmony_Patches
 			if (mat == null)
 				return null;
 
-			foreach (var propName in TextureProps)
+			for (int i = 0; i < TexturePropIDs.Length; i++)
 			{
-				int propId = Shader.PropertyToID(propName);
+				int propId = TexturePropIDs[i];
 				if (!mat.HasProperty(propId))
 					continue;
 
 				var curTex = mat.GetTexture(propId) as Texture2D;
 				if (curTex != null)
 				{
-					Logging.Debug($"[TexturePatcher] Material '{mat.name}' has texture in property '{propName}': {curTex.width}x{curTex.height}");
+					Logging.Debug($"[TexturePatcher] Material '{mat.name}' has texture in property '{TextureProps[i]}': {curTex.width}x{curTex.height}");
 					return curTex;
 				}
 			}
@@ -1293,6 +1454,58 @@ namespace UltrakULL.Harmony_Patches
 			foreach (var tex in textureCache.Values)
 				Object.Destroy(tex);
 			textureCache.Clear();
+		}
+
+		// Releases only the per-scene replacement textures, keeping the reusable global/rank/icon
+		// textures decoded once at first use. Keeps scene transitions cheap without unbounded growth.
+		// Uses deferred destruction to avoid GC spikes on low-end hardware.
+		private static void ClearTransientTextureCache()
+		{
+			if (textureCache.Count == 0)
+				return;
+
+			List<string> transientKeys = null;
+			foreach (var kv in textureCache)
+			{
+				if (persistentTextureFileNames.Contains(kv.Key))
+					continue;
+
+				// Queue for deferred destruction instead of immediate Destroy
+				pendingTextureDestruction.Enqueue(kv.Value);
+				if (transientKeys == null)
+					transientKeys = new List<string>();
+				transientKeys.Add(kv.Key);
+			}
+
+			if (transientKeys == null)
+				return;
+
+			foreach (var key in transientKeys)
+				textureCache.Remove(key);
+
+			// Start the destruction drain coroutine if not already running
+			if (destructionDrainCoroutine == null && coroutineStarter != null)
+			{
+				destructionDrainCoroutine = coroutineStarter.StartCoroutine(DrainDestructionQueue());
+			}
+		}
+
+		/// <summary>
+		/// Destroys queued textures over time to avoid GC spikes.
+		/// Time-based: 1 texture every textureDestructionIntervalSeconds (config default 3s).
+		/// Runs on unscaled time so it works even in menus/paused game.
+		/// </summary>
+		private static IEnumerator DrainDestructionQueue()
+		{
+			var wait = new WaitForSecondsRealtime(textureDestructionIntervalSeconds);
+			while (pendingTextureDestruction.Count > 0)
+			{
+				var tex = pendingTextureDestruction.Dequeue();
+				if (tex != null)
+					Object.Destroy(tex);
+				yield return wait;
+			}
+			destructionDrainCoroutine = null;
 		}
 
 		private static void ClearRankSprites()
@@ -1354,24 +1567,18 @@ namespace UltrakULL.Harmony_Patches
 					);
 
 					rankSprites[key] = sprite;
-					Logging.Message($"[TexturePatcher] Loaded sprite '{filename}' as '{key}'");
+					if (Logging.Verbose)
+						Logging.Message($"[TexturePatcher] Loaded sprite '{filename}' as '{key}'");
 				}
 				else
 				{
 					currentReplacements[key] = loaded;
-					Logging.Message($"[TexturePatcher] Loaded texture '{filename}' as '{key}'");
+					if (Logging.Verbose)
+						Logging.Message($"[TexturePatcher] Loaded texture '{filename}' as '{key}'");
 				}
 			}
 		}
 
-
-		private static void StartBackgroundCheck()
-		{
-			if (backgroundChecker != null)
-				coroutineStarter.StopCoroutine(backgroundChecker);
-
-			backgroundChecker = coroutineStarter.StartCoroutine(BackgroundTextureCheck());
-		}
 		private static IEnumerator BackgroundTextureCheck()
 		{
 			while (!cancellationTokenSource.IsCancellationRequested && !string.IsNullOrEmpty(currentLevel))
@@ -1381,7 +1588,7 @@ namespace UltrakULL.Harmony_Patches
 
 				if ((currentReplacements != null && currentReplacements.Count > 0) || rankSprites.Count > 0)
 				{
-					yield return ReplaceTexturesInScene(false);
+					yield return ReplaceTexturesInScene(texturePatchFrameBudgetMs);
 					yield return UpdateStyleHUD();
 				}
 			}
@@ -1391,86 +1598,42 @@ namespace UltrakULL.Harmony_Patches
 
 		private static float GetSceneCheckDelay(string sceneName)
 		{
+			// Keep the heavier water level (4-S) at a slower, fixed interval.
 			if (sceneName.IndexOf("4-S", StringComparison.OrdinalIgnoreCase) >= 0)
 				return 1f;
+
+			if (rescanIntervalSecondsOverride > 0f)
+				return rescanIntervalSecondsOverride;
 
 			return 0.5f;
 		}
 
-
-		private static bool ShouldCancel() =>
-			cancellationTokenSource?.IsCancellationRequested ?? false;
 		private static readonly string[] TextureProps = { "_MainTex", "_BaseMap", "_DetailAlbedoMap", "_Texture", "_MainTexture", "_EmissiveTex" };
 		private static readonly int[] TexturePropIDs = TextureProps.Select(Shader.PropertyToID).ToArray();
 
-		private static IEnumerator ReplaceTexturesInScene(bool isInitialPass)
+		private static IEnumerator ReplaceTexturesInScene(float frameBudgetMs)
 		{
 			if (currentReplacements == null || cancellationTokenSource.IsCancellationRequested)
 				yield break;
 
 			Camera mainCam = Camera.main;
-			int processedChanges = 0;
-			int scannedRenderers = 0;
-			int scannedRawImages = 0;
-			int maxChangesPerFrame = isInitialPass ? int.MaxValue : 1024;
-			int maxScansPerFrame = isInitialPass ? int.MaxValue : 500;
+			var propertyBlock = new MaterialPropertyBlock();
+			var frameBudget = new System.Diagnostics.Stopwatch();
+			frameBudget.Start();
 
 			var renderers = Object.FindObjectsOfType<Renderer>();
 			foreach (var rend in renderers)
 			{
-				if (!IsValidRenderer(rend, mainCam))
+				// Skip renderers already handled this scene before the expensive validity
+				// check (IsValidRenderer walks the camera hierarchy).
+				if (rend == null || processedObjectIds.Contains(rend.GetInstanceID()))
 					continue;
 
-				if (IsInIgnoredPath(rend.gameObject))
-					continue;
+				ApplyReplacementToRenderer(rend, mainCam, propertyBlock);
 
-				int id = rend.GetInstanceID();
-				if (!processedObjectIds.Add(id))
-					continue;
-
-				var sharedMaterials = rend.sharedMaterials;
-				var propertyBlock = new MaterialPropertyBlock();
-
-				for (int m = 0; m < sharedMaterials.Length; m++)
+				if (frameBudget.Elapsed.TotalMilliseconds >= frameBudgetMs)
 				{
-					var mat = sharedMaterials[m];
-					if (mat == null) continue;
-
-					bool modified = false;
-					propertyBlock.Clear();
-					rend.GetPropertyBlock(propertyBlock, m);
-
-					for (int p = 0; p < TexturePropIDs.Length; p++)
-					{
-						int propId = TexturePropIDs[p];
-						if (!mat.HasProperty(propId)) continue;
-
-						var curTex = mat.GetTexture(propId) as Texture2D;
-						if (curTex == null) continue;
-
-						if (TryGetReplacement(curTex.name, out var replacement))
-						{
-							propertyBlock.SetTexture(propId, replacement);
-							modified = true;
-							processedChanges++;
-						}
-
-						if (processedChanges >= maxChangesPerFrame)
-						{
-							processedChanges = 0;
-							yield return null;
-						}
-					}
-
-					if (modified)
-					{
-						rend.SetPropertyBlock(propertyBlock, m);
-					}
-				}
-
-				scannedRenderers++;
-				if ((scannedRenderers % maxScansPerFrame) == 0)
-				{
+					frameBudget.Restart();
 					yield return null;
 				}
 			}
@@ -1479,30 +1642,155 @@ namespace UltrakULL.Harmony_Patches
 
 			foreach (var raw in Object.FindObjectsOfType<RawImage>())
 			{
-				if (!IsValidRawImage(raw)) continue;
-
-				if (IsInIgnoredPath(raw.gameObject))
+				if (raw == null || processedRawImages.Contains(raw.GetInstanceID()))
 					continue;
 
-				int id = raw.GetInstanceID();
-				if (!processedRawImages.Add(id)) continue;
+				ApplyReplacementToRawImage(raw);
 
-				Texture2D curTex = raw.texture as Texture2D;
-				if (curTex == null) continue;
-
-				if (TryGetReplacement(curTex.name, out var replacement))
+				if (frameBudget.Elapsed.TotalMilliseconds >= frameBudgetMs)
 				{
-					raw.texture = replacement;
-					processedChanges++;
-				}
-
-				scannedRawImages++;
-				if (processedChanges >= maxChangesPerFrame || (scannedRawImages % maxScansPerFrame) == 0)
-				{
-					processedChanges = 0;
+					frameBudget.Restart();
 					yield return null;
 				}
 			}
+		}
+
+		/// <summary>
+		/// Applies matching replacements to a single renderer. Deduplicated through
+		/// <see cref="processedObjectIds"/> so each renderer is evaluated once per scene.
+		/// </summary>
+		private static void ApplyReplacementToRenderer(Renderer rend, Camera mainCam, MaterialPropertyBlock propertyBlock)
+		{
+			if (!IsValidRenderer(rend, mainCam))
+				return;
+
+			int id = rend.GetInstanceID();
+			if (!processedObjectIds.Add(id))
+				return;
+
+			if (IsInIgnoredPath(rend.gameObject))
+				return;
+
+			var sharedMaterials = rend.sharedMaterials;
+
+			for (int m = 0; m < sharedMaterials.Length; m++)
+			{
+				var mat = sharedMaterials[m];
+				if (mat == null) continue;
+
+				bool modified = false;
+				propertyBlock.Clear();
+				rend.GetPropertyBlock(propertyBlock, m);
+
+				for (int p = 0; p < TexturePropIDs.Length; p++)
+				{
+					int propId = TexturePropIDs[p];
+					if (!mat.HasProperty(propId)) continue;
+
+					var curTex = mat.GetTexture(propId) as Texture2D;
+					if (curTex == null) continue;
+
+					if (TryGetReplacement(curTex.name, out var replacement))
+					{
+						propertyBlock.SetTexture(propId, replacement);
+						modified = true;
+					}
+				}
+
+				if (modified)
+				{
+					rend.SetPropertyBlock(propertyBlock, m);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Applies matching replacements to a single RawImage. Deduplicated through
+		/// <see cref="processedRawImages"/> so each RawImage is evaluated once per scene.
+		/// </summary>
+		private static void ApplyReplacementToRawImage(RawImage raw)
+		{
+			if (!IsValidRawImage(raw)) return;
+
+			int id = raw.GetInstanceID();
+			if (!processedRawImages.Add(id)) return;
+
+			if (IsInIgnoredPath(raw.gameObject))
+				return;
+
+			Texture2D curTex = raw.texture as Texture2D;
+			if (curTex == null) return;
+
+			if (TryGetReplacement(curTex.name, out var replacement))
+			{
+				raw.texture = replacement;
+			}
+		}
+
+		/// <summary>
+		/// Processes the subtree of a GameObject that was just activated by a game trigger.
+		/// Used by the event hooks so late-activated objects are patched immediately
+		/// instead of waiting for the next background poll.
+		/// </summary>
+		private static void ProcessActivatedSubtree(GameObject root)
+		{
+			if (root == null) return;
+			if (currentReplacements == null && rankSprites.Count == 0 && customIconSprites.Count == 0)
+				return;
+
+			Camera mainCam = Camera.main;
+			var propertyBlock = new MaterialPropertyBlock();
+
+			foreach (var rend in root.GetComponentsInChildren<Renderer>(true))
+				ApplyReplacementToRenderer(rend, mainCam, propertyBlock);
+
+			foreach (var raw in root.GetComponentsInChildren<RawImage>(true))
+				ApplyReplacementToRawImage(raw);
+		}
+
+		/// <summary>
+		/// Queues objects activated by a game event and lazily starts the drain coroutine.
+		/// </summary>
+		internal static void EnqueueActivationRoots(GameObject[] roots)
+		{
+			if (!activationHooksEnabled || roots == null || roots.Length == 0)
+				return;
+
+			for (int i = 0; i < roots.Length; i++)
+			{
+				if (roots[i] != null)
+					pendingActivationRoots.Enqueue(roots[i]);
+			}
+
+			if (!activationDrainRunning && coroutineStarter != null)
+				coroutineStarter.StartCoroutine(DrainActivationQueue());
+		}
+
+		/// <summary>
+		/// Drains queued activation roots within the per-frame time budget.
+		/// </summary>
+		private static IEnumerator DrainActivationQueue()
+		{
+			activationDrainRunning = true;
+
+			var frameBudget = new System.Diagnostics.Stopwatch();
+
+			while (pendingActivationRoots.Count > 0 && !cancellationTokenSource.IsCancellationRequested)
+			{
+				frameBudget.Restart();
+
+				while (pendingActivationRoots.Count > 0 && frameBudget.Elapsed.TotalMilliseconds < texturePatchFrameBudgetMs)
+				{
+					GameObject root = pendingActivationRoots.Dequeue();
+					if (root != null)
+						ProcessActivatedSubtree(root);
+				}
+
+				if (pendingActivationRoots.Count > 0)
+					yield return null;
+			}
+
+			activationDrainRunning = false;
 		}
 
 		private static void ProcessSandboxArmRenderers()
@@ -1513,6 +1801,7 @@ namespace UltrakULL.Harmony_Patches
 			try { arm = MonoSingleton<SandboxArm>.Instance; } catch { return; }
 			if (arm == null || arm.holder == null) return;
 
+			var propertyBlock = new MaterialPropertyBlock();
 			foreach (var rend in arm.holder.GetComponentsInChildren<Renderer>(true))
 			{
 				if (rend == null) continue;
@@ -1520,7 +1809,6 @@ namespace UltrakULL.Harmony_Patches
 				if (!processedObjectIds.Add(id)) continue;
 
 				var sharedMaterials = rend.sharedMaterials;
-				var propertyBlock = new MaterialPropertyBlock();
 
 				for (int m = 0; m < sharedMaterials.Length; m++)
 				{
@@ -1556,8 +1844,55 @@ namespace UltrakULL.Harmony_Patches
 
 		private static bool TryGetReplacement(string textureName, out Texture2D replacement)
 		{
-			return currentReplacements.TryGetValue(textureName, out replacement)
-				|| currentReplacements.TryGetValue(textureName.ToLower(), out replacement);
+			if (replacementResolutionCache.TryGetValue(textureName, out replacement))
+				return replacement != null;
+
+			// The replacement map is transient: it is null between ResetInternalState and the
+			// scene load, and activation hooks can fire in that window. Bail out without caching
+			// so a later lookup (after the map is populated) still resolves correctly.
+			var replacements = currentReplacements;
+			if (replacements == null)
+			{
+				replacement = null;
+				return false;
+			}
+
+			bool found = replacements.TryGetValue(textureName, out replacement)
+				|| replacements.TryGetValue(textureName.ToLower(), out replacement);
+
+			replacementResolutionCache[textureName] = found ? replacement : null;
+			return found;
+		}
+
+		// ===== Late activation hooks =====
+		// GameObject.SetActive is a native icall and cannot be patched reliably in Mono,
+		// so we hook the managed game methods that perform those activations instead.
+
+		[HarmonyPatch(typeof(UltrakillEvent), "Invoke")]
+		private static class UltrakillEvent_Invoke_Patch
+		{
+			private static void Postfix(UltrakillEvent __instance)
+			{
+				EnqueueActivationRoots(__instance?.toActivateObjects);
+			}
+		}
+
+		[HarmonyPatch(typeof(UltrakillEvent), "Revert")]
+		private static class UltrakillEvent_Revert_Patch
+		{
+			private static void Postfix(UltrakillEvent __instance)
+			{
+				EnqueueActivationRoots(__instance?.toDisActivateObjects);
+			}
+		}
+
+		[HarmonyPatch(typeof(ObjectActivatorStay), "Activate")]
+		private static class ObjectActivatorStay_Activate_Patch
+		{
+			private static void Postfix(ObjectActivatorStay __instance)
+			{
+				EnqueueActivationRoots(__instance?.toActivate);
+			}
 		}
 
 		private static bool IsValidRenderer(Renderer rend, Camera mainCam)
@@ -1741,27 +2076,35 @@ namespace UltrakULL.Harmony_Patches
 			return File.Exists(raw) ? raw : null;
 		}
 
-		private static void ReplaceUISprites()
+		private static IEnumerator ReplaceUISprites(float frameBudgetMs)
 		{
 			var images = GameObject.FindObjectsOfType<Image>(true);
 			int replaced = 0;
+			var frameBudget = new System.Diagnostics.Stopwatch();
+			frameBudget.Start();
 
 			foreach (var img in images)
 			{
-				if (img == null || img.sprite == null)
-					continue;
-
-				string spriteName = img.sprite.name;
-
-				if (rankSprites.TryGetValue(spriteName, out var replacement))
+				if (img != null && img.sprite != null)
 				{
-					img.sprite = replacement;
-					replaced++;
+					string spriteName = img.sprite.name;
+
+					if (rankSprites.TryGetValue(spriteName, out var replacement))
+					{
+						img.sprite = replacement;
+						replaced++;
+					}
+					else if (customIconSprites.TryGetValue(spriteName, out var iconReplacement))
+					{
+						img.sprite = iconReplacement;
+						replaced++;
+					}
 				}
-				else if (customIconSprites.TryGetValue(spriteName, out var iconReplacement))
+
+				if (frameBudget.Elapsed.TotalMilliseconds >= frameBudgetMs)
 				{
-					img.sprite = iconReplacement;
-					replaced++;
+					frameBudget.Restart();
+					yield return null;
 				}
 			}
 
@@ -1899,7 +2242,8 @@ namespace UltrakULL.Harmony_Patches
 				sprite.name = iconKey;
 
 				customIconSprites[iconKey] = sprite;
-				Logging.Message($"[TexturePatcher] Loaded icon sprite '{filename}' as key='{iconKey}'");
+				if (Logging.Verbose)
+					Logging.Message($"[TexturePatcher] Loaded icon sprite '{filename}' as key='{iconKey}'");
 			}
 
 			if (customIconSprites.Count > 0)
@@ -2016,14 +2360,6 @@ namespace UltrakULL.Harmony_Patches
 			}
 		}
 
-		private static void ClearIconSprites()
-		{
-			foreach (var s in customIconSprites.Values)
-				Object.Destroy(s);
-			customIconSprites.Clear();
-		}
-
-
 		// ===== Harmony Patches for Icon System =====
 
 		[HarmonyPatch(typeof(IconManager), "Reload")]
@@ -2133,9 +2469,17 @@ namespace UltrakULL.Harmony_Patches
 				cancellationTokenSource?.Cancel();
 				currentLevel = null;
 				currentReplacements = null;
+				replacementResolutionCache.Clear();
 				rankSprites.Clear();
 				textureCache.Clear();
 				batchOriginCache.Clear();
+				// Clear pending destruction queue
+				pendingTextureDestruction.Clear();
+				if (destructionDrainCoroutine != null && coroutineStarter != null)
+				{
+					coroutineStarter.StopCoroutine(destructionDrainCoroutine);
+					destructionDrainCoroutine = null;
+				}
 				Logging.Message("[TexturePatcher] Coroutine destroyed and cache cleared");
 			}
 		}

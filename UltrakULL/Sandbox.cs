@@ -11,31 +11,31 @@ namespace UltrakULL
     {
         private void PatchSandboxDupeMenu(ref GameObject canvasObj)
         {
-            GameObject dupeMenu = GetGameObjectChild(GetGameObjectChild(canvasObj, "Cheat Menu"), "Sandbox Saves");
+            GameObject dupeMenu = canvasObj.FindPath("Cheat Menu", "Sandbox Saves");
 
-            TextMeshProUGUI dupeMenuTitle = GetTextMeshProUGUI(GetGameObjectChild(dupeMenu, "Title"));
+            TextMeshProUGUI dupeMenuTitle = dupeMenu.Child("Title").TMP();
             dupeMenuTitle.text = LanguageManager.CurrentLanguage.cheats.cheats_dupesTitle;
 
-            TextMeshProUGUI dupeMenuOpenFolder = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(dupeMenu, "Directory Button Wrapper"),"Directory Button"),"Text"));
+            TextMeshProUGUI dupeMenuOpenFolder = dupeMenu.FindPath("Directory Button Wrapper", "Directory Button", "Text").TMP();
             dupeMenuOpenFolder.text = LanguageManager.CurrentLanguage.cheats.cheats_dupesOpenFolder;
 
-            TextMeshProUGUI dupeMenuPlaceholder = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(dupeMenu, "Button"), "InputField"), "Placeholder"));
+            TextMeshProUGUI dupeMenuPlaceholder = dupeMenu.FindPath("Button", "InputField", "Placeholder").TMP();
             dupeMenuPlaceholder.text = LanguageManager.CurrentLanguage.cheats.cheats_dupesSaveNamePrompt;
 
-            TextMeshProUGUI dupeMenuSave = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(dupeMenu, "New Save Wrapper"), "Save Button"), "Text"));
+            TextMeshProUGUI dupeMenuSave = dupeMenu.FindPath("New Save Wrapper", "Save Button", "Text").TMP();
             dupeMenuSave.text = LanguageManager.CurrentLanguage.cheats.cheats_dupesNewSave;
 
-            GameObject saveOverwriteConfirmPanel = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(canvasObj, "SandboxDialogs"), "Save Overwrite Confirmation"), "Panel");
-            TextMeshProUGUI saveOverwriteConfirmText = GetTextMeshProUGUI(GetGameObjectChild(saveOverwriteConfirmPanel, "Text"));
+            GameObject saveOverwriteConfirmPanel = canvasObj.FindPath("SandboxDialogs", "Save Overwrite Confirmation", "Panel");
+            TextMeshProUGUI saveOverwriteConfirmText = saveOverwriteConfirmPanel.Child("Text").TMP();
             saveOverwriteConfirmText.text = LanguageManager.CurrentLanguage.cheats.cheats_dupesOverWriteWarn;
 
-            TextMeshProUGUI saveOverwritedisableWindow = GetTextMeshProUGUI(GetGameObjectChild(saveOverwriteConfirmPanel, "Text (1)"));
+            TextMeshProUGUI saveOverwritedisableWindow = saveOverwriteConfirmPanel.Child("Text (1)").TMP();
             saveOverwritedisableWindow.text = LanguageManager.CurrentLanguage.pauseMenu.pause_disableWindow;
 
-            TextMeshProUGUI saveOverwriteCancel = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(saveOverwriteConfirmPanel, "Cancel"), "Text"));
+            TextMeshProUGUI saveOverwriteCancel = saveOverwriteConfirmPanel.FindPath("Cancel", "Text").TMP();
             saveOverwriteCancel.text = LanguageManager.CurrentLanguage.cheats.cheats_disclaimerNo;
 
-            TextMeshProUGUI saveOverwriteSave = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(saveOverwriteConfirmPanel, "Confirm"), "Text"));
+            TextMeshProUGUI saveOverwriteSave = saveOverwriteConfirmPanel.FindPath("Confirm", "Text").TMP();
             saveOverwriteSave.text = "<color=#F9A100>" + LanguageManager.CurrentLanguage.cheats.cheats_dupesSave + "</color>";
 
         }
@@ -43,7 +43,7 @@ namespace UltrakULL
         private void PatchMisc(ref GameObject canvasObj)
         {
             //text mesh pro out of date
-            Text navmeshWarning = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(canvasObj, "Navmesh Warning"), "Text (1)"));
+            Text navmeshWarning = canvasObj.FindPath("Navmesh Warning", "Text (1)").Text();
             navmeshWarning.text = LanguageManager.CurrentLanguage.sandbox.sandbox_navmeshWarn;
 			//I don't know how to add a second line that doesn't exist.
 			//Text navmeshWarningShadow = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(canvasObj, "Navmesh Warning"), "Text (1)"));
@@ -51,53 +51,53 @@ namespace UltrakULL
             //shop
             GameObject sandboxShop = GameObject.Find("Sandbox Shop");
 
-            GameObject sandboxShopCanvas = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(sandboxShop, "Canvas"), "Background"), "Main Panel");
+            GameObject sandboxShopCanvas = sandboxShop.FindPath("Canvas", "Background", "Main Panel");
 
-            TextMeshProUGUI sandboxShopStatsTitle = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(sandboxShopCanvas, "Stats"), "Title"));
+            TextMeshProUGUI sandboxShopStatsTitle = sandboxShopCanvas.FindPath("Stats", "Title").TMP();
             sandboxShopStatsTitle.text = LanguageManager.CurrentLanguage.sandbox.sandbox_shop_stats;
             //for wondering, actual stat texts are patched in StatsPatch.cs
 
             
             //Main menu
-            GameObject sandboxShopMenu = GetGameObjectChild(GetGameObjectChild(sandboxShopCanvas, "Main Menu"), "Buttons");
+            GameObject sandboxShopMenu = sandboxShopCanvas.FindPath("Main Menu", "Buttons");
 
-            TextMeshProUGUI sandboxShopTimeOfDayButton = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(sandboxShopMenu, "TimeOfDayButton"), "Text"));
+            TextMeshProUGUI sandboxShopTimeOfDayButton = sandboxShopMenu.FindPath("TimeOfDayButton", "Text").TMP();
             sandboxShopTimeOfDayButton.text = LanguageManager.CurrentLanguage.sandbox.sandbox_shop_timeOfDay;
             
-            TextMeshProUGUI sandboxShopWorldOptionsButton = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(sandboxShopMenu, "WorldOptionsButton"), "Text"));
+            TextMeshProUGUI sandboxShopWorldOptionsButton = sandboxShopMenu.FindPath("WorldOptionsButton", "Text").TMP();
             sandboxShopWorldOptionsButton.text = LanguageManager.CurrentLanguage.sandbox.sandbox_shop_worldOptions;
             
-            TextMeshProUGUI sandboxShopIconsButton = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(sandboxShopMenu, "IconsButton"), "Text"));
+            TextMeshProUGUI sandboxShopIconsButton = sandboxShopMenu.FindPath("IconsButton", "Text").TMP();
             sandboxShopIconsButton.text = LanguageManager.CurrentLanguage.sandbox.sandbox_shop_icons;
             
             //Time of day
-            GameObject sandboxShopTimeOfDay = GetGameObjectChild(sandboxShopCanvas, "Time of Day");
+            GameObject sandboxShopTimeOfDay = sandboxShopCanvas.Child("Time of Day");
 
             TextMeshProUGUI sandboxShopTimeOfDayTitle =
-                GetTextMeshProUGUI(GetGameObjectChild(sandboxShopTimeOfDay, "Title"));
+                sandboxShopTimeOfDay.Child("Title").TMP();
             sandboxShopTimeOfDayTitle.text = LanguageManager.CurrentLanguage.sandbox.sandbox_shop_timeOfDay;
 
             TextMeshProUGUI sandboxShopTimeOfDayLoading =
-                GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(sandboxShopTimeOfDay, "Panel"), "Loading"), "Title"));
+                sandboxShopTimeOfDay.FindPath("Panel", "Loading", "Title").TMP();
             sandboxShopTimeOfDayLoading.text = LanguageManager.CurrentLanguage.misc.loading + "...";
 
-            TextMeshProUGUI sandboxShopTimeOfDayClose = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(sandboxShopTimeOfDay, "Panel"), "Close Button"),"Text"));
+            TextMeshProUGUI sandboxShopTimeOfDayClose = sandboxShopTimeOfDay.FindPath("Panel", "Close Button", "Text").TMP();
             sandboxShopTimeOfDayClose.text = LanguageManager.CurrentLanguage.options.save_close;
             
             //World options
-            GameObject sandboxShopWorldOptions = GetGameObjectChild(sandboxShopCanvas, "World Options");
-            TextMeshProUGUI sandboxShopWorldOptionsTitle = GetTextMeshProUGUI(GetGameObjectChild(sandboxShopWorldOptions, "Title"));
+            GameObject sandboxShopWorldOptions = sandboxShopCanvas.Child("World Options");
+            TextMeshProUGUI sandboxShopWorldOptionsTitle = sandboxShopWorldOptions.Child("Title").TMP();
             sandboxShopWorldOptionsTitle.text =
                 LanguageManager.CurrentLanguage.sandbox.sandbox_shop_worldOptionsTitle;
-            TextMeshProUGUI sandboxWorldOptionsClose = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(sandboxShopWorldOptions, "Panel"), "Close Button"),"Text"));
+            TextMeshProUGUI sandboxWorldOptionsClose = sandboxShopWorldOptions.FindPath("Panel", "Close Button", "Text").TMP();
             sandboxWorldOptionsClose.text = LanguageManager.CurrentLanguage.options.save_close;
             
-            GameObject sandboxShopWorldOptionsMapBorder = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(sandboxShopWorldOptions, "Panel"), "Options"),"Map Border");
-            TextMeshProUGUI sandboxShopWorldOptionsMapBorderTitle = GetTextMeshProUGUI(GetGameObjectChild(sandboxShopWorldOptionsMapBorder, "Title Text"));
+            GameObject sandboxShopWorldOptionsMapBorder = sandboxShopWorldOptions.FindPath("Panel", "Options", "Map Border");
+            TextMeshProUGUI sandboxShopWorldOptionsMapBorderTitle = sandboxShopWorldOptionsMapBorder.Child("Title Text").TMP();
             sandboxShopWorldOptionsMapBorderTitle.text = LanguageManager.CurrentLanguage.sandbox.sandbox_shop_mapBorder;
 
-            TextMeshProUGUI sandboxShopWorldOptionsMapBorderStatus = GetTextMeshProUGUI(GetGameObjectChild(sandboxShopWorldOptionsMapBorder, "Status Text"));
-            TextMeshProUGUI sandboxShopWorldOptionsMapBorderButton = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(sandboxShopWorldOptionsMapBorder, "Button"),"Text"));
+            TextMeshProUGUI sandboxShopWorldOptionsMapBorderStatus = sandboxShopWorldOptionsMapBorder.Child("Status Text").TMP();
+            TextMeshProUGUI sandboxShopWorldOptionsMapBorderButton = sandboxShopWorldOptionsMapBorder.FindPath("Button", "Text").TMP();
             switch(sandboxShopWorldOptionsMapBorderStatus.text.ToUpper())
             {
                 case "ENABLED":
@@ -126,92 +126,92 @@ namespace UltrakULL
             }
 
             //Icons
-            GameObject sandboxShopIcons = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(sandboxShopCanvas, "Icons"), "Icons Window"),"Panel");
-            TextMeshProUGUI sandboxShopIconsTitle = GetTextMeshProUGUI(GetGameObjectChild(sandboxShopIcons.transform.parent.gameObject, "Title"));
+            GameObject sandboxShopIcons = sandboxShopCanvas.FindPath("Icons", "Icons Window", "Panel");
+            TextMeshProUGUI sandboxShopIconsTitle = sandboxShopIcons.transform.parent.gameObject.Child("Title").TMP();
             sandboxShopIconsTitle.text =
                 LanguageManager.CurrentLanguage.sandbox.sandbox_shop_iconsTitle;
             
-            TextMeshProUGUI sandboxShopIconsDefault = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(sandboxShopIcons, "Default"), "Text"));
+            TextMeshProUGUI sandboxShopIconsDefault = sandboxShopIcons.FindPath("Default", "Text").TMP();
             sandboxShopIconsDefault.text = LanguageManager.CurrentLanguage.sandbox.sandbox_shop_default;
             
-            TextMeshProUGUI sandboxShopIconsPitr = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(sandboxShopIcons, "PITR"), "Text"));
+            TextMeshProUGUI sandboxShopIconsPitr = sandboxShopIcons.FindPath("PITR", "Text").TMP();
             sandboxShopIconsPitr.text = LanguageManager.CurrentLanguage.sandbox.sandbox_shop_pitr;
             
-            TextMeshProUGUI sandboxIconsClose = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(sandboxShopCanvas, "Icons"), "Back Button"),"Text"));
+            TextMeshProUGUI sandboxIconsClose = sandboxShopCanvas.FindPath("Icons", "Back Button", "Text").TMP();
             sandboxIconsClose.text = LanguageManager.CurrentLanguage.shop.shop_back;
         }
         public static void PatchAlterMenu()
         {
             // Sandbox enemy modifier menu
 
-            GameObject panel = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetInactiveRootObject("Canvas"), "Alter Menu Wrapper"), "Sandbox Alter Menu"), "Spawning Menu");
+            GameObject panel = GetInactiveRootObject("Canvas").FindPath("Alter Menu Wrapper", "Sandbox Alter Menu", "Spawning Menu");
 
-            GameObject enemyAlterMenu = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(panel, "Scroll View"), "Viewport"), "Content");
+            GameObject enemyAlterMenu = panel.FindPath("Scroll View", "Viewport", "Content");
 
-            TextMeshProUGUI enemyAlterMenuTitle = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(enemyAlterMenu, "Header"), "Title"));
+            TextMeshProUGUI enemyAlterMenuTitle = enemyAlterMenu.FindPath("Header", "Title").TMP();
             enemyAlterMenuTitle.text = LanguageManager.CurrentLanguage.misc.enemyAlter_title;
 
-            GameObject enemyAlterSizeMenu = GetGameObjectChild(enemyAlterMenu, "Size Options");
-            TextMeshProUGUI enemyAlterSizeTitle = GetTextMeshProUGUI(GetGameObjectChild(enemyAlterSizeMenu, "Title (1)"));
+            GameObject enemyAlterSizeMenu = enemyAlterMenu.Child("Size Options");
+            TextMeshProUGUI enemyAlterSizeTitle = enemyAlterSizeMenu.Child("Title (1)").TMP();
             enemyAlterSizeTitle.text = LanguageManager.CurrentLanguage.misc.enemyAlter_sizeTitle;
 
-            TextMeshProUGUI enemyAlterSizeUniform = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(enemyAlterSizeMenu, "Toggle"), "Label"));
+            TextMeshProUGUI enemyAlterSizeUniform = enemyAlterSizeMenu.FindPath("Toggle", "Label").TMP();
             enemyAlterSizeUniform.text = LanguageManager.CurrentLanguage.misc.enemyAlter_uniformToggle;
 
-            GameObject enemyAlterSizeUniformContainer = GetGameObjectChild(GetGameObjectChild(enemyAlterSizeMenu, "Uniform Container"), "Image");
-            TextMeshProUGUI enemyAlterSizeUniformContainerSmaller = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(enemyAlterSizeUniformContainer, "Divide By Two Button"), "Text"));
-            TextMeshProUGUI enemyAlterSizeUniformContainerDefault = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(enemyAlterSizeUniformContainer, "Default Size Button"), "Text"));
-            TextMeshProUGUI enemyAlterSizeUniformContainerLarger = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(enemyAlterSizeUniformContainer, "Time Two Button"), "Text"));
+            GameObject enemyAlterSizeUniformContainer = enemyAlterSizeMenu.FindPath("Uniform Container", "Image");
+            TextMeshProUGUI enemyAlterSizeUniformContainerSmaller = enemyAlterSizeUniformContainer.FindPath("Divide By Two Button", "Text").TMP();
+            TextMeshProUGUI enemyAlterSizeUniformContainerDefault = enemyAlterSizeUniformContainer.FindPath("Default Size Button", "Text").TMP();
+            TextMeshProUGUI enemyAlterSizeUniformContainerLarger = enemyAlterSizeUniformContainer.FindPath("Time Two Button", "Text").TMP();
             enemyAlterSizeUniformContainerSmaller.text = LanguageManager.CurrentLanguage.misc.enemyAlter_uniformSmall;
             enemyAlterSizeUniformContainerDefault.text = LanguageManager.CurrentLanguage.misc.enemyAlter_uniformDefault;
             enemyAlterSizeUniformContainerLarger.text = LanguageManager.CurrentLanguage.misc.enemyAlter_uniformLarge;
 
-            GameObject enemyAlterMeta = GetGameObjectChild(enemyAlterMenu, "Meta Options");
+            GameObject enemyAlterMeta = enemyAlterMenu.Child("Meta Options");
             //Prop
-            TextMeshProUGUI enemyAlterMetaTitle = GetTextMeshProUGUI(GetGameObjectChild(enemyAlterMeta, "Title (1)"));
+            TextMeshProUGUI enemyAlterMetaTitle = enemyAlterMeta.Child("Title (1)").TMP();
             enemyAlterMetaTitle.text = LanguageManager.CurrentLanguage.misc.enemyAlter_metaTitle;
 
-            TextMeshProUGUI enemyAlterMetaFrozen = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(enemyAlterMeta, "Frozen Toggle"), "Label"));
+            TextMeshProUGUI enemyAlterMetaFrozen = enemyAlterMeta.FindPath("Frozen Toggle", "Label").TMP();
             enemyAlterMetaFrozen.text = LanguageManager.CurrentLanguage.misc.enemyAlter_metaFrozen;
 
-            TextMeshProUGUI enemyAlterMetaDisallowManipulation = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(enemyAlterMeta, "Disallow Manipulation Toggle"), "Label"));
+            TextMeshProUGUI enemyAlterMetaDisallowManipulation = enemyAlterMeta.FindPath("Disallow Manipulation Toggle", "Label").TMP();
             enemyAlterMetaDisallowManipulation.text = LanguageManager.CurrentLanguage.misc.enemyAlter_metaDisallowManipulation;
 
-            TextMeshProUGUI enemyAlterMetaDisallowFreezing = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(enemyAlterMeta, "Disallow Freezing Toggle"), "Label"));
+            TextMeshProUGUI enemyAlterMetaDisallowFreezing = enemyAlterMeta.FindPath("Disallow Freezing Toggle", "Label").TMP();
             enemyAlterMetaDisallowFreezing.text = LanguageManager.CurrentLanguage.misc.enemyAlter_metaDisallowFreezing;
 
             //Jumppad
-            GameObject enemyAlterJumpPad = GetGameObjectChild(enemyAlterMenu, "Jump Pad Options");
-            TextMeshProUGUI enemyAlterJumpPadTitle = GetTextMeshProUGUI(GetGameObjectChild(enemyAlterJumpPad, "Title (1)"));
+            GameObject enemyAlterJumpPad = enemyAlterMenu.Child("Jump Pad Options");
+            TextMeshProUGUI enemyAlterJumpPadTitle = enemyAlterJumpPad.Child("Title (1)").TMP();
             enemyAlterJumpPadTitle.text = LanguageManager.CurrentLanguage.misc.enemyAlter_jumpPadTitle;
 
-            TextMeshProUGUI enemyAlterJumpPadPower = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(enemyAlterJumpPad, "Slider"), "Title (4)"));
+            TextMeshProUGUI enemyAlterJumpPadPower = enemyAlterJumpPad.FindPath("Slider", "Title (4)").TMP();
             enemyAlterJumpPadPower.text = LanguageManager.CurrentLanguage.misc.enemyAlter_power;
 
             //Radiance options
-            GameObject enemyAlterRadiance = GetGameObjectChild(enemyAlterMenu, "Radiance Options");
-            TextMeshProUGUI enemyAlterRadianceTitle = GetTextMeshProUGUI(GetGameObjectChild(enemyAlterRadiance, "Title (1)"));
+            GameObject enemyAlterRadiance = enemyAlterMenu.Child("Radiance Options");
+            TextMeshProUGUI enemyAlterRadianceTitle = enemyAlterRadiance.Child("Title (1)").TMP();
             enemyAlterRadianceTitle.text = LanguageManager.CurrentLanguage.misc.enemyAlter_radianceTitle;
 
-            TextMeshProUGUI enemyAlterRadianceEnable = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(enemyAlterRadiance, "Toggle"), "Label"));
+            TextMeshProUGUI enemyAlterRadianceEnable = enemyAlterRadiance.FindPath("Toggle", "Label").TMP();
             enemyAlterRadianceEnable.text = LanguageManager.CurrentLanguage.misc.enemyAlter_radianceEnable;
 
             //Radiance details
-            GameObject enemyAlterRadianceDetails = GetGameObjectChild(GetGameObjectChild(enemyAlterMenu, "Radiance Details"), "Radiance Settings");
-            TextMeshProUGUI enemyAlterRadianceDetailsTier = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(enemyAlterRadianceDetails, "Radiance Tier Container"), "Title (4)"));
+            GameObject enemyAlterRadianceDetails = enemyAlterMenu.FindPath("Radiance Details", "Radiance Settings");
+            TextMeshProUGUI enemyAlterRadianceDetailsTier = enemyAlterRadianceDetails.FindPath("Radiance Tier Container", "Title (4)").TMP();
             enemyAlterRadianceDetailsTier.text = LanguageManager.CurrentLanguage.misc.enemyAlter_radianceDetails_tier;
 
-            TextMeshProUGUI enemyAlterRadianceHealth = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(enemyAlterRadianceDetails, "Health Multi Container"), "Title (4)"));
+            TextMeshProUGUI enemyAlterRadianceHealth = enemyAlterRadianceDetails.FindPath("Health Multi Container", "Title (4)").TMP();
             enemyAlterRadianceHealth.text = LanguageManager.CurrentLanguage.misc.enemyAlter_radianceHealth_tier;
 
-            TextMeshProUGUI enemyAlterRadianceDamage = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(enemyAlterRadianceDetails, "Damage Multi Container"), "Title (4)"));
+            TextMeshProUGUI enemyAlterRadianceDamage = enemyAlterRadianceDetails.FindPath("Damage Multi Container", "Title (4)").TMP();
             enemyAlterRadianceDamage.text = LanguageManager.CurrentLanguage.misc.enemyAlter_radianceDamage_tier;
 
-            TextMeshProUGUI enemyAlterRadianceSpeed = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(enemyAlterRadianceDetails, "Speed Multi Container"), "Title (4)"));
+            TextMeshProUGUI enemyAlterRadianceSpeed = enemyAlterRadianceDetails.FindPath("Speed Multi Container", "Title (4)").TMP();
             enemyAlterRadianceSpeed.text = LanguageManager.CurrentLanguage.misc.enemyAlter_radianceSpeed_tier;
 
             //Close button
-            TextMeshProUGUI enemyAlterClose = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(panel, "Close Button"), "Text"));
+            TextMeshProUGUI enemyAlterClose = panel.FindPath("Close Button", "Text").TMP();
             enemyAlterClose.text = LanguageManager.CurrentLanguage.options.save_close;
 
             //Note: Stuff for jump pads, props and enemy boss HP bars are located in SandboxPatches because of dynamic object creation by the game

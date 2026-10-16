@@ -54,11 +54,18 @@ namespace UltrakULL.Harmony_Patches.AudioSwaps
 
             if (dubbingEnabled)
             {
-                string powerFolder = Path.Combine(AudioSwapper.SpeechFolder, "power");
-                AudioSwapper.PreloadFolderAsync(powerFolder, () =>
+                // The Main Menu creates a PowerVoiceController (the menu V1 rig) but never
+                // plays Power voice lines there. Preloading the whole "power" folder on every
+                // menu entry loaded dozens of clips and caused a noticeable hitch, so rebinding
+                // is skipped in that scene. Clips still load lazily if they are ever needed.
+                if (GetCurrentSceneName() != "Main Menu")
                 {
-                    RebindPowerClips(__instance);
-                });
+                    string powerFolder = Path.Combine(AudioSwapper.SpeechFolder, "power");
+                    AudioSwapper.PreloadFolderAsync(powerFolder, () =>
+                    {
+                        RebindPowerClips(__instance);
+                    });
+                }
             }
             else
             {
@@ -126,7 +133,8 @@ namespace UltrakULL.Harmony_Patches.AudioSwaps
                 if (!_originalClips.ContainsKey(key))
                 {
                     _originalClips[key] = original;
-                    Logging.Info($"[PowerAudioSwap] Saved original clip '{original.name}' for {key}");
+                    if (Logging.Verbose)
+                        Logging.Info($"[PowerAudioSwap] Saved original clip '{original.name}' for {key}");
                 }
             }
         }
@@ -143,7 +151,8 @@ namespace UltrakULL.Harmony_Patches.AudioSwaps
                 if (!_originalClips.ContainsKey(key))
                 {
                     _originalClips[key] = original;
-                    Logging.Info($"[PowerAudioSwap] Saved original clip '{original.name}' for {key}");
+                    if (Logging.Verbose)
+                        Logging.Info($"[PowerAudioSwap] Saved original clip '{original.name}' for {key}");
                 }
             }
         }
@@ -320,7 +329,8 @@ namespace UltrakULL.Harmony_Patches.AudioSwaps
                 SaveOriginalClip(instanceId, fieldName, index, original);
 
                 string path = Path.Combine(folder, original.name);
-                Logging.Info($"[PowerAudioSwap] Attempting to preload clip '{original.name}' from '{path}'.");
+                if (Logging.Verbose)
+                    Logging.Info($"[PowerAudioSwap] Attempting to preload clip '{original.name}' from '{path}'.");
                 AudioSwapper.PreloadClipAsync(path, original, delegate (AudioClip newClip)
                 {
                     if (newClip != null)
@@ -330,14 +340,16 @@ namespace UltrakULL.Harmony_Patches.AudioSwaps
                         // as fallback. Registering the original clip as handled would suppress its playback.
                         if (newClip != original)
                         {
-                            Logging.Info($"[PowerAudioSwap] Successfully preloaded localized clip '{newClip.name}' for field '{fieldName}'.");
+                            if (Logging.Verbose)
+                                Logging.Info($"[PowerAudioSwap] Successfully preloaded localized clip '{newClip.name}' for field '{fieldName}'.");
                             clips[index] = newClip;
                             field.SetValue(instance, clips);
                             UltrakULL.Harmony_Patches.Subtitles.PowerSubtitlesSwap.RegisterPowerClipAsHandled(newClip.name);
                         }
                         else
                         {
-                            Logging.Info($"[PowerAudioSwap] No localized clip found for '{original.name}' in field '{fieldName}'. Keeping original.");
+                            if (Logging.Verbose)
+                                Logging.Info($"[PowerAudioSwap] No localized clip found for '{original.name}' in field '{fieldName}'. Keeping original.");
                         }
                     }
                     else
@@ -368,7 +380,8 @@ namespace UltrakULL.Harmony_Patches.AudioSwaps
             SaveOriginalClip(instance.GetInstanceID(), fieldName, original);
 
             string fullPath = Path.Combine(folder, replacementName);
-            Logging.Info($"[PowerAudioSwap] Attempting to preload single clip '{original.name}' from '{fullPath}'.");
+            if (Logging.Verbose)
+                Logging.Info($"[PowerAudioSwap] Attempting to preload single clip '{original.name}' from '{fullPath}'.");
             AudioSwapper.PreloadClipAsync(fullPath, original, delegate (AudioClip newClip)
             {
                 if (newClip != null)
@@ -376,13 +389,15 @@ namespace UltrakULL.Harmony_Patches.AudioSwaps
                     // Only register as handled if the clip was actually replaced with a different (localized) clip.
                     if (newClip != original)
                     {
-                        Logging.Info($"[PowerAudioSwap] Successfully replaced '{fieldName}' with localized clip '{newClip.name}'.");
+                        if (Logging.Verbose)
+                            Logging.Info($"[PowerAudioSwap] Successfully replaced '{fieldName}' with localized clip '{newClip.name}'.");
                         try { field.SetValue(instance, newClip); } catch { }
                         UltrakULL.Harmony_Patches.Subtitles.PowerSubtitlesSwap.RegisterPowerClipAsHandled(newClip.name);
                     }
                     else
                     {
-                        Logging.Info($"[PowerAudioSwap] No localized clip found for '{fieldName}'. Keeping original.");
+                        if (Logging.Verbose)
+                            Logging.Info($"[PowerAudioSwap] No localized clip found for '{fieldName}'. Keeping original.");
                     }
                 }
                 else

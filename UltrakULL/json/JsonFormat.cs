@@ -1061,9 +1061,23 @@ namespace UltrakULL.json
         public string subtitles_power_specialWave3;
         public string subtitles_power_specialWave4;
 
+        // Subtitle fields are looked up by name at runtime (subtitles and transpilers).
+        // Cache the FieldInfo per name; a cached null preserves the original behavior
+        // (GetValue on a missing field throws).
+        private static readonly object SubtitleFieldsLock = new object();
+        private static readonly Dictionary<string, FieldInfo> SubtitleFields = new Dictionary<string, FieldInfo>();
+
         public string GetField(string name)
         {
-            var field = typeof(Subtitles).GetField(name, BindingFlags.Public | BindingFlags.Instance);
+            FieldInfo field;
+            lock (SubtitleFieldsLock)
+            {
+                if (!SubtitleFields.TryGetValue(name, out field))
+                {
+                    field = typeof(Subtitles).GetField(name, BindingFlags.Public | BindingFlags.Instance);
+                    SubtitleFields[name] = field;
+                }
+            }
             return (string)field.GetValue(this);
         }
     }

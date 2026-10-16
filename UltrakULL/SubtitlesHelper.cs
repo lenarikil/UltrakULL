@@ -1,4 +1,3 @@
-using System.Reflection;
 using UltrakULL.json;
 
 namespace UltrakULL
@@ -10,9 +9,6 @@ namespace UltrakULL
     /// </summary>
     public static class SubtitlesHelper
     {
-        private static readonly FieldInfo SubtitlesField = typeof(JsonFormat).GetField("subtitles", BindingFlags.Public | BindingFlags.Instance);
-        private static readonly object SubtitlesLock = new object();
-
         /// <summary>
         /// Gets a subtitle string from the current language by field name.
         /// Thread-safe. Returns null if the field doesn't exist.
@@ -38,21 +34,6 @@ namespace UltrakULL
         /// Gets a subtitle string with color tags wrapped around it.
         /// </summary>
         public static string GetTextWithColor(string fieldName, string colorHex)
-        {
-            var text = GetText(fieldName);
-            if (string.IsNullOrEmpty(text))
-                return null;
-
-            if (string.IsNullOrEmpty(colorHex))
-                return text;
-
-            return "<color=#" + colorHex + ">" + text + "</color>";
-        }
-
-        /// <summary>
-        /// Gets a subtitle string with color tags wrapped around it (using HTML-style color format).
-        /// </summary>
-        public static string GetTextWithColorHtml(string fieldName, string colorHex)
         {
             var text = GetText(fieldName);
             if (string.IsNullOrEmpty(text))

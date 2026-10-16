@@ -20,13 +20,13 @@ namespace UltrakULL
             {
                 GameObject bossRoom = GetInactiveRootObject("3 - Fuckatorium");
 
-                secretText = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(bossRoom, "3 Stuff"),"End"),"FinalRoom Prime"),"Testament Shop"),"Canvas"),"Border"),"TipBox"),"Panel"),"Scroll View"),"Viewport"),"Content"),"Text (1)"));
+                secretText = bossRoom.FindPath("3 Stuff", "End", "FinalRoom Prime", "Testament Shop", "Canvas", "Border", "TipBox", "Panel", "Scroll View", "Viewport", "Content", "Text (1)").Text();
             }
             else if (currentLevel.Contains("P-2"))
             {
-                GameObject bossRoom = GetGameObjectChild(GetInactiveRootObject("Main Section"),"9 - Boss Arena");
+                GameObject bossRoom = GetInactiveRootObject("Main Section").Child("9 - Boss Arena");
                 
-                secretText = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(bossRoom, "Boss Stuff"),"Outro"),"FinalRoom Prime Variant"),"Testament Shop"),"Canvas"),"Border"),"TipBox"),"Panel"),"Scroll View"),"Viewport"),"Content"),"Text (1)"));
+                secretText = bossRoom.FindPath("Boss Stuff", "Outro", "FinalRoom Prime Variant", "Testament Shop", "Canvas", "Border", "TipBox", "Panel", "Scroll View", "Viewport", "Content", "Text (1)").Text();
             }
 
             if (secretText != null)
@@ -56,14 +56,14 @@ namespace UltrakULL
                 string levelname = primeSanctumChallengeStrings.GetLevelName();
                 
                 //First lock buttons
-                GameObject firstLockObject = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetInactiveRootObject("Main Section"),"Inside"),"8 - Elevator"),"8 Stuff"), "InteractiveScreenWithStand"), "InteractiveScreen"),"Canvas"), "Background");
+                GameObject firstLockObject = GetInactiveRootObject("Main Section").FindPath("Inside", "8 - Elevator", "8 Stuff", "InteractiveScreenWithStand", "InteractiveScreen", "Canvas", "Background");
                 
-                TextMeshProUGUI firstLockLocked = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(firstLockObject,"A"), "Text (TMP)"));
-                TextMeshProUGUI firstLockUnlocked = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(firstLockObject, "A (Pressed)"), "Text (TMP)"));
-                TextMeshProUGUI secondLockLocked = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(firstLockObject,"B"), "Text (TMP)"));
-                TextMeshProUGUI secondLockUnlocked = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(firstLockObject, "B (Pressed)"),"Text (TMP)"));
-                TextMeshProUGUI thirdLockLocked = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(firstLockObject,"C"), "Text (TMP)"));
-                TextMeshProUGUI thirdLockUnlocked = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(firstLockObject, "C (Pressed)"), "Text (TMP)"));
+                TextMeshProUGUI firstLockLocked = firstLockObject.FindPath("A", "Text (TMP)").TMP();
+                TextMeshProUGUI firstLockUnlocked = firstLockObject.FindPath("A (Pressed)", "Text (TMP)").TMP();
+                TextMeshProUGUI secondLockLocked = firstLockObject.FindPath("B", "Text (TMP)").TMP();
+                TextMeshProUGUI secondLockUnlocked = firstLockObject.FindPath("B (Pressed)", "Text (TMP)").TMP();
+                TextMeshProUGUI thirdLockLocked = firstLockObject.FindPath("C", "Text (TMP)").TMP();
+                TextMeshProUGUI thirdLockUnlocked = firstLockObject.FindPath("C (Pressed)", "Text (TMP)").TMP();
 
                 firstLockLocked.text = LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_lockFirstLocked;
                 firstLockUnlocked.text = LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_lockUnlocked;
@@ -73,14 +73,14 @@ namespace UltrakULL
                 thirdLockUnlocked.text = LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_lockUnlocked;
                 
                 //Second lock buttons
-                GameObject secondLockObject = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetInactiveRootObject("Main Section"), "Inside"), "8 - Elevator"), "8 Stuff"), "InteractiveScreenWithStand (1)"), "InteractiveScreen"), "Canvas"), "Background");
+                GameObject secondLockObject = GetInactiveRootObject("Main Section").FindPath("Inside", "8 - Elevator", "8 Stuff", "InteractiveScreenWithStand (1)", "InteractiveScreen", "Canvas", "Background");
 
                 TextMeshProUGUI secondLockOpen =
-                    GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(secondLockObject, "InteractiveScreenButton"), "Text (TMP)"));
-                TextMeshProUGUI secondLockAreYouSure = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(secondLockObject, "AreYouSure"), "Text"));
+                    secondLockObject.FindPath("InteractiveScreenButton", "Text (TMP)").TMP();
+                TextMeshProUGUI secondLockAreYouSure = secondLockObject.FindPath("AreYouSure", "Text").TMP();
 
-                TextMeshProUGUI secondLockWarning = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(secondLockObject, "WarningText"), "WarningText"));
-                GameObject secondLockAsIf = GetGameObjectChild(secondLockObject, "AsIfText");
+                TextMeshProUGUI secondLockWarning = secondLockObject.FindPath("WarningText", "WarningText").TMP();
+                GameObject secondLockAsIf = secondLockObject.Child("AsIfText");
 
                 secondLockOpen.text = LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_lockOpen;
                 //secondLockOpen.fontSize = 20;
@@ -99,13 +99,13 @@ namespace UltrakULL
                 {
                     try
                     {
-                        TextMeshProUGUI haText = GetTextMeshProUGUI(GetGameObjectChild(secondLockAsIf.transform.GetChild(i).gameObject, "Text (TMP)"));
+                        TextMeshProUGUI haText = secondLockAsIf.ChildAt(i).Child("Text (TMP)").TMP();
                         haText.text = LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_lockNo1;
                     }
                     catch { }
                 }
 
-                TextMeshProUGUI secondLockAsIfText = GetTextMeshProUGUI(GetGameObjectChild(secondLockAsIf.transform.GetChild(7).gameObject, "Text (TMP)"));
+                TextMeshProUGUI secondLockAsIfText = secondLockAsIf.ChildAt(7).Child("Text (TMP)").TMP();
                 secondLockAsIfText.text =
                     "<color=red>" + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_lockNo2 + "\n</color>";
                 

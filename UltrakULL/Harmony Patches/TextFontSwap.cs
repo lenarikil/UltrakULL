@@ -15,7 +15,7 @@ namespace UltrakULL.Harmony_Patches
 		[HarmonyPatch(typeof(Text), "OnEnable")]
 		public static class TextFontSwapper
 		{
-			private static List<IntPtr> objectsFixed = new List<IntPtr>();
+			private static HashSet<IntPtr> objectsFixed = new HashSet<IntPtr>();
 
 			public static void ClearCache()
 			{
@@ -74,15 +74,12 @@ namespace UltrakULL.Harmony_Patches
 					}
 					else
 					{
-						originalFont = __instance.font;
 						__instance.font = Core.GlobalFont;
 					}
 				}
 				objectsFixed.Add(___m_CachedPtr);
 			}
 		}
-
-		public static Font originalFont;
 
 		private static class FontLogger
 		{

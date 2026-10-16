@@ -36,9 +36,9 @@ namespace UltrakULL.Harmony_Patches
             if (referenceButtonTemplate != null)
                 return;
 
-            var optionsParent = GetGameObjectChild(GetInactiveRootObject("Canvas"), "OptionsMenu").transform;
+            var optionsParent = GetInactiveRootObject("Canvas").Child("OptionsMenu").transform;
             var navigationRail = optionsParent.Find("Navigation Rail").gameObject;
-            var buttonPrefab = GetGameObjectChild(navigationRail, "Back");
+            var buttonPrefab = navigationRail.Child("Back");
 
             referenceButtonTemplate = GameObject.Instantiate(buttonPrefab);
             referenceButtonTemplate.name = "ReferenceButtonTemplate";
@@ -155,9 +155,9 @@ namespace UltrakULL.Harmony_Patches
         
         public static void warnBeforeDownload(LanguageInfo lInfo)
         {
-            GameObject difficultySelectMenu = GetGameObjectChild(GetInactiveRootObject("Canvas"),"Difficulty Select (1)");
+            GameObject difficultySelectMenu = GetInactiveRootObject("Canvas").Child("Difficulty Select (1)");
 
-            GameObject panelToUse = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetInactiveRootObject("Canvas"),"OptionsMenu"),"Assist Options"),"Panel");
+            GameObject panelToUse = GetInactiveRootObject("Canvas").FindPath("OptionsMenu", "Assist Options", "Panel");
             
             if(redownloadConfirmPanel == null)
             {
@@ -166,19 +166,19 @@ namespace UltrakULL.Harmony_Patches
 
             redownloadConfirmPanel.name = "ConfirmDownloadPanel";
             
-            Text confirmDownloadText = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(redownloadConfirmPanel,"Panel"),"Text (2)"));
+            Text confirmDownloadText = redownloadConfirmPanel.FindPath("Panel", "Text (2)").Text();
             
             confirmDownloadText.fontSize = 22;
             confirmDownloadText.text =
             "This language has already been downloaded. <color=#34e1eb>Redownload?</color>\n\n" 
                 +"<color=orange>The current file's contents will be overwritten.</color>";
 
-            Text confirmDownloadTextConfirm = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(redownloadConfirmPanel,"Panel"),"Text (1)"));
+            Text confirmDownloadTextConfirm = redownloadConfirmPanel.FindPath("Panel", "Text (1)").Text();
             confirmDownloadTextConfirm.text = "";
             
             //Destroy the original buttons and replace them with new ones (at least until I can figure out how to change the listeners of the original buttons)
-            GameObject origYes = GetGameObjectChild(GetGameObjectChild(redownloadConfirmPanel,"Panel"),"Yes");
-            GameObject origNo = GetGameObjectChild(GetGameObjectChild(redownloadConfirmPanel,"Panel"),"No");
+            GameObject origYes = redownloadConfirmPanel.FindPath("Panel", "Yes");
+            GameObject origNo = redownloadConfirmPanel.FindPath("Panel", "No");
             origYes.SetActive(false);
             origNo.SetActive(false);
             
@@ -209,7 +209,7 @@ namespace UltrakULL.Harmony_Patches
         {
             string masterLanguageUrl = "https://clearwateruk.github.io/mods/ultrakULL/languagesMaster.json";
             Transform navigationRail = GameObject.Find("Navigation Rail").transform;
-            Transform optionsParent = GetGameObjectChild(GetInactiveRootObject("Canvas"), "OptionsMenu").transform;
+            Transform optionsParent = GetInactiveRootObject("Canvas").Child("OptionsMenu").transform;
             Transform pagesParent = GameObject.Find("Pages").transform;
             Transform referencePage = pagesParent.transform.Find("General");
             Scrollbar referenceScrollbar = referencePage.GetComponentsInChildren<Scrollbar>().FirstOrDefault();
@@ -398,7 +398,7 @@ namespace UltrakULL.Harmony_Patches
                         LanguageManager.allLanguages.Add(languageTag, file);
                         
                         
-                        Transform optionsParent = GetGameObjectChild(GetInactiveRootObject("Canvas"),"OptionsMenu").transform;
+                        Transform optionsParent = GetInactiveRootObject("Canvas").Child("OptionsMenu").transform;
                         GameObject slotRowPrefab = optionsParent.Find("Save Slots").Find("Grid").Find("Slot Row").gameObject;
                         addLocalLanguageToLocalList(ref slotRowPrefab, file.metadata.langName,true);
                     }
@@ -416,11 +416,11 @@ namespace UltrakULL.Harmony_Patches
         public static void addLocalLanguageToLocalList(ref GameObject slotRowPrefab, string language, bool newlyAdded=false)
         {
             Transform contentParent = langLocalPage.transform.Find("Scroll Rect").Find("Contents");
-            GameObject deleteButtonPrefab = GetGameObjectChild(slotRowPrefab.transform.Find("Delete Wrapper").gameObject, "Delete Button");
+            GameObject deleteButtonPrefab = slotRowPrefab.transform.Find("Delete Wrapper").gameObject.Child("Delete Button");
             GameObject languageButtonInstance = ButtonUtils.CreateTMPButton(contentParent, language, LanguageManager.allLanguages[language].metadata.langDisplayName, delegate
             {
-                GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(contentParent.gameObject, LanguageManager.CurrentLanguage.metadata.langName), "Text")).text = LanguageManager.CurrentLanguage.metadata.langDisplayName;
-                GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(contentParent.gameObject, language), "Text")).text += "\n<size=22>(<color=green>Selected</color>)</size>";
+                contentParent.gameObject.FindPath(LanguageManager.CurrentLanguage.metadata.langName, "Text").TMP().text = LanguageManager.CurrentLanguage.metadata.langDisplayName;
+                contentParent.gameObject.FindPath(language, "Text").TMP().text += "\n<size=22>(<color=green>Selected</color>)</size>";
                 LanguageManager.SetCurrentLanguage(language);
             });
             //languageButtonInstance.transform.Find("Select Wrapper").gameObject.SetActive(false);
@@ -538,8 +538,8 @@ namespace UltrakULL.Harmony_Patches
 
             Logging.Message("Creating language menu button...");
             GameObject languageButton = ButtonUtils.CreateTMPButton(navigationRail, "Language", LanguageManager.CurrentLanguage.options.language_title, () => ShowLanguagePage(), changeSize: false);
-            languageButtonText = GetTextMeshProUGUI(GetGameObjectChild(languageButton, "Text"));
-            RectTransform sourceRect = GetGameObjectChild(navigationRail.gameObject, "General").GetComponent<RectTransform>();
+            languageButtonText = languageButton.Child("Text").TMP();
+            RectTransform sourceRect = navigationRail.gameObject.Child("General").GetComponent<RectTransform>();
             RectTransform targetRect = languageButton.GetComponent<RectTransform>();
             targetRect.sizeDelta = sourceRect.sizeDelta;
             //targetRect.anchorMin = sourceRect.anchorMin;
@@ -602,8 +602,8 @@ namespace UltrakULL.Harmony_Patches
                             b.colors = cb; // Force update colors (sometimes helps)
                         }
                     }
-                    Transform navRail = GetGameObjectChild(GetInactiveRootObject("Canvas"), "OptionsMenu").transform.Find("Navigation Rail");
-                    GameObject langBtn = GetGameObjectChild(navRail.gameObject, "Language");
+                    Transform navRail = GetInactiveRootObject("Canvas").Child("OptionsMenu").transform.Find("Navigation Rail");
+                    GameObject langBtn = navRail.gameObject.Child("Language");
                     EventSystem.current.SetSelectedGameObject(langBtn);
                 }
             }

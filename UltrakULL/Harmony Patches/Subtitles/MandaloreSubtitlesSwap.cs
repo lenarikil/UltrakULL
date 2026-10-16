@@ -6,7 +6,6 @@ using UnityEngine;
 using UltrakULL.json;
 using static System.Reflection.Emit.OpCodes;
 using static HarmonyLib.AccessTools;
-using static UltrakULL.CommonFunctions;
 using System.Runtime.CompilerServices;
 using System.Reflection.Emit;
 using System.Reflection;

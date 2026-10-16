@@ -998,7 +998,11 @@ if (IsBossBarText((TMP_Text)__instance) || IsHealthText((TMP_Text)__instance))
 				{
 					((TMP_Text)__instance).alignment = (TextAlignmentOptions)1028;
 				}
-				Core.GlobalFontTMP.fallbackFontAssetTable.Add(Core.ArabicFontTMP);
+				if (Core.GlobalFontTMP != null && Core.ArabicFontTMP != null &&
+					!Core.GlobalFontTMP.fallbackFontAssetTable.Contains(Core.ArabicFontTMP))
+				{
+					Core.GlobalFontTMP.fallbackFontAssetTable.Add(Core.ArabicFontTMP);
+				}
 				if (CommonFunctions.GetCurrentSceneName() == "CreditsMuseum2" && ((TMP_Text)__instance).font.name == "GFS Garaldus")
 				{
 					ApplyFont(__instance, underlayColor, underlayOffset, underlaySoftness, underlayDilate, preserveExistingUnderlay, isUnderlaid, isOverlay, editOverlayStatus, museumFont, museumOverlayMat, museumNormalMat);

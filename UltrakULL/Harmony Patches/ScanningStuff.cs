@@ -40,7 +40,7 @@ namespace UltrakULL.Harmony_Patches
 
             GameObject canvas = GetInactiveRootObject("Canvas");
 
-            TextMeshProUGUI scanningText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(canvas, "ScanningStuff"), "ScanningPanel"), "Text"));
+            TextMeshProUGUI scanningText = canvas.FindPath("ScanningStuff", "ScanningPanel", "Text").TMP();
             scanningText.text = LanguageManager.CurrentLanguage.books.books_scanning;
             text = Books.GetBookText(text);
             return true;
@@ -51,13 +51,11 @@ namespace UltrakULL.Harmony_Patches
             GameObject canvas = GetInactiveRootObject("Canvas");
             if (canvas == null) return false;
 
-            GameObject readingScanned = GetGameObjectChild(
-                GetGameObjectChild(canvas, "ScanningStuff"),
-                "ReadingScanned");
-            GameObject panel = GetGameObjectChild(readingScanned, "Panel");
-            GameObject scrollRect = GetGameObjectChild(panel, "Scroll Rect");
-            GameObject viewport = GetGameObjectChild(scrollRect, "Viewport");
-            GameObject textObj = GetGameObjectChild(viewport, "Text");
+            GameObject readingScanned = canvas.FindPath("ScanningStuff", "ReadingScanned");
+            GameObject panel = readingScanned.Child("Panel");
+            GameObject scrollRect = panel.Child("Scroll Rect");
+            GameObject viewport = scrollRect.Child("Viewport");
+            GameObject textObj = viewport.Child("Text");
             if (textObj == null) return false;
 
             RectTransform textRect = textObj.GetComponent<RectTransform>();

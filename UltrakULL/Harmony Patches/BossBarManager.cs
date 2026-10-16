@@ -2,7 +2,6 @@
 using HarmonyLib;
 using UltrakULL.json;
 
-using static UltrakULL.CommonFunctions;
 
 namespace UltrakULL.Harmony_Patches
 {
@@ -27,20 +26,40 @@ namespace UltrakULL.Harmony_Patches
 
         public static class BossNameHelper
         {
+            // Rebuilt only when the active language changes; avoids reflecting over the
+            // enemyNames fields on every boss-bar update (called every frame).
+            private static object cachedSource;
+            private static HashSet<string> cachedLocalizedNames;
+
             public static bool IsAlreadyLocalized(string name)
             {
+                if (string.IsNullOrEmpty(name))
+                    return false;
+
                 var enemyNames = LanguageManager.CurrentLanguage.enemyNames;
+                if (!ReferenceEquals(cachedSource, enemyNames))
+                {
+                    cachedSource = enemyNames;
+                    cachedLocalizedNames = BuildLocalizedNames(enemyNames);
+                }
+
+                return cachedLocalizedNames != null && cachedLocalizedNames.Contains(name);
+            }
+
+            private static HashSet<string> BuildLocalizedNames(object enemyNames)
+            {
+                var localizedNames = new HashSet<string>();
+                if (enemyNames == null)
+                    return localizedNames;
 
                 foreach (var field in enemyNames.GetType().GetFields())
                 {
                     var value = field.GetValue(enemyNames)?.ToString();
-                    if (!string.IsNullOrEmpty(value) && value == name)
-                    {
-                        return true; // If it matches, it's a translation
-                    }
+                    if (!string.IsNullOrEmpty(value))
+                        localizedNames.Add(value);
                 }
 
-                return false;// If it doesn't match, it's the original
+                return localizedNames;
             }
         }
 

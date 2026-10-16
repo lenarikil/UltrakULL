@@ -48,15 +48,15 @@ namespace UltrakULL
 
                 //testamentPanelTitle = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(finalRoom, "Room"), "Testament Shop"), "Canvas"), "Border"), "TipBox"), "Panel"), "Title"));
 
-                testamentPanelText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(testamentRoom, "Room"), "Testament Shop (1)"), "Canvas"), "Text (TMP)"));
+                testamentPanelText = testamentRoom.FindPath("Room", "Testament Shop (1)", "Canvas", "Text (TMP)").TMP();
 
                 //testamentPanelTitle.text = LanguageManager.CurrentLanguage.secretLevels.secretLevels_prelude_testamentTitle;
             }
             //1-S
             else if (GetCurrentSceneName() == "Level 1-S")
             {
-                GameObject finalRoom = GetGameObjectChild(testamentRoom, "FinalRoomSecretExit");
-                testamentPanelText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(finalRoom, "Room"), "Testament Shop (1)"), "Canvas"), "Text (TMP)"));
+                GameObject finalRoom = testamentRoom.Child("FinalRoomSecretExit");
+                testamentPanelText = finalRoom.FindPath("Room", "Testament Shop (1)", "Canvas", "Text (TMP)").TMP();
             }
             //4-S
             else if (GetCurrentSceneName() == "Level 4-S")
@@ -80,15 +80,7 @@ namespace UltrakULL
                     {
                         try
                         {
-                            testamentPanelText4S1 = GetTextMeshProUGUI(GetGameObjectChild(
-                                GetGameObjectChild(
-                                    GetGameObjectChild(
-                                        GetGameObjectChild(
-                                            GetGameObjectChild(stuffObject, "FinalRoom SecretExit"),
-                                            "Room"),
-                                        "Testament Shop (1)"),
-                                    "Canvas"),
-                                "Text (TMP)"));
+                            testamentPanelText4S1 = stuffObject.FindPath("FinalRoom SecretExit", "Room", "Testament Shop (1)", "Canvas", "Text (TMP)").TMP();
                         }
                         catch (Exception ex)
                         {
@@ -100,15 +92,7 @@ namespace UltrakULL
                     {
                         try
                         {
-                            testamentPanelText4S2 = GetTextMeshProUGUI(GetGameObjectChild(
-                                GetGameObjectChild(
-                                    GetGameObjectChild(
-                                        GetGameObjectChild(
-                                            GetGameObjectChild(stuffObject, "FinalRoom SecretExit"),
-                                            "Room"),
-                                        "Testament Shop (1)"),
-                                    "Canvas"),
-                                "Text (TMP)"));
+                            testamentPanelText4S2 = stuffObject.FindPath("FinalRoom SecretExit", "Room", "Testament Shop (1)", "Canvas", "Text (TMP)").TMP();
                         }
                         catch (Exception ex)
                         {
@@ -128,12 +112,12 @@ namespace UltrakULL
             {
                 //testamentPanelTitle = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(finalRoom, "Room"), "Testament Shop"), "Canvas"), "Border"), "TipBox"), "Panel"), "Title"));
 
-                testamentPanelText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(testamentRoom, "Room"), "Testament Shop (1)"), "Canvas"), "Text (TMP)"));
+                testamentPanelText = testamentRoom.FindPath("Room", "Testament Shop (1)", "Canvas", "Text (TMP)").TMP();
 
             }
             else if (GetCurrentSceneName() == "Level 7-S")
             {
-                testamentPanelText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(testamentRoom, "Room"), "Testament Shop (1)"), "Canvas"), "Text (TMP)"));
+                testamentPanelText = testamentRoom.FindPath("Room", "Testament Shop (1)", "Canvas", "Text (TMP)").TMP();
 
             }
 
@@ -265,22 +249,22 @@ namespace UltrakULL
 
         public void Patch5S(ref GameObject canvasObj)
         {
-            GameObject powerGauge = GetGameObjectChild(GetInactiveRootObject("FishingCanvas"), "Power Meter");
-            TextMeshProUGUI distanceFar = GetTextMeshProUGUI(GetGameObjectChild(powerGauge, "Text (TMP)")); 
+            GameObject powerGauge = GetInactiveRootObject("FishingCanvas").Child("Power Meter");
+            TextMeshProUGUI distanceFar = powerGauge.Child("Text (TMP)").TMP();
             distanceFar.text = LanguageManager.CurrentLanguage.fishing.fish_rodFar;
-            TextMeshProUGUI distanceClose = GetTextMeshProUGUI(GetGameObjectChild(powerGauge, "Text (TMP) (1)"));
+            TextMeshProUGUI distanceClose = powerGauge.Child("Text (TMP) (1)").TMP();
             distanceClose.text = LanguageManager.CurrentLanguage.fishing.fish_rodClose;
 
             //Localize buttons in Balancing Minigame
-            GameObject balancingMinigame = GetGameObjectChild(GetGameObjectChild(GetInactiveRootObject("FishingCanvas"), "Struggle Mini Game"), "Balancing Minigame");
-            TextMeshProUGUI RMB = GetTextMeshProUGUI(GetGameObjectChild(balancingMinigame, "Text (TMP)"));
+            GameObject balancingMinigame = GetInactiveRootObject("FishingCanvas").FindPath("Struggle Mini Game", "Balancing Minigame");
+            TextMeshProUGUI RMB = balancingMinigame.Child("Text (TMP)").TMP();
             RMB.text = GetAbbreviation(LanguageManager.CurrentLanguage.inputStrings.input_RMB);
-            TextMeshProUGUI LMB = GetTextMeshProUGUI(GetGameObjectChild(balancingMinigame, "Text (TMP) (1)"));
+            TextMeshProUGUI LMB = balancingMinigame.Child("Text (TMP) (1)").TMP();
             LMB.text = GetAbbreviation(LanguageManager.CurrentLanguage.inputStrings.input_LMB);
 
-            GameObject fishingLeaderboard = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetInactiveRootObject("Exit Lobby Interior"), "Fish Scores"), "Canvas"), "Border"), "TipBox"), "Panel");
+            GameObject fishingLeaderboard = GetInactiveRootObject("Exit Lobby Interior").FindPath("Fish Scores", "Canvas", "Border", "TipBox", "Panel");
 
-            TextMeshProUGUI fishingLeaderboardTitle = GetTextMeshProUGUI(GetGameObjectChild(fishingLeaderboard, "Title"));
+            TextMeshProUGUI fishingLeaderboardTitle = fishingLeaderboard.Child("Title").TMP();
             fishingLeaderboardTitle.text = LanguageManager.CurrentLanguage.fishing.fish_leaderboard;
 
             //Trying change Fishing Leaderboard "Global" and "Friend" title. Not work now, need create Harmony Patch for original Fishing Leaderboad code
@@ -291,11 +275,11 @@ namespace UltrakULL
             fishingLeaderboardGlobal.text = rx.Replace(fishingLeaderboardGlobal.text, "GLOBAL TEST", 1);
             fishingLeaderboardFriends.text = rw.Replace(fishingLeaderboardFriends.text, "FRIENDS TEST", 1);*/
 
-            GameObject fishingTerminal = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetInactiveRootObject("Fishing Enc Terminal"), "Canvas"), "Background"), "Main Window");
-            TextMeshProUGUI fishingTerminalTitle = GetTextMeshProUGUI(GetGameObjectChild(fishingTerminal, "Title"));
+            GameObject fishingTerminal = GetInactiveRootObject("Fishing Enc Terminal").FindPath("Canvas", "Background", "Main Window");
+            TextMeshProUGUI fishingTerminalTitle = fishingTerminal.Child("Title").TMP();
             fishingTerminalTitle.text = LanguageManager.CurrentLanguage.fishing.fish_terminalTitle;
-            GameObject fishingTerminalBackButton = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(fishingTerminal, "Fish Info"), "Window"), "Back Button");
-            TextMeshProUGUI fishingTerminalBackButtonText = GetTextMeshProUGUI(GetGameObjectChild(fishingTerminalBackButton, "Text"));
+            GameObject fishingTerminalBackButton = fishingTerminal.FindPath("Fish Info", "Window", "Back Button");
+            TextMeshProUGUI fishingTerminalBackButtonText = fishingTerminalBackButton.Child("Text").TMP();
             fishingTerminalBackButtonText.text = LanguageManager.CurrentLanguage.shop.shop_back;
         }
         public void Patch7S(ref GameObject canvasObj)
@@ -304,16 +288,16 @@ namespace UltrakULL
             {   
                 //BloodCleanText
                 GameObject washcanvas = GameObject.Find("WashingCanvas");
-                TextMeshProUGUI BloodCleanText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(washcanvas, "Painter Completion Meter"), "Slider Group"), "Blood Cleaned"));
+                TextMeshProUGUI BloodCleanText = washcanvas.FindPath("Painter Completion Meter", "Slider Group", "Blood Cleaned").TMP();
                 BloodCleanText.text = LanguageManager.CurrentLanguage.washing.wash_bloodClean;
-                GameObject chklst = GetGameObjectChild(washcanvas, "CheckList");
+                GameObject chklst = washcanvas.Child("CheckList");
 
-                TextMeshProUGUI LitterCount = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(chklst, "Litter"), "Litter Count:"));
+                TextMeshProUGUI LitterCount = chklst.FindPath("Litter", "Litter Count:").TMP();
                 LitterCount.text = LanguageManager.CurrentLanguage.washing.wash_littercount;
 
                 //Faxeexittext
-                GameObject fakeexitCanvas = GetGameObjectChild(GetGameObjectChild(GetInactiveRootObject("Fake Exit"), "PuzzleScreen"), "Canvas"); 
-                TextMeshProUGUI fakeexittext = GetTextMeshProUGUI(GetGameObjectChild(fakeexitCanvas, "Cleaning Prompt Text"));
+                GameObject fakeexitCanvas = GetInactiveRootObject("Fake Exit").FindPath("PuzzleScreen", "Canvas");
+                TextMeshProUGUI fakeexittext = fakeexitCanvas.Child("Cleaning Prompt Text").TMP();
                 fakeexittext.text = "<size=12><color=#7f0000><u><b>" + LanguageManager.CurrentLanguage.washing.wash_fakeexittext1 + "</u></b></color></size>\n\n"
                 + LanguageManager.CurrentLanguage.washing.wash_fakeexittext2 + "\n"
                 + LanguageManager.CurrentLanguage.washing.wash_fakeexittext3 + "\n"
@@ -321,7 +305,7 @@ namespace UltrakULL
                 + LanguageManager.CurrentLanguage.washing.wash_fakeexittext5 + "\n"
                 + LanguageManager.CurrentLanguage.washing.wash_fakeexittext6;
 
-                TextMeshProUGUI thxtext = GetTextMeshProUGUI(GetGameObjectChild(fakeexitCanvas, "Thank You Text"));
+                TextMeshProUGUI thxtext = fakeexitCanvas.Child("Thank You Text").TMP();
                 thxtext.text = "<size=12><color=#7f0000><u><b>" + LanguageManager.CurrentLanguage.washing.wash_exitOpenText1 + "</u></b></color></size>\n\n"
                 + LanguageManager.CurrentLanguage.washing.wash_exitOpenText2 + "\n\n"
                 + LanguageManager.CurrentLanguage.washing.wash_exitOpenText3;
@@ -353,19 +337,19 @@ namespace UltrakULL
                 case "Level 7-S": { testamentRoom = GetInactiveRootObject("FinalRoom SecretExit");PatchTestament(ref testamentRoom); Patch7S(ref canvasObj); break; }  
             }
             Logging.Info("gugi");
-            GameObject secretLevelResults = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(player, "Main Camera"), "HUD Camera"), "HUD"), "FinishCanvas");
+            GameObject secretLevelResults = player.FindPath("Main Camera", "HUD Camera", "HUD", "FinishCanvas");
 
             Logging.Info("guga");
-            GameObject secretLevelResultsPanel = secretLevelResults.transform.GetChild(2).gameObject;
+            GameObject secretLevelResultsPanel = secretLevelResults.ChildAt(2);
 
             Logging.Info("gooo");
-            TextMeshProUGUI secretLevelResultsName = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(secretLevelResultsPanel, "Title"), "Text"));
+            TextMeshProUGUI secretLevelResultsName = secretLevelResultsPanel.FindPath("Title", "Text").TMP();
             secretLevelResultsName.text = GetSecretLevelName();
 
-            TextMeshProUGUI secretLevelResultsInfo = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(secretLevelResultsPanel, "Time - Info"), "Text"));
+            TextMeshProUGUI secretLevelResultsInfo = secretLevelResultsPanel.FindPath("Time - Info", "Text").TMP();
             secretLevelResultsInfo.text = LanguageManager.CurrentLanguage.secretLevels.secretLevels_complete1;
 
-            TextMeshProUGUI secretLevelComplete = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(secretLevelResultsPanel, "Time - Rank"), "Text"));
+            TextMeshProUGUI secretLevelComplete = secretLevelResultsPanel.FindPath("Time - Rank", "Text").TMP();
             secretLevelComplete.text = LanguageManager.CurrentLanguage.secretLevels.secretLevels_complete2;
 
         }

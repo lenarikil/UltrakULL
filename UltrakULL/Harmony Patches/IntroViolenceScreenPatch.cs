@@ -13,6 +13,11 @@ public static class IntroViolenceScreenPatch
     private static GameObject textObject1;
     private static GameObject textObject2;
 
+    private static readonly FieldInfo FadeAmountField = AccessTools.Field(typeof(IntroViolenceScreen), "fadeAmount");
+    private static readonly FieldInfo TargetAlphaField = AccessTools.Field(typeof(IntroViolenceScreen), "targetAlpha");
+    private static readonly FieldInfo FadeField = AccessTools.Field(typeof(IntroViolenceScreen), "fade");
+    private static readonly FieldInfo RedField = AccessTools.Field(typeof(IntroViolenceScreen), "red");
+
     [HarmonyPatch("Start")]
     [HarmonyPostfix]
     private static void StartPatch(IntroViolenceScreen __instance)
@@ -41,11 +46,12 @@ public static class IntroViolenceScreenPatch
     private static void UpdatePatch(IntroViolenceScreen __instance)
     {
         if (textObject1 == null || textObject2 == null) return;
+        if (FadeAmountField == null || TargetAlphaField == null || FadeField == null || RedField == null) return;
 
-        float fadeAmount = Traverse.Create(__instance).Field("fadeAmount").GetValue<float>();
-        float targetAlpha = Traverse.Create(__instance).Field("targetAlpha").GetValue<float>();
-        bool fade = Traverse.Create(__instance).Field("fade").GetValue<bool>();
-        Color redColor = Traverse.Create(__instance).Field("red").GetValue<Image>().color;
+        float fadeAmount = (float)FadeAmountField.GetValue(__instance);
+        float targetAlpha = (float)TargetAlphaField.GetValue(__instance);
+        bool fade = (bool)FadeField.GetValue(__instance);
+        Color redColor = ((Image)RedField.GetValue(__instance)).color;
 
                if (fade && targetAlpha == 1f)
         {

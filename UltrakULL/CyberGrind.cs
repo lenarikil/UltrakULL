@@ -7,7 +7,6 @@ using TMPro;
 using UltrakULL.json;
 using UnityEngine;
 using UnityEngine.UI;
-using static UltrakULL.CommonFunctions;
 
 namespace UltrakULL
 {
@@ -27,7 +26,7 @@ namespace UltrakULL
             }
 
             List<GameObject> cubeCanvasList = new List<GameObject>();
-            GameObject cubeCanvas = GetGameObjectChild(everythingList[4],"Canvas");
+            GameObject cubeCanvas = everythingList[4].Child("Canvas");
             foreach (Transform child in cubeCanvas.transform)
             {
                 cubeCanvasList.Add(child.gameObject);
@@ -35,10 +34,10 @@ namespace UltrakULL
             GameObject cgBoard = cubeCanvasList[1];
 
             //Patch all the strings here.
-            Text waveText = GetTextfromGameObject(GetGameObjectChild(cgBoard, "Wave Title"));
+            Text waveText = cgBoard.Child("Wave Title").Text();
             waveText.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_wave;
 
-            Text enemiesLeftText = GetTextfromGameObject(GetGameObjectChild(cgBoard, "Enemies Left Title"));
+            Text enemiesLeftText = cgBoard.Child("Enemies Left Title").Text();
             enemiesLeftText.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_enemiesRemaining;
 
         }
@@ -47,11 +46,11 @@ namespace UltrakULL
         {
             GameObject level = GameObject.Find("Player");
 
-            GameObject resultsPanel = GetGameObjectChild(GetGameObjectChild(level, "FinishCanvas (1)"), "Panel");
-            GameObject lastResult = GetGameObjectChild(resultsPanel, "Panel");
-            GameObject bestResult = GetGameObjectChild(GetGameObjectChild(resultsPanel, "Panel (1)"),"Filler");
-            GameObject pointsPanel = GetGameObjectChild(resultsPanel, "Total Points");
-            GameObject leaderboardsPanel = GetGameObjectChild(resultsPanel, "Cyber Grind Leaderboards");
+            GameObject resultsPanel = level.FindPath("FinishCanvas (1)", "Panel");
+            GameObject lastResult = resultsPanel.Child("Panel");
+            GameObject bestResult = resultsPanel.FindPath("Panel (1)", "Filler");
+            GameObject pointsPanel = resultsPanel.Child("Total Points");
+            GameObject leaderboardsPanel = resultsPanel.Child("Cyber Grind Leaderboards");
 
             //Both result panels use the same strings, so declare them here to avoid redundancy.
             string wave = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_wave;
@@ -61,65 +60,65 @@ namespace UltrakULL
 
 
             //Title
-            TextMeshProUGUI titleText= GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(resultsPanel, "Title"),"Text"));
+            TextMeshProUGUI titleText= resultsPanel.FindPath("Title", "Text").TMP();
             titleText.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_cgTitle;
 
             //Last result panel
-            TextMeshProUGUI lastTitle = GetTextMeshProUGUI(GetGameObjectChild(lastResult, "Text"));
+            TextMeshProUGUI lastTitle = lastResult.Child("Text").TMP();
             lastTitle.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_previousRun;
 
-            TextMeshProUGUI lastWave = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(lastResult, "Wave - Info"),"Text"));
+            TextMeshProUGUI lastWave = lastResult.FindPath("Wave - Info", "Text").TMP();
             lastWave.text = wave;
 
-            TextMeshProUGUI lastKills = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(lastResult, "Kills - Info"), "Text"));
+            TextMeshProUGUI lastKills = lastResult.FindPath("Kills - Info", "Text").TMP();
             lastKills.text = kills;
 
-            TextMeshProUGUI lastStyle = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(lastResult, "Style - Info"), "Text"));
+            TextMeshProUGUI lastStyle = lastResult.FindPath("Style - Info", "Text").TMP();
             lastStyle.text = style;
 
-            TextMeshProUGUI lastTime = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(lastResult, "Time - Info"), "Text"));
+            TextMeshProUGUI lastTime = lastResult.FindPath("Time - Info", "Text").TMP();
             lastTime.text = time;
 
             //Best result panel
-            TextMeshProUGUI bestTitle = GetTextMeshProUGUI(GetGameObjectChild(bestResult, "Text (1)"));
+            TextMeshProUGUI bestTitle = bestResult.Child("Text (1)").TMP();
             bestTitle.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_bestRun;
 
-            TextMeshProUGUI bestWave = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(bestResult, "Wave - Info (1)"), "Text"));
+            TextMeshProUGUI bestWave = bestResult.FindPath("Wave - Info (1)", "Text").TMP();
             bestWave.text = wave;
 
-            TextMeshProUGUI bestKills = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(bestResult, "Kills - Info (1)"), "Text"));
+            TextMeshProUGUI bestKills = bestResult.FindPath("Kills - Info (1)", "Text").TMP();
             bestKills.text = kills;
 
-            TextMeshProUGUI bestStyle = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(bestResult, "Style - Info (1)"), "Text"));
+            TextMeshProUGUI bestStyle = bestResult.FindPath("Style - Info (1)", "Text").TMP();
             bestStyle.text = style;
 
-            TextMeshProUGUI bestTime = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(bestResult, "Time - Info (1)"), "Text"));
+            TextMeshProUGUI bestTime = bestResult.FindPath("Time - Info (1)", "Text").TMP();
             bestTime.text = time;
 
             //Points panel
-            TextMeshProUGUI totalPointsText = GetTextMeshProUGUI(GetGameObjectChild(pointsPanel, "Text (1)"));
+            TextMeshProUGUI totalPointsText = pointsPanel.Child("Text (1)").TMP();
             totalPointsText.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_total;
 
-            TextMeshProUGUI totalPoints = GetTextMeshProUGUI(GetGameObjectChild(pointsPanel, "Text"));
+            TextMeshProUGUI totalPoints = pointsPanel.Child("Text").TMP();
             totalPoints.text = "+0" + "<color=orange>" + LanguageManager.CurrentLanguage.shop.shop_moneyCount + "</color>";
 
             //Leaderboards
 
             string connecting = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_connectingToSteam;
 
-            GameObject friendScores = GetGameObjectChild(leaderboardsPanel, "Friend High Scores");
-            GameObject globalScores = GetGameObjectChild(leaderboardsPanel, "Global High Scores");
+            GameObject friendScores = leaderboardsPanel.Child("Friend High Scores");
+            GameObject globalScores = leaderboardsPanel.Child("Global High Scores");
 
-            TextMeshProUGUI friendScoresTitle = GetTextMeshProUGUI(GetGameObjectChild(friendScores, "Text"));
+            TextMeshProUGUI friendScoresTitle = friendScores.Child("Text").TMP();
             friendScoresTitle.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_friendScores;
 
-            TextMeshProUGUI globalScoresTitle = GetTextMeshProUGUI(GetGameObjectChild(globalScores, "Text"));
+            TextMeshProUGUI globalScoresTitle = globalScores.Child("Text").TMP();
             globalScoresTitle.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_globalScores;
 
-            TextMeshProUGUI friendsConnectingText = GetTextMeshProUGUI(GetGameObjectChild(friendScores, "Connecting"));
+            TextMeshProUGUI friendsConnectingText = friendScores.Child("Connecting").TMP();
             friendsConnectingText.text = connecting;
 
-            TextMeshProUGUI globalConnectingText = GetTextMeshProUGUI(GetGameObjectChild(globalScores, "Connecting"));
+            TextMeshProUGUI globalConnectingText = globalScores.Child("Connecting").TMP();
             globalConnectingText.text = connecting;
 
 
@@ -128,102 +127,102 @@ namespace UltrakULL
         private static void PatchTerminal()
         {
             GameObject level = GameObject.Find("FirstRoom");
-            GameObject cgTerminal = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(level, "Room"), "Cybergrind Shop"), "Canvas");
+            GameObject cgTerminal = level.FindPath("Room", "Cybergrind Shop", "Canvas");
 
-            GameObject cgTerminalMainPanel = GetGameObjectChild(GetGameObjectChild(cgTerminal, "Background"), "Main Panel");
+            GameObject cgTerminalMainPanel = cgTerminal.FindPath("Background", "Main Panel");
 
             //Terminal description(I just ripped off from shop.cs lol)
-            GameObject tipPanel = GetGameObjectChild(cgTerminalMainPanel, "Stats");
-            TextMeshProUGUI cgTerminalTipboxTitle = GetTextMeshProUGUI(GetGameObjectChild(tipPanel, "Title"));
+            GameObject tipPanel = cgTerminalMainPanel.Child("Stats");
+            TextMeshProUGUI cgTerminalTipboxTitle = tipPanel.Child("Title").TMP();
             cgTerminalTipboxTitle.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_settings;
 
-            TextMeshProUGUI cgTerminalTipboxDescription = GetTextMeshProUGUI((GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(tipPanel, "Panel"), "Text Inset"), "Text")));
+            TextMeshProUGUI cgTerminalTipboxDescription = tipPanel.FindPath("Panel", "Text Inset", "Text").TMP();
             cgTerminalTipboxDescription.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_settingsDescription;
 
             //Main menu
-            GameObject mainButtons = GetGameObjectChild(GetGameObjectChild(cgTerminalMainPanel, "Main Menu"), "Buttons");
+            GameObject mainButtons = cgTerminalMainPanel.FindPath("Main Menu", "Buttons");
 
-            TextMeshProUGUI cgTerminalThemesText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(mainButtons, "Themes Button"), "Text"));
+            TextMeshProUGUI cgTerminalThemesText = mainButtons.FindPath("Themes Button", "Text").TMP();
             cgTerminalThemesText.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_themes;
 
-            TextMeshProUGUI cgTerminalMusicText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(mainButtons, "Music Button"), "Text"));
+            TextMeshProUGUI cgTerminalMusicText = mainButtons.FindPath("Music Button", "Text").TMP();
             cgTerminalMusicText.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_music;
 
-            TextMeshProUGUI cgTerminalPatternsText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(mainButtons, "Patterns Button"), "Text"));
+            TextMeshProUGUI cgTerminalPatternsText = mainButtons.FindPath("Patterns Button", "Text").TMP();
             cgTerminalPatternsText.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_patterns;
 
-            TextMeshProUGUI cgTerminalWaveText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(mainButtons, "Waves Button"), "Text"));
+            TextMeshProUGUI cgTerminalWaveText = mainButtons.FindPath("Waves Button", "Text").TMP();
             cgTerminalWaveText.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_waves;
 
             //Themes
-            GameObject cgTerminalThemes = GetGameObjectChild(GetGameObjectChild(cgTerminalMainPanel, "Themes"),"Preset Panel");
+            GameObject cgTerminalThemes = cgTerminalMainPanel.FindPath("Themes", "Preset Panel");
 
-            TextMeshProUGUI cgTerminalThemesTitle = GetTextMeshProUGUI(GetGameObjectChild(cgTerminalThemes, "Title"));
+            TextMeshProUGUI cgTerminalThemesTitle = cgTerminalThemes.Child("Title").TMP();
             cgTerminalThemesTitle.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_themesTitle;
 
-            GameObject cgTerminalThemesPanel = GetGameObjectChild(cgTerminalThemes, "Panel");
+            GameObject cgTerminalThemesPanel = cgTerminalThemes.Child("Panel");
 
-            TextMeshProUGUI cgTerminalThemesDescription = GetTextMeshProUGUI(GetGameObjectChild(cgTerminalThemesPanel, "Text"));
+            TextMeshProUGUI cgTerminalThemesDescription = cgTerminalThemesPanel.Child("Text").TMP();
             cgTerminalThemesDescription.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_themesDescription;
             
-            GameObject cgTerminalThemesButton = GetGameObjectChild(cgTerminalThemesPanel, "Buttons");
+            GameObject cgTerminalThemesButton = cgTerminalThemesPanel.Child("Buttons");
 
-            TextMeshProUGUI cgTerminalThemesLight = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(cgTerminalThemesButton, "Light Button"), "Text"));
+            TextMeshProUGUI cgTerminalThemesLight = cgTerminalThemesButton.FindPath("Light Button", "Text").TMP();
             cgTerminalThemesLight.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_themesLight;
 
-            TextMeshProUGUI cgTerminalThemesDark = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(cgTerminalThemesButton, "Dark Button"), "Text"));
+            TextMeshProUGUI cgTerminalThemesDark = cgTerminalThemesButton.FindPath("Dark Button", "Text").TMP();
             cgTerminalThemesDark.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_themesDark;
 
-            TextMeshProUGUI cgTerminalThemesCustom = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(cgTerminalThemesButton, "Custom Button"), "Text"));
+            TextMeshProUGUI cgTerminalThemesCustom = cgTerminalThemesButton.FindPath("Custom Button", "Text").TMP();
             cgTerminalThemesCustom.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_themesCustom;
 
-            TextMeshProUGUI cgTerminalThemesBack = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(cgTerminalThemes.transform.parent.gameObject, "Back Button"), "Text"));
+            TextMeshProUGUI cgTerminalThemesBack = cgTerminalThemes.transform.parent.gameObject.FindPath("Back Button", "Text").TMP();
             cgTerminalThemesBack.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_themesCustomBack;
 			//Да почему оно сбрасывает всю ветку themes, я же всё правильно по айди ввёл и сравнил с предыдущими, всё идентично. Ещё я хз как сделать перехват текста, чтобы он заменял отображаемые имена папок на свой текст, ибо они тот же TMP используют для отображения, но у них у всех одинаковый подраздел Folder(Clone), и я также хз как их распределить по содержанию строки как в книгах или сообщениях, а не по подразделу, т.к. во всех случаях они весь раздел сбрасывают
 			//TextMeshProUGUI cgTerminalThemesDefault = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(cgTerminalThemesButton, "Default"), "Text"));
 			//cgTerminalThemesDefault.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_themesDefault;
 
             //Playlist
-            GameObject cgMusic = GetGameObjectChild(GetGameObjectChild(cgTerminalMainPanel, "Playlist"),"Panel");
+            GameObject cgMusic = cgTerminalMainPanel.FindPath("Playlist", "Panel");
             
-            TextMeshProUGUI cgMusicTitle = GetTextMeshProUGUI(GetGameObjectChild(cgMusic.transform.parent.gameObject,"Title"));
+            TextMeshProUGUI cgMusicTitle = cgMusic.transform.parent.gameObject.Child("Title").TMP();
             cgMusicTitle.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_musicTitle;
             
-            TextMeshProUGUI cgMusicClose = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(cgMusic, "Close Button"),"Text"));
+            TextMeshProUGUI cgMusicClose = cgMusic.FindPath("Close Button", "Text").TMP();
             cgMusicClose.text = LanguageManager.CurrentLanguage.devMuseum.museum_chessSettingsclose;
 
             //Songs Type Selection(+ button in playlist will show this up)
-            GameObject cgMusicTypeCanvas = GetGameObjectChild(GetGameObjectChild(cgTerminalMainPanel, "Songs Type Selection"), "Panel");
+            GameObject cgMusicTypeCanvas = cgTerminalMainPanel.FindPath("Songs Type Selection", "Panel");
 
-            TextMeshProUGUI cgMusicTypeTitle = GetTextMeshProUGUI(GetGameObjectChild(cgMusicTypeCanvas.transform.parent.gameObject, "Title"));
+            TextMeshProUGUI cgMusicTypeTitle = cgMusicTypeCanvas.transform.parent.gameObject.Child("Title").TMP();
             cgMusicTypeTitle.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_musicType;
 
-            GameObject cgMusicTypeButtons = GetGameObjectChild(GetGameObjectChild(cgMusicTypeCanvas, "Inset"), "Type Selection Buttons");
-            TextMeshProUGUI cgMusicTypeULTRAKILL = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(cgMusicTypeButtons, "Soundtrack Button"), "Text"));
+            GameObject cgMusicTypeButtons = cgMusicTypeCanvas.FindPath("Inset", "Type Selection Buttons");
+            TextMeshProUGUI cgMusicTypeULTRAKILL = cgMusicTypeButtons.FindPath("Soundtrack Button", "Text").TMP();
             cgMusicTypeULTRAKILL.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_musicSoundtrack;
 
-            TextMeshProUGUI cgMusicTypeCustom = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(cgMusicTypeButtons, "Custom Button"), "Text"));
+            TextMeshProUGUI cgMusicTypeCustom = cgMusicTypeButtons.FindPath("Custom Button", "Text").TMP();
             cgMusicTypeCustom.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_themesCustom;
 
-            TextMeshProUGUI cgMusicTypeClose = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(cgMusicTypeCanvas, "Close Button"), "Text"));
+            TextMeshProUGUI cgMusicTypeClose = cgMusicTypeCanvas.FindPath("Close Button", "Text").TMP();
             cgMusicTypeClose.text = LanguageManager.CurrentLanguage.devMuseum.museum_chessSettingsclose;
 
-            GameObject cgMusicSoundtrack = GetGameObjectChild(GetGameObjectChild(cgTerminalMainPanel, "Songs Soundtrack"),"Panel");
-            TextMeshProUGUI cgMusicSoundtrackTitle = GetTextMeshProUGUI(GetGameObjectChild(cgMusicSoundtrack.transform.parent.gameObject,"Title"));
+            GameObject cgMusicSoundtrack = cgTerminalMainPanel.FindPath("Songs Soundtrack", "Panel");
+            TextMeshProUGUI cgMusicSoundtrackTitle = cgMusicSoundtrack.transform.parent.gameObject.Child("Title").TMP();
             cgMusicSoundtrackTitle.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_musicSoundtrack;
 
-            TextMeshProUGUI cgMusicSoundtrackClose = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(cgMusicSoundtrack,"Close Button"),"Text"));
+            TextMeshProUGUI cgMusicSoundtrackClose = cgMusicSoundtrack.FindPath("Close Button", "Text").TMP();
             cgMusicSoundtrackClose.text = LanguageManager.CurrentLanguage.devMuseum.museum_chessSettingsclose;
 
-            GameObject cgMusicSoundtrackAddMenu = GetGameObjectChild(GetGameObjectChild(cgMusicSoundtrack,"Inset"),"Songs");
+            GameObject cgMusicSoundtrackAddMenu = cgMusicSoundtrack.FindPath("Inset", "Songs");
 
             //CustomMusic
-            GameObject cgCustomMusic = GetGameObjectChild(GetGameObjectChild(cgTerminalMainPanel, "Songs Custom"), "Panel");
+            GameObject cgCustomMusic = cgTerminalMainPanel.FindPath("Songs Custom", "Panel");
 
-            TextMeshProUGUI cgCustomMusicTitle = GetTextMeshProUGUI(GetGameObjectChild(cgCustomMusic.transform.parent.gameObject, "Title"));
+            TextMeshProUGUI cgCustomMusicTitle = cgCustomMusic.transform.parent.gameObject.Child("Title").TMP();
             cgCustomMusicTitle.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_themesCustom;
 
-            TextMeshProUGUI cgCustomMusicClose = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(cgCustomMusic, "Close Button"), "Text"));
+            TextMeshProUGUI cgCustomMusicClose = cgCustomMusic.FindPath("Close Button", "Text").TMP();
             cgCustomMusicClose.text = LanguageManager.CurrentLanguage.devMuseum.museum_chessSettingsclose;
 
             //Changes the "Unlocked" string under songs that are unlocked
@@ -232,7 +231,7 @@ namespace UltrakULL
             {
                 if (child.name == "Song Template(Clone)")
                 {
-                    TextMeshProUGUI cgMusicSoundtrackTask = GetTextMeshProUGUI(GetGameObjectChild(child.gameObject, "Requirement"));
+                    TextMeshProUGUI cgMusicSoundtrackTask = child.gameObject.Child("Requirement").TMP();
                     if (cgMusicSoundtrackTask.text == "Unlocked") { cgMusicSoundtrackTask.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_musicUnlocked; }
                 }
             }
@@ -244,89 +243,89 @@ namespace UltrakULL
             
             
             //Customize theme
-            GameObject cgCustomTheme = GetGameObjectChild(GetGameObjectChild(cgTerminalMainPanel, "Theme Custom"),"Panel");
-            TextMeshProUGUI cgCustomThemeTitle = GetTextMeshProUGUI(GetGameObjectChild(cgCustomTheme.transform.parent.gameObject, "Title"));
+            GameObject cgCustomTheme = cgTerminalMainPanel.FindPath("Theme Custom", "Panel");
+            TextMeshProUGUI cgCustomThemeTitle = cgCustomTheme.transform.parent.gameObject.Child("Title").TMP();
             //"Custom", replace this later
             cgCustomThemeTitle.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_themesModify;
 
-            GameObject cgCustomThemeButtons = GetGameObjectChild(cgCustomTheme, "Sidebar");
-            GameObject cgCustomThemeSelectorButtons = GetGameObjectChild(cgCustomThemeButtons, "Selector Buttons");
-            TextMeshProUGUI cgCustomGrid = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(cgCustomThemeSelectorButtons, "Grid Button"),"Text"));
+            GameObject cgCustomThemeButtons = cgCustomTheme.Child("Sidebar");
+            GameObject cgCustomThemeSelectorButtons = cgCustomThemeButtons.Child("Selector Buttons");
+            TextMeshProUGUI cgCustomGrid = cgCustomThemeSelectorButtons.FindPath("Grid Button", "Text").TMP();
             cgCustomGrid.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_themesCustomGrid;
 
-            TextMeshProUGUI cgCustomGridGlow = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(cgCustomThemeSelectorButtons, "Glow Button"), "Text"));
+            TextMeshProUGUI cgCustomGridGlow = cgCustomThemeSelectorButtons.FindPath("Glow Button", "Text").TMP();
             cgCustomGridGlow.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_themesCustomGridGlow;
 
-            TextMeshProUGUI cgCustomSkybox = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(cgCustomThemeSelectorButtons, "Skybox Button"), "Text"));
+            TextMeshProUGUI cgCustomSkybox = cgCustomThemeSelectorButtons.FindPath("Skybox Button", "Text").TMP();
             cgCustomSkybox.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_themesCustomSkybox;
 
-            TextMeshProUGUI cgCustomFog = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(cgCustomThemeSelectorButtons, "Fog Button"), "Text"));
+            TextMeshProUGUI cgCustomFog = cgCustomThemeSelectorButtons.FindPath("Fog Button", "Text").TMP();
             cgCustomFog.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_themesCustomFog;
 
-            TextMeshProUGUI cgCustomThemeBack = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(cgCustomThemeButtons, "Back Button"), "Text"));
+            TextMeshProUGUI cgCustomThemeBack = cgCustomThemeButtons.FindPath("Back Button", "Text").TMP();
             cgCustomThemeBack.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_themesCustomBack;
 
             //Leftside Buttons(Custom Theme)
-            GameObject cgCustomAdditionalRows = GetGameObjectChild(cgCustomTheme, "Window");
+            GameObject cgCustomAdditionalRows = cgCustomTheme.Child("Window");
 
-            TextMeshProUGUI cgCustomRefresh = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(cgCustomAdditionalRows, "Grid Wrapper"),"Refresh Button"),"Text"));
+            TextMeshProUGUI cgCustomRefresh = cgCustomAdditionalRows.FindPath("Grid Wrapper", "Refresh Button", "Text").TMP();
             cgCustomRefresh.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_patternsRefresh;
 
-            GameObject cgCustomGridTypeSelection = GetGameObjectChild(cgCustomAdditionalRows, "Grid Type Selection");
+            GameObject cgCustomGridTypeSelection = cgCustomAdditionalRows.Child("Grid Type Selection");
 
-            TextMeshProUGUI cgCustomAdditionalBase = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(cgCustomGridTypeSelection, "Base Button"), "Text"));
+            TextMeshProUGUI cgCustomAdditionalBase = cgCustomGridTypeSelection.FindPath("Base Button", "Text").TMP();
             cgCustomAdditionalBase.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_themesCustomBase;
 
-            TextMeshProUGUI cgCustomAdditionalTopRow = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(cgCustomGridTypeSelection, "Top Row Button"), "Text"));
+            TextMeshProUGUI cgCustomAdditionalTopRow = cgCustomGridTypeSelection.FindPath("Top Row Button", "Text").TMP();
             cgCustomAdditionalTopRow.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_themesCustomTopRow;
 
-            TextMeshProUGUI cgCustomAdditionalTop = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(cgCustomGridTypeSelection, "Top Button"), "Text"));
+            TextMeshProUGUI cgCustomAdditionalTop = cgCustomGridTypeSelection.FindPath("Top Button", "Text").TMP();
             cgCustomAdditionalTop.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_themesCustomTop;
 
-            TextMeshProUGUI cgCustomAdditionalGlowIntensity = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(cgCustomAdditionalRows, "Glow Intensity"),"Title"));
+            TextMeshProUGUI cgCustomAdditionalGlowIntensity = cgCustomAdditionalRows.FindPath("Glow Intensity", "Title").TMP();
             cgCustomAdditionalGlowIntensity.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_themesCustomGlowIntensity;
             //Fog Control goes here, add it later
 
-            GameObject cgCustomFogWindow = GetGameObjectChild(cgCustomAdditionalRows, "Fog Control");
-            GameObject cgCustomFogSlider = GetGameObjectChild(cgCustomFogWindow, "Sliders");
-            GameObject cgCustomFogSliderLayoutGroup = GetGameObjectChild(cgCustomFogSlider, "Layout Group"); //This is the parent of all sliders
-            GameObject cgCustomFogTabs = GetGameObjectChild(cgCustomFogWindow, "Tabs"); //Now this GameObject contains all buttons to switch fog type. "Disable", "Static", "Dynamic"
+            GameObject cgCustomFogWindow = cgCustomAdditionalRows.Child("Fog Control");
+            GameObject cgCustomFogSlider = cgCustomFogWindow.Child("Sliders");
+            GameObject cgCustomFogSliderLayoutGroup = cgCustomFogSlider.Child("Layout Group"); //This is the parent of all sliders
+            GameObject cgCustomFogTabs = cgCustomFogWindow.Child("Tabs"); //Now this GameObject contains all buttons to switch fog type. "Disable", "Static", "Dynamic"
 
             //Patch Color
-            TextMeshProUGUI cgCustomFogColor = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(cgCustomFogWindow, "Color"), "Text")); //Color moved to Window in 16d Patch
+            TextMeshProUGUI cgCustomFogColor = cgCustomFogWindow.FindPath("Color", "Text").TMP(); //Color moved to Window in 16d Patch
             cgCustomFogColor.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_themesCustomFogColor;
 
             //Patch Sliders Text and "Disable" Description
-            TextMeshProUGUI cgCustomFogDisableDesc = GetTextMeshProUGUI(GetGameObjectChild(cgCustomFogSlider, "Fog Disabled Text"));
+            TextMeshProUGUI cgCustomFogDisableDesc = cgCustomFogSlider.Child("Fog Disabled Text").TMP();
             cgCustomFogDisableDesc.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_themesCustomFogDisableDesc;
 
-            TextMeshProUGUI cgCustomFogStart = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(cgCustomFogSliderLayoutGroup, "Start Distance"), "Text"));
+            TextMeshProUGUI cgCustomFogStart = cgCustomFogSliderLayoutGroup.FindPath("Start Distance", "Text").TMP();
             cgCustomFogStart.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_themesCustomFogStart;
 
-            TextMeshProUGUI cgCustomFogEnd = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(cgCustomFogSliderLayoutGroup, "End Distance"), "Text"));
+            TextMeshProUGUI cgCustomFogEnd = cgCustomFogSliderLayoutGroup.FindPath("End Distance", "Text").TMP();
             cgCustomFogEnd.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_themesCustomFogEnd;
 
             //Patch Buttons in Tabs. "Disable", "Static", "Dynamic"
-            TextMeshProUGUI cgCustomFogDisable = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(cgCustomFogTabs, "Disabled Button"), "Text"));
+            TextMeshProUGUI cgCustomFogDisable = cgCustomFogTabs.FindPath("Disabled Button", "Text").TMP();
             cgCustomFogDisable.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_themesCustomFogDisable;
 
-            TextMeshProUGUI cgCustomFogStatic = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(cgCustomFogTabs, "Static Button"), "Text"));
+            TextMeshProUGUI cgCustomFogStatic = cgCustomFogTabs.FindPath("Static Button", "Text").TMP();
             cgCustomFogStatic.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_themesCustomFogStatic;
 
-            TextMeshProUGUI cgCustomFogDynamic = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(cgCustomFogTabs, "Dynamic Button"), "Text"));
+            TextMeshProUGUI cgCustomFogDynamic = cgCustomFogTabs.FindPath("Dynamic Button", "Text").TMP();
             cgCustomFogDynamic.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_themesCustomFogDynamic;
 
             //"Set to default" button
-            TextMeshProUGUI cgCustomFogDefault = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(cgCustomFogWindow, "Default Button"), "Text"));
+            TextMeshProUGUI cgCustomFogDefault = cgCustomFogWindow.FindPath("Default Button", "Text").TMP();
             cgCustomFogDefault.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_themesCustomFogDefault;
 
             //Patterns
-            GameObject cgTerminalPatterns = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(cgTerminalMainPanel, "Patterns"), "Patterns Window"), "Panel");
+            GameObject cgTerminalPatterns = cgTerminalMainPanel.FindPath("Patterns", "Patterns Window", "Panel");
 
-            TextMeshProUGUI cgTerminalPatternsTitle = GetTextMeshProUGUI(GetGameObjectChild(cgTerminalPatterns.transform.parent.gameObject, "Title"));
+            TextMeshProUGUI cgTerminalPatternsTitle = cgTerminalPatterns.transform.parent.gameObject.Child("Title").TMP();
             cgTerminalPatternsTitle.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_patternsTitle;
 
-            TextMeshProUGUI cgPatternsWarning = GetTextMeshProUGUI(GetGameObjectChild(cgTerminalPatterns,"Warning Text"));
+            TextMeshProUGUI cgPatternsWarning = cgTerminalPatterns.Child("Warning Text").TMP();
             cgPatternsWarning.text = "<color=red>" + LanguageManager.CurrentLanguage.cyberGrind.cybergrind_patternsWarning + "</color>";
 
             bool customPatternMode = MonoSingleton<EndlessGrid>.Instance.customPatternMode;
@@ -335,7 +334,7 @@ namespace UltrakULL
                 ? LanguageManager.CurrentLanguage.cyberGrind.cybergrind_patternsSwitchButtonNot
                 : LanguageManager.CurrentLanguage.cyberGrind.cybergrind_patternsSwitchButton;
 
-            TextMeshProUGUI cgPatternsBack = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(cgTerminalMainPanel, "Patterns"), "Back Button"), "Text"));
+            TextMeshProUGUI cgPatternsBack = cgTerminalMainPanel.FindPath("Patterns", "Back Button", "Text").TMP();
             cgPatternsBack.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_themesCustomBack;
 
             //TextMeshProUGUI cgCustomStateButton = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(cgTerminalPatterns, "StateButton"), "Text"));
@@ -343,24 +342,24 @@ namespace UltrakULL
             //cgCustomStateButton.text = (customPatternMode ? LanguageManager.CurrentLanguage.misc.state_activated : LanguageManager.CurrentLanguage.misc.state_deactivated);
             //it seems broken vanilla rn, so skipping it
 
-            TextMeshProUGUI cgTerminalPatternsEditor = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(cgTerminalPatterns, "Patterns"), "Editor Button"), "Text"));
+            TextMeshProUGUI cgTerminalPatternsEditor = cgTerminalPatterns.FindPath("Patterns", "Editor Button", "Text").TMP();
             cgTerminalPatternsEditor.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_patternsLaunchExternalEditor;
 
             //Waves
-            GameObject cgTerminalWaves = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(cgTerminalMainPanel, "Waves"), "Waves Window"), "Panel");
+            GameObject cgTerminalWaves = cgTerminalMainPanel.FindPath("Waves", "Waves Window", "Panel");
 
-            TextMeshProUGUI cgTerminalWavesTitle = GetTextMeshProUGUI(GetGameObjectChild(cgTerminalWaves.transform.parent.gameObject, "Title"));
+            TextMeshProUGUI cgTerminalWavesTitle = cgTerminalWaves.transform.parent.gameObject.Child("Title").TMP();
             cgTerminalWavesTitle.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_wavesTitle;
 
-            TextMeshProUGUI cgTerminalWavesText = GetTextMeshProUGUI(GetGameObjectChild(cgTerminalWaves, "Select Wave Text"));
+            TextMeshProUGUI cgTerminalWavesText = cgTerminalWaves.Child("Select Wave Text").TMP();
             cgTerminalWavesText.text =
                 LanguageManager.CurrentLanguage.cyberGrind.cybergrind_wavesDescription1;
             cgTerminalWavesText.fontSize = 16;
-            TextMeshProUGUI cgTerminalWavesReqText = GetTextMeshProUGUI(GetGameObjectChild(cgTerminalWaves, "Wave Requirement Text"));
+            TextMeshProUGUI cgTerminalWavesReqText = cgTerminalWaves.Child("Wave Requirement Text").TMP();
             cgTerminalWavesReqText.text =
                 LanguageManager.CurrentLanguage.cyberGrind.cybergrind_wavesDescription2;
 
-            TextMeshProUGUI cgWavesBack = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(cgTerminalMainPanel, "Waves"), "Back Button"), "Text"));
+            TextMeshProUGUI cgWavesBack = cgTerminalMainPanel.FindPath("Waves", "Back Button", "Text").TMP();
             cgWavesBack.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_themesCustomBack;
         }
 
@@ -368,9 +367,9 @@ namespace UltrakULL
         {
             //Changes all folders' own names based on their original name
             GameObject level = GameObject.Find("FirstRoom");
-            GameObject cgTerminalMainPanel = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(level, "Room"), "Cybergrind Shop"), "Canvas"),"Background"),"Main Panel");
-            GameObject cgMusicSoundtrack = GetGameObjectChild(GetGameObjectChild(cgTerminalMainPanel, "Songs Soundtrack"), "Panel");
-            GameObject cgMusicSoundtrackAddMenu = GetGameObjectChild(GetGameObjectChild(cgMusicSoundtrack, "Inset"), "Songs");
+            GameObject cgTerminalMainPanel = level.FindPath("Room", "Cybergrind Shop", "Canvas", "Background", "Main Panel");
+            GameObject cgMusicSoundtrack = cgTerminalMainPanel.FindPath("Songs Soundtrack", "Panel");
+            GameObject cgMusicSoundtrackAddMenu = cgMusicSoundtrack.FindPath("Inset", "Songs");
             await Task.Delay(5);
             foreach (Transform child in cgMusicSoundtrackAddMenu.transform)
             {
@@ -378,7 +377,7 @@ namespace UltrakULL
                 {
                     Button a = child.GetComponent<Button>();
                     a.onClick.AddListener(delegate { PatchTerminalFolder(); });
-                    TextMeshProUGUI cgMusicSoundtrackFolderTitle = GetTextMeshProUGUI(GetGameObjectChild(child.gameObject, "Title"));
+                    TextMeshProUGUI cgMusicSoundtrackFolderTitle = child.gameObject.Child("Title").TMP();
                     switch (cgMusicSoundtrackFolderTitle.text.ToUpper())
                     {
                         case "THE CYBER GRIND": { cgMusicSoundtrackFolderTitle.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_musicFolderNameCyberGrind; break; }
@@ -396,7 +395,7 @@ namespace UltrakULL
                 }
                 if (child.name == "Song Template(Clone)")
                 {
-                    TextMeshProUGUI cgMusicSoundtrackTask = GetTextMeshProUGUI(GetGameObjectChild(child.gameObject, "Requirement"));
+                    TextMeshProUGUI cgMusicSoundtrackTask = child.gameObject.Child("Requirement").TMP();
                     if (cgMusicSoundtrackTask.text == "Unlocked") { cgMusicSoundtrackTask.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_musicUnlocked; }
                 }
             }

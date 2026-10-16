@@ -54,14 +54,13 @@ namespace UltrakULL.Harmony_Patches
                 if (__instance.gameObject.name == "Shop Prime")
                 {
                     Logging.Warn("Prime end testament, getting text");
-                    TextMeshProUGUI primeEndText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(___shopCanvas.gameObject, "Background"), "Main Window"),
-                        "Scroll View"), "Viewport"), "Text"));
+                    TextMeshProUGUI primeEndText = ___shopCanvas.gameObject.FindPath("Background", "Main Window", "Scroll View", "Viewport", "Text").TMP();
                     PrimeSanctumStrings pss = new PrimeSanctumStrings();
                     primeEndText.text = pss.GetSecretText();
                     return;
                 }
 
-                TextMeshProUGUI origTip = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(___shopCanvas.gameObject, "Background"), "Main Panel"), "Tip of the Day"), "Panel"), "Text Inset"), "TipText"));
+                TextMeshProUGUI origTip = ___shopCanvas.gameObject.FindPath("Background", "Main Panel", "Tip of the Day", "Panel", "Text Inset", "TipText").TMP();
                 GameObject shopObject = ___shopCanvas.gameObject;
 
                 //Redirect for the 5-3 end shop.

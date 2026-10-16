@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using static UltrakULL.CommonFunctions;
 using UltrakULL.json;
 
 namespace UltrakULL
@@ -18,9 +17,9 @@ namespace UltrakULL
         public static void PatchPrompts(ref GameObject canvasObj)
         {
 
-            GameObject choicesBaseObject = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(canvasObj, "PowerUpVignette"),"Panel"),"Aspect Ratio Mask");
+            GameObject choicesBaseObject = canvasObj.FindPath("PowerUpVignette", "Panel", "Aspect Ratio Mask");
 
-            GameObject fallenChoices = GetGameObjectChild(choicesBaseObject, "Fallen");
+            GameObject fallenChoices = choicesBaseObject.Child("Fallen");
 
             //Annoyingly both choice box objects in the Fallen sections are named the same. So we'll do this to pick up both of them.
             List<GameObject> fallenChoiceObjects = new List<GameObject>();
@@ -36,175 +35,175 @@ namespace UltrakULL
             GameObject fallenChoice2Object = fallenChoiceObjects[1];
 
             //Fallen
-            Text fallenChoice1ChoiceAText = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(fallenChoice1Object, "Button (A)"),"Text"));
+            Text fallenChoice1ChoiceAText = fallenChoice1Object.FindPath("Button (A)", "Text").Text();
             fallenChoice1ChoiceAText.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_fallenPromptFirst1;
 
-            Text fallenChoice1ChoiceBText = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(fallenChoice1Object, "Button (B)"), "Text"));
+            Text fallenChoice1ChoiceBText = fallenChoice1Object.FindPath("Button (B)", "Text").Text();
             fallenChoice1ChoiceBText.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_fallenPromptFirst2;
 
-            Text fallenChoice1ChoiceCText = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(fallenChoice1Object, "Button (C)"), "Text"));
+            Text fallenChoice1ChoiceCText = fallenChoice1Object.FindPath("Button (C)", "Text").Text();
             fallenChoice1ChoiceCText.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_fallenPromptFirst3;
 
-            Text fallenChoice2ChoiceAText = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(fallenChoice2Object, "Button (A)"), "Text"));
+            Text fallenChoice2ChoiceAText = fallenChoice2Object.FindPath("Button (A)", "Text").Text();
             fallenChoice2ChoiceAText.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_fallenPromptSecond1;
 
-            Text fallenChoice2ChoiceBText = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(fallenChoice2Object, "Button (B)"), "Text"));
+            Text fallenChoice2ChoiceBText = fallenChoice2Object.FindPath("Button (B)", "Text").Text();
             fallenChoice2ChoiceBText.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_fallenPromptSecond2;
 
-            Text fallenChoice2ChoiceCText = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(fallenChoice2Object, "Button (C)"), "Text"));
+            Text fallenChoice2ChoiceCText = fallenChoice2Object.FindPath("Button (C)", "Text").Text();
             fallenChoice2ChoiceCText.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_fallenPromptSecond3;
 
             //Middle choice 1
-            GameObject middleChoices1Object = GetGameObjectChild(GetGameObjectChild(choicesBaseObject, "Middle"), "Choices Box (1)");
+            GameObject middleChoices1Object = choicesBaseObject.FindPath("Middle", "Choices Box (1)");
 
-            Text middleChoice1ChoiceAText = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(middleChoices1Object, "Button (A)"), "Text"));
+            Text middleChoice1ChoiceAText = middleChoices1Object.FindPath("Button (A)", "Text").Text();
             middleChoice1ChoiceAText.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_middlePrompt1;
 
-            Text middleChoice1ChoiceBText = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(middleChoices1Object, "Button (B)"), "Text"));
+            Text middleChoice1ChoiceBText = middleChoices1Object.FindPath("Button (B)", "Text").Text();
             middleChoice1ChoiceBText.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_middlePrompt2;
 
-            Text middleChoice1ChoiceCText = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(middleChoices1Object, "Button (C)"), "Text"));
+            Text middleChoice1ChoiceCText = middleChoices1Object.FindPath("Button (C)", "Text").Text();
             middleChoice1ChoiceCText.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_middlePrompt3;
 
 
             //Middle choice 2
-            GameObject middleChoices2Object = GetGameObjectChild(GetGameObjectChild(choicesBaseObject, "Middle"), "Choices Box (2)");
+            GameObject middleChoices2Object = choicesBaseObject.FindPath("Middle", "Choices Box (2)");
 
-            Text middleChoice2ChoiceAText = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(middleChoices2Object, "Button (A)"), "Text"));
+            Text middleChoice2ChoiceAText = middleChoices2Object.FindPath("Button (A)", "Text").Text();
             middleChoice2ChoiceAText.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_middlePromptSecondRecklessness;
 
-            Text middleChoice2ChoiceBText = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(middleChoices2Object, "Button (B)"), "Text"));
+            Text middleChoice2ChoiceBText = middleChoices2Object.FindPath("Button (B)", "Text").Text();
             middleChoice2ChoiceBText.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_middlePromptSecondWaiting;
 
-            Text middleChoice2ChoiceCText = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(middleChoices2Object, "Button (C)"), "Text"));
+            Text middleChoice2ChoiceCText = middleChoices2Object.FindPath("Button (C)", "Text").Text();
             middleChoice2ChoiceCText.text = "...Pourquoi sommes-nous ici?";
 
 
             //Recklessness choice 1
-            GameObject recklessnessChoices1Object = GetGameObjectChild(GetGameObjectChild(choicesBaseObject, "Recklessness"), "Choices Box");
+            GameObject recklessnessChoices1Object = choicesBaseObject.FindPath("Recklessness", "Choices Box");
 
-            Text recklessnessChoice1ChoiceAText = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(recklessnessChoices1Object, "Button (A)"), "Text"));
+            Text recklessnessChoice1ChoiceAText = recklessnessChoices1Object.FindPath("Button (A)", "Text").Text();
             recklessnessChoice1ChoiceAText.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_recklessnessPrompt1;
 
-            Text recklessnessChoice2ChoiceBText = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(recklessnessChoices1Object, "Button (B)"), "Text"));
+            Text recklessnessChoice2ChoiceBText = recklessnessChoices1Object.FindPath("Button (B)", "Text").Text();
             recklessnessChoice2ChoiceBText.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_recklessnessPrompt2;
 
             //Recklessness choice 2
-            GameObject recklessnessChoices2Object = GetGameObjectChild(GetGameObjectChild(choicesBaseObject, "Recklessness"), "Choices Box (1)");
-            Text recklessnessChoice2ChoiceAText = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(recklessnessChoices2Object, "Button (A)"), "Text"));
+            GameObject recklessnessChoices2Object = choicesBaseObject.FindPath("Recklessness", "Choices Box (1)");
+            Text recklessnessChoice2ChoiceAText = recklessnessChoices2Object.FindPath("Button (A)", "Text").Text();
             recklessnessChoice2ChoiceAText.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_recklessnessPrompt3;
 
             //Waiting choice 1
-            GameObject waitingChoices1Object = GetGameObjectChild(GetGameObjectChild(choicesBaseObject, "Waiting"), "Choices Box");
+            GameObject waitingChoices1Object = choicesBaseObject.FindPath("Waiting", "Choices Box");
 
-            Text waitingChoice1ChoiceAText = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(waitingChoices1Object, "Button (A)"), "Text"));
+            Text waitingChoice1ChoiceAText = waitingChoices1Object.FindPath("Button (A)", "Text").Text();
             waitingChoice1ChoiceAText.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_waitingPromptFirst1;
 
-            Text waitingChoice2ChoiceBText = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(waitingChoices1Object, "Button (B)"), "Text"));
+            Text waitingChoice2ChoiceBText = waitingChoices1Object.FindPath("Button (B)", "Text").Text();
             waitingChoice2ChoiceBText.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_waitingPromptFirst2;
 
             //Waiting choice 2
-            GameObject waitingChoices2Object = GetGameObjectChild(GetGameObjectChild(choicesBaseObject, "Waiting"), "Choices Box (1)");
-            Text waitingChoice2ChoiceAText = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(waitingChoices2Object, "Button (A)"), "Text"));
+            GameObject waitingChoices2Object = choicesBaseObject.FindPath("Waiting", "Choices Box (1)");
+            Text waitingChoice2ChoiceAText = waitingChoices2Object.FindPath("Button (A)", "Text").Text();
             waitingChoice2ChoiceAText.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_waitingPromptThird;
 
             //Nihilism choice
-            GameObject nihilismChoices1Object = GetGameObjectChild(GetGameObjectChild(choicesBaseObject, "Nihilism"), "Choices Box (2)");
-            Text nihilismChoices1Text = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(nihilismChoices1Object, "Button (A)"), "Text"));
+            GameObject nihilismChoices1Object = choicesBaseObject.FindPath("Nihilism", "Choices Box (2)");
+            Text nihilismChoices1Text = nihilismChoices1Object.FindPath("Button (A)", "Text").Text();
             nihilismChoices1Text.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilismPrompt1;
 
-            GameObject nihilismChoices2Object = GetGameObjectChild(GetGameObjectChild(choicesBaseObject, "Nihilism"), "Choices Box (3)");
-            Text nihilismChoices2Text = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(nihilismChoices2Object, "Button (A)"), "Text"));
+            GameObject nihilismChoices2Object = choicesBaseObject.FindPath("Nihilism", "Choices Box (3)");
+            Text nihilismChoices2Text = nihilismChoices2Object.FindPath("Button (A)", "Text").Text();
             nihilismChoices2Text.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilismPrompt2;
 
-            GameObject nihilismChoices3Object = GetGameObjectChild(GetGameObjectChild(choicesBaseObject, "Nihilism"), "Choices Box (4)");
-            Text nihilismChoices3Text = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(nihilismChoices3Object, "Button (A)"), "Text"));
+            GameObject nihilismChoices3Object = choicesBaseObject.FindPath("Nihilism", "Choices Box (4)");
+            Text nihilismChoices3Text = nihilismChoices3Object.FindPath("Button (A)", "Text").Text();
             nihilismChoices3Text.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilismPrompt3;
 
-            GameObject nihilismChoices4Object = GetGameObjectChild(GetGameObjectChild(choicesBaseObject, "Nihilism"), "Choices Box (5)");
-            Text nihilismChoices4Text = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(nihilismChoices4Object, "Button (A)"), "Text"));
+            GameObject nihilismChoices4Object = choicesBaseObject.FindPath("Nihilism", "Choices Box (5)");
+            Text nihilismChoices4Text = nihilismChoices4Object.FindPath("Button (A)", "Text").Text();
             nihilismChoices4Text.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilismPrompt4;
 
-            GameObject nihilismChoices5Object = GetGameObjectChild(GetGameObjectChild(choicesBaseObject, "Nihilism"), "Choices Box (6)");
-            Text nihilismChoices5Text = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(nihilismChoices5Object, "Button (A)"), "Text"));
+            GameObject nihilismChoices5Object = choicesBaseObject.FindPath("Nihilism", "Choices Box (6)");
+            Text nihilismChoices5Text = nihilismChoices5Object.FindPath("Button (A)", "Text").Text();
             nihilismChoices5Text.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilismPrompt5;
 
-            GameObject nihilismChoices6Object = GetGameObjectChild(GetGameObjectChild(choicesBaseObject, "Nihilism"), "Choices Box (7)");
-            Text nihilismChoices6Text = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(nihilismChoices6Object, "Button (A)"), "Text"));
+            GameObject nihilismChoices6Object = choicesBaseObject.FindPath("Nihilism", "Choices Box (7)");
+            Text nihilismChoices6Text = nihilismChoices6Object.FindPath("Button (A)", "Text").Text();
             nihilismChoices6Text.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilismPrompt6;
 
-            GameObject nihilismChoices7Object = GetGameObjectChild(GetGameObjectChild(choicesBaseObject, "Nihilism"), "Choices Box (8)");
-            Text nihilismChoices7Text = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(nihilismChoices7Object, "Button (A)"), "Text"));
+            GameObject nihilismChoices7Object = choicesBaseObject.FindPath("Nihilism", "Choices Box (8)");
+            Text nihilismChoices7Text = nihilismChoices7Object.FindPath("Button (A)", "Text").Text();
             nihilismChoices7Text.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilismPrompt7;
 
-            GameObject nihilismChoices8Object = GetGameObjectChild(GetGameObjectChild(choicesBaseObject, "Nihilism"), "Choices Box (9)");
-            Text nihilismChoices8Text = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(nihilismChoices8Object, "Button (A)"), "Text"));
+            GameObject nihilismChoices8Object = choicesBaseObject.FindPath("Nihilism", "Choices Box (9)");
+            Text nihilismChoices8Text = nihilismChoices8Object.FindPath("Button (A)", "Text").Text();
             nihilismChoices8Text.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilismPrompt8;
 
-            GameObject nihilismChoices9Object = GetGameObjectChild(GetGameObjectChild(choicesBaseObject, "Nihilism"), "Choices Box (10)");
-            Text nihilismChoices9Text = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(nihilismChoices9Object, "Button (A)"), "Text"));
+            GameObject nihilismChoices9Object = choicesBaseObject.FindPath("Nihilism", "Choices Box (10)");
+            Text nihilismChoices9Text = nihilismChoices9Object.FindPath("Button (A)", "Text").Text();
             nihilismChoices9Text.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilismPrompt9;
 
-            GameObject nihilismChoices10Object = GetGameObjectChild(GetGameObjectChild(choicesBaseObject, "Nihilism"), "Choices Box (11)");
-            Text nihilismChoices10Text = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(nihilismChoices10Object, "Button (A)"), "Text"));
+            GameObject nihilismChoices10Object = choicesBaseObject.FindPath("Nihilism", "Choices Box (11)");
+            Text nihilismChoices10Text = nihilismChoices10Object.FindPath("Button (A)", "Text").Text();
             nihilismChoices10Text.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilismPrompt10;
 
-            GameObject nihilismChoices11Object = GetGameObjectChild(GetGameObjectChild(choicesBaseObject, "Nihilism"), "Choices Box (12)");
-            Text nihilismChoices11Text = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(nihilismChoices11Object, "Button (A)"), "Text"));
+            GameObject nihilismChoices11Object = choicesBaseObject.FindPath("Nihilism", "Choices Box (12)");
+            Text nihilismChoices11Text = nihilismChoices11Object.FindPath("Button (A)", "Text").Text();
             nihilismChoices11Text.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilismPrompt11;
 
-            GameObject nihilismChoices12Object = GetGameObjectChild(GetGameObjectChild(choicesBaseObject, "Nihilism"), "Choices Box (13)");
-            Text nihilismChoices12Text = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(nihilismChoices12Object, "Button (A)"), "Text"));
+            GameObject nihilismChoices12Object = choicesBaseObject.FindPath("Nihilism", "Choices Box (13)");
+            Text nihilismChoices12Text = nihilismChoices12Object.FindPath("Button (A)", "Text").Text();
             nihilismChoices12Text.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilismPrompt12;
 
-            GameObject nihilismChoices13Object = GetGameObjectChild(GetGameObjectChild(choicesBaseObject, "Nihilism"), "Choices Box (14)");
-            Text nihilismChoices13Text = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(nihilismChoices13Object, "Button (A)"), "Text"));
+            GameObject nihilismChoices13Object = choicesBaseObject.FindPath("Nihilism", "Choices Box (14)");
+            Text nihilismChoices13Text = nihilismChoices13Object.FindPath("Button (A)", "Text").Text();
             nihilismChoices13Text.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilismPrompt13;
 
-            GameObject nihilismChoices14Object = GetGameObjectChild(GetGameObjectChild(choicesBaseObject, "Nihilism"), "Choices Box (16)");
-            Text nihilismChoices14Text = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(nihilismChoices14Object, "Button (A)"), "Text"));
+            GameObject nihilismChoices14Object = choicesBaseObject.FindPath("Nihilism", "Choices Box (16)");
+            Text nihilismChoices14Text = nihilismChoices14Object.FindPath("Button (A)", "Text").Text();
             nihilismChoices14Text.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilismPrompt14;
 
-            GameObject nihilismChoices15Object = GetGameObjectChild(GetGameObjectChild(choicesBaseObject, "Nihilism"), "Choices Box (17)");
-            Text nihilismChoices15Text = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(nihilismChoices15Object, "Button (A)"), "Text"));
+            GameObject nihilismChoices15Object = choicesBaseObject.FindPath("Nihilism", "Choices Box (17)");
+            Text nihilismChoices15Text = nihilismChoices15Object.FindPath("Button (A)", "Text").Text();
             nihilismChoices15Text.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilismPrompt15;
 
-            GameObject nihilismChoices16Object = GetGameObjectChild(GetGameObjectChild(choicesBaseObject, "Nihilism"), "Choices Box (18)");
-            Text nihilismChoices16Text = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(nihilismChoices16Object, "Button (A)"), "Text"));
+            GameObject nihilismChoices16Object = choicesBaseObject.FindPath("Nihilism", "Choices Box (18)");
+            Text nihilismChoices16Text = nihilismChoices16Object.FindPath("Button (A)", "Text").Text();
             nihilismChoices16Text.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilismPrompt16;
 
-            GameObject nihilismChoices17Object = GetGameObjectChild(GetGameObjectChild(choicesBaseObject, "Nihilism"), "Choices Box (19)");
-            Text nihilismChoices17Text = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(nihilismChoices17Object, "Button (A)"), "Text"));
+            GameObject nihilismChoices17Object = choicesBaseObject.FindPath("Nihilism", "Choices Box (19)");
+            Text nihilismChoices17Text = nihilismChoices17Object.FindPath("Button (A)", "Text").Text();
             nihilismChoices17Text.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilismPrompt17;
 
-            GameObject nihilismChoices18Object = GetGameObjectChild(GetGameObjectChild(choicesBaseObject, "Nihilism"), "Choices Box (20)");
-            Text nihilismChoices18Text = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(nihilismChoices18Object, "Button (A)"), "Text"));
+            GameObject nihilismChoices18Object = choicesBaseObject.FindPath("Nihilism", "Choices Box (20)");
+            Text nihilismChoices18Text = nihilismChoices18Object.FindPath("Button (A)", "Text").Text();
             nihilismChoices18Text.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilismPrompt18;
 
-            GameObject nihilismChoices19Object = GetGameObjectChild(GetGameObjectChild(choicesBaseObject, "Nihilism"), "Choices Box (21)");
-            Text nihilismChoices19Text = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(nihilismChoices19Object, "Button (A)"), "Text"));
+            GameObject nihilismChoices19Object = choicesBaseObject.FindPath("Nihilism", "Choices Box (21)");
+            Text nihilismChoices19Text = nihilismChoices19Object.FindPath("Button (A)", "Text").Text();
             nihilismChoices19Text.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilismPrompt19;
 
-            GameObject nihilismChoices20Object = GetGameObjectChild(GetGameObjectChild(choicesBaseObject, "Nihilism"), "Choices Box (22)");
-            Text nihilismChoices20Text = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(nihilismChoices20Object, "Button (A)"), "Text"));
+            GameObject nihilismChoices20Object = choicesBaseObject.FindPath("Nihilism", "Choices Box (22)");
+            Text nihilismChoices20Text = nihilismChoices20Object.FindPath("Button (A)", "Text").Text();
             nihilismChoices20Text.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilismPrompt20;
 
-            GameObject nihilismChoices21Object = GetGameObjectChild(GetGameObjectChild(choicesBaseObject, "Nihilism"), "Choices Box (25)");
-            Text nihilismChoices21Text = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(nihilismChoices21Object, "Button (A)"), "Text"));
+            GameObject nihilismChoices21Object = choicesBaseObject.FindPath("Nihilism", "Choices Box (25)");
+            Text nihilismChoices21Text = nihilismChoices21Object.FindPath("Button (A)", "Text").Text();
             nihilismChoices21Text.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilismPrompt21;
 
-            GameObject nihilismChoices22Object = GetGameObjectChild(GetGameObjectChild(choicesBaseObject, "Nihilism"), "Choices Box (23)");
-            Text nihilismChoices22Text = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(nihilismChoices22Object, "Button (A)"), "Text"));
+            GameObject nihilismChoices22Object = choicesBaseObject.FindPath("Nihilism", "Choices Box (23)");
+            Text nihilismChoices22Text = nihilismChoices22Object.FindPath("Button (A)", "Text").Text();
             nihilismChoices22Text.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilismPrompt22;
 
-            GameObject nihilismChoices23Object = GetGameObjectChild(GetGameObjectChild(choicesBaseObject, "Nihilism"), "Choices Box (24)");
-            Text nihilismChoices23Text = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(nihilismChoices23Object, "Button (A)"), "Text"));
+            GameObject nihilismChoices23Object = choicesBaseObject.FindPath("Nihilism", "Choices Box (24)");
+            Text nihilismChoices23Text = nihilismChoices23Object.FindPath("Button (A)", "Text").Text();
             nihilismChoices23Text.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_nihilismPrompt23;
 
             //Conclusion choice
-            GameObject conclusionChoices1Object = GetGameObjectChild(GetGameObjectChild(choicesBaseObject, "Conclusion"), "Choices Box (2)");
-            Text conclusionChoices1Text = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(conclusionChoices1Object, "Button (A)"), "Text"));
-            Text conclusionChoices2Text = GetTextfromGameObject(GetGameObjectChild(GetGameObjectChild(conclusionChoices1Object, "Button (B)"), "Text"));
+            GameObject conclusionChoices1Object = choicesBaseObject.FindPath("Conclusion", "Choices Box (2)");
+            Text conclusionChoices1Text = conclusionChoices1Object.FindPath("Button (A)", "Text").Text();
+            Text conclusionChoices2Text = conclusionChoices1Object.FindPath("Button (B)", "Text").Text();
             conclusionChoices1Text.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusionPrompt1;
             conclusionChoices2Text.text = LanguageManager.CurrentLanguage.visualnovel.visualnovel_conclusionPrompt2;
 

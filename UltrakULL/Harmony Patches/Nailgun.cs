@@ -1,5 +1,4 @@
 ﻿using HarmonyLib;
-using static UltrakULL.CommonFunctions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,19 +29,25 @@ namespace UltrakULL.Harmony_Patches
         [HarmonyPatch("Update"), HarmonyPostfix]
         public static void NailgunUpdatePostfix(Nailgun __instance, WeaponCharges ___wc)
         {
-            //This one is for arabic numbers
-            if(__instance.variation == 1 && LanguageManager.CurrentLanguage.metadata.langHinduNumbers)
+            // Arabic/Hindu numbers for Magnet/Sawblade (variation 1).
+            // Runs on all instances including dual-wield off-hand.
+            if (__instance.variation == 1 && LanguageManager.CurrentLanguage?.metadata?.langHinduNumbers == true)
             {
-                if (__instance.altVersion) 
+                var ammoText = __instance.ammoText;
+                if (ammoText == null)
+                    return;
+
+                string formatted;
+                if (__instance.altVersion)
                 {
-                    __instance.ammoText.text = ArabicFixerTool.FixLine(Mathf.RoundToInt(___wc.naiSaws).ToString()).ToString();
+                    formatted = ArabicFixerTool.FixLine(Mathf.RoundToInt(___wc.naiSaws).ToString());
                 }
                 else
                 {
-                    __instance.ammoText.text = ArabicFixerTool.FixLine(Mathf.RoundToInt(___wc.naiAmmo).ToString()).ToString();
+                    formatted = ArabicFixerTool.FixLine(Mathf.RoundToInt(___wc.naiAmmo).ToString());
                 }
+                ammoText.text = formatted;
             }
-            
         }
 
         static bool enablezapperfix = true;
@@ -60,7 +65,7 @@ namespace UltrakULL.Harmony_Patches
                     }
                     if (___rechargingOverlay.activeSelf)
                     {
-                        TextMeshProUGUI rechargeText = GetTextMeshProUGUI(GetGameObjectChild(___rechargingOverlay, "Text (TMP)"));
+                        TextMeshProUGUI rechargeText = ___rechargingOverlay.Child("Text (TMP)").TMP();
                         //RECHARGING...
                         rechargeText.text = LanguageManager.CurrentLanguage.weapon.weapon_nailgunZapperRecharging;
                     }

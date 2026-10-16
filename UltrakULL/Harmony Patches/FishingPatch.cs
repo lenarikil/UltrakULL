@@ -14,10 +14,10 @@ namespace UltrakULL.Harmony_Patches
         {
             if(!isUsingEnglish())
             {
-                Text outOfWaterText = GetTextfromGameObject(GetGameObjectChild(___outOfWaterMessage,"Text"));
+                Text outOfWaterText = ___outOfWaterMessage.Child("Text").Text();
                 outOfWaterText.text = LanguageManager.CurrentLanguage.fishing.fish_outOfWater;
             
-                Text hookedText = GetTextfromGameObject(GetGameObjectChild(___hookedContainer,"Text"));
+                Text hookedText = ___hookedContainer.Child("Text").Text();
                 hookedText.text = LanguageManager.CurrentLanguage.fishing.fish_rodHooked;
             }
             
@@ -104,7 +104,7 @@ namespace UltrakULL.Harmony_Patches
                 ___fishCaughtText.text = "<size=56>" + LanguageManager.CurrentLanguage.fishing.fish_fishCaught + "</size> <color=#FFA500><size=80>" + fishName + "</size></color>";
                 ___fishCaughtText.resizeTextForBestFit = true;
                 
-                Text fishSizeText = GetTextfromGameObject(___fishSizeContainer);
+                Text fishSizeText = ___fishSizeContainer.Text();
                 fishSizeText.text = "<b>" + LanguageManager.CurrentLanguage.fishing.fish_size + "</b>";
                 fishSizeText.resizeTextForBestFit = true;
             }

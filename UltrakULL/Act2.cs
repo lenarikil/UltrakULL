@@ -13,15 +13,15 @@ namespace UltrakULL
     {
         private static void PatchHellmap(ref GameObject canvasObj)
         {
-            GameObject hellMapObject = GetGameObjectChild(GetGameObjectChild(canvasObj, "Hellmap"),"Hellmap Act 2");
-            
-            TextMeshProUGUI hellmapGreed = GetTextMeshProUGUI(GetGameObjectChild(hellMapObject, "Text"));
+            GameObject hellMapObject = canvasObj.FindPath("Hellmap", "Hellmap Act 2");
+
+            TextMeshProUGUI hellmapGreed = hellMapObject.Child("Text").TMP();
             hellmapGreed.text = LanguageManager.CurrentLanguage.misc.hellmap_greed;
 
-            TextMeshProUGUI hellmapWrath = GetTextMeshProUGUI(GetGameObjectChild(hellMapObject, "Text (1)"));
+            TextMeshProUGUI hellmapWrath = hellMapObject.Child("Text (1)").TMP();
             hellmapWrath.text = LanguageManager.CurrentLanguage.misc.hellmap_wrath;
 
-            TextMeshProUGUI hellmapHeresy = GetTextMeshProUGUI(GetGameObjectChild(hellMapObject, "Text (2)"));
+            TextMeshProUGUI hellmapHeresy = hellMapObject.Child("Text (2)").TMP();
             hellmapHeresy.text = LanguageManager.CurrentLanguage.misc.hellmap_heresy;
         }
     

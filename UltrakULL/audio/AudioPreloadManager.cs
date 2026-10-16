@@ -136,20 +136,12 @@ namespace UltrakULL.audio
                 return;
             }
 
-            List<string> paths = GetScenePreloadPaths(sceneName).ToList();
-            if (paths.Count == 0)
-            {
-                completedScenePreloads.Add(preloadKey);
-                onReady?.Invoke();
-                return;
-            }
-
             pendingScenePreloads.Add(preloadKey);
             if (onReady != null)
                 pendingSceneCallbacks[preloadKey] = new List<Action> { onReady };
 
-            Logging.Info("[AudioPreload] Preloading " + paths.Count + " audio files for scene '" + sceneName + "'.");
-            AudioSwapper.PreloadPathsAsync(paths, delegate
+            Logging.Info("[AudioPreload] Preloading audio files for scene '" + sceneName + "'.");
+            AudioSwapper.PreloadPathsAsync(GetScenePreloadPaths(sceneName), delegate
             {
                 pendingScenePreloads.Remove(preloadKey);
                 completedScenePreloads.Add(preloadKey);
@@ -169,9 +161,13 @@ namespace UltrakULL.audio
             });
         }
 
+        /// <summary>
+        /// Lazy enumeration so directory scans happen when the path list is materialized
+        /// on the audio worker thread rather than on the main thread.
+        /// </summary>
         private static IEnumerable<string> GetScenePreloadPaths(string sceneName)
         {
-            HashSet<string> paths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            HashSet<string> seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             string[] folders;
             if (SceneFolders.TryGetValue(sceneName, out folders))
@@ -182,10 +178,10 @@ namespace UltrakULL.audio
                     if (!Directory.Exists(folderPath))
                         continue;
 
-                    foreach (string filePath in Directory.GetFiles(folderPath, "*.*", SearchOption.TopDirectoryOnly))
+                    foreach (string filePath in Directory.EnumerateFiles(folderPath, "*.*", SearchOption.TopDirectoryOnly))
                     {
-                        if (AudioSwapper.TryGetAudioType(filePath) != UnityEngine.AudioType.UNKNOWN)
-                            paths.Add(filePath);
+                        if (AudioSwapper.TryGetAudioType(filePath) != UnityEngine.AudioType.UNKNOWN && seen.Add(filePath))
+                            yield return filePath;
                     }
                 }
             }
@@ -198,11 +194,13 @@ namespace UltrakULL.audio
                 foreach (var reference in references)
                 {
                     if (!string.IsNullOrEmpty(reference.AudioPath))
-                        paths.Add(Path.Combine(AudioSwapper.SpeechFolder, reference.AudioPath));
+                    {
+                        string path = Path.Combine(AudioSwapper.SpeechFolder, reference.AudioPath);
+                        if (seen.Add(path))
+                            yield return path;
+                    }
                 }
             }
-
-            return paths;
         }
 
         private static void PreloadAllAudioOnce(Action onComplete = null)
@@ -228,7 +226,7 @@ namespace UltrakULL.audio
                 return;
             }
 
-            IEnumerable<string> paths = Directory.GetFiles(folder, "*.*", SearchOption.AllDirectories)
+            IEnumerable<string> paths = Directory.EnumerateFiles(folder, "*.*", SearchOption.AllDirectories)
                 .Where(path => AudioSwapper.TryGetAudioType(path) != UnityEngine.AudioType.UNKNOWN);
 
             Logging.Info("[AudioPreload] StartupAll preload started.");

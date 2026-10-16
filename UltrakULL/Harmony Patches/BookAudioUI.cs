@@ -23,11 +23,7 @@ namespace UltrakULL.Harmony_Patches
             GameObject canvas = GetInactiveRootObject("Canvas");
             if (canvas == null) return;
 
-            GameObject panel = GetGameObjectChild(
-                GetGameObjectChild(
-                    GetGameObjectChild(canvas, "ScanningStuff"),
-                    "ReadingScanned"),
-                "Panel");
+            GameObject panel = canvas.FindPath("ScanningStuff", "ReadingScanned", "Panel");
             if (panel == null) return;
 
             BookUIController controller = panel.GetComponent<BookUIController>();

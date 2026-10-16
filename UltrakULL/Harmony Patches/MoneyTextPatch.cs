@@ -1,7 +1,6 @@
 ﻿using HarmonyLib;
 using UnityEngine;
 using TMPro;
-using static UltrakULL.CommonFunctions;
 using UltrakULL.json;
 
 namespace UltrakULL.Harmony_Patches

@@ -5,7 +5,6 @@ using TMPro;
 using UltrakULL.json;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using static UltrakULL.CommonFunctions;
 
 namespace UltrakULL.Harmony_Patches
 {
@@ -19,7 +18,7 @@ namespace UltrakULL.Harmony_Patches
             {
                 if (section.name == "Control Section Template(Clone)")
                 {
-                    TextMeshProUGUI sectionText = GetTextMeshProUGUI(section);
+                    TextMeshProUGUI sectionText = section.TMP();
                     switch (sectionText.text)
                     {
                         case "-- MOVEMENT --":

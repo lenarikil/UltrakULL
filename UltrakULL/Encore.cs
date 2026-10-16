@@ -22,28 +22,28 @@ namespace UltrakULL
             {
                 try
                 {
-                    GameObject heatResistanceWindow = GetGameObjectChild(GetGameObjectChild(canvasObj, "HurtScreen"), "Heat Resistance");
+                    GameObject heatResistanceWindow = canvasObj.FindPath("HurtScreen", "Heat Resistance");
 
-                    TextMeshProUGUI heatResistanceWarn = GetTextMeshProUGUI(GetGameObjectChild(heatResistanceWindow, "Warning"));
+                    TextMeshProUGUI heatResistanceWarn = heatResistanceWindow.Child("Warning").TMP();
                     heatResistanceWarn.enableWordWrapping = false;
                     heatResistanceWarn.text = LanguageManager.CurrentLanguage.encore.encorePrelude_heatResistanceWarn;
 
-                    TextMeshProUGUI heatResistanceText = GetTextMeshProUGUI(GetGameObjectChild(heatResistanceWindow, "Flavor Text"));
+                    TextMeshProUGUI heatResistanceText = heatResistanceWindow.Child("Flavor Text").TMP();
                     heatResistanceText.text = LanguageManager.CurrentLanguage.encore.encorePrelude_heatResistanceText;
 
-                    TextMeshProUGUI heatResistanceTitle = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(heatResistanceWindow, "Meter"), "Label"));
+                    TextMeshProUGUI heatResistanceTitle = heatResistanceWindow.FindPath("Meter", "Label").TMP();
                     heatResistanceTitle.text = LanguageManager.CurrentLanguage.encore.encorePrelude_heatResistanceTitle;
 
-                    GameObject heatResistanceFixedWindow = GetGameObjectChild(GetGameObjectChild(canvasObj, "HurtScreen"), "Heat Fixed");
+                    GameObject heatResistanceFixedWindow = canvasObj.FindPath("HurtScreen", "Heat Fixed");
 
-                    TextMeshProUGUI heatResistanceFixedWarn = GetTextMeshProUGUI(GetGameObjectChild(heatResistanceFixedWindow, "Warning"));
+                    TextMeshProUGUI heatResistanceFixedWarn = heatResistanceFixedWindow.Child("Warning").TMP();
                     heatResistanceFixedWarn.enableWordWrapping = false;
                     heatResistanceFixedWarn.text = LanguageManager.CurrentLanguage.encore.encorePrelude_heatResistanceRepaired;
 
-                    TextMeshProUGUI heatResistanceFixedText = GetTextMeshProUGUI(GetGameObjectChild(heatResistanceFixedWindow, "Flavor Text"));
+                    TextMeshProUGUI heatResistanceFixedText = heatResistanceFixedWindow.Child("Flavor Text").TMP();
                     heatResistanceFixedText.text = LanguageManager.CurrentLanguage.encore.encorePrelude_heatResistanceRepairedText;
 
-                    TextMeshProUGUI heatResistanceFixedTitle = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(heatResistanceFixedWindow, "Meter"), "Label"));
+                    TextMeshProUGUI heatResistanceFixedTitle = heatResistanceFixedWindow.FindPath("Meter", "Label").TMP();
                     heatResistanceFixedTitle.text = LanguageManager.CurrentLanguage.encore.encorePrelude_heatResistanceTitle;
                 }
                 catch (Exception e)
@@ -56,8 +56,8 @@ namespace UltrakULL
             {
                 try
                 {
-                    GameObject warningCanvas = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetInactiveRootObject("11 - Skull Room"), "11 Nonstuff"), "Room"), "Cube (24)"), "Canvas");
-                    TextMeshProUGUI warningText = GetTextMeshProUGUI(GetGameObjectChild(warningCanvas, "Text (TMP)"));
+                    GameObject warningCanvas = GetInactiveRootObject("11 - Skull Room").FindPath("11 Nonstuff", "Room", "Cube (24)", "Canvas");
+                    TextMeshProUGUI warningText = warningCanvas.Child("Text (TMP)").TMP();
                     warningText.text = LanguageManager.CurrentLanguage.encore.encoreLimbo_warningText;
                 }
                 catch (Exception e)

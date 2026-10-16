@@ -162,67 +162,67 @@ namespace UltrakULL
         {
             try
             {
-                GameObject pauseMenu = GetGameObjectChild(canvasObj, "PauseMenu");
+                GameObject pauseMenu = canvasObj.Child("PauseMenu");
 
                 //Title
-                TextMeshProUGUI pauseText = GetTextMeshProUGUI(GetGameObjectChild(pauseMenu, "Text"));
+                TextMeshProUGUI pauseText = pauseMenu.Child("Text").TMP();
                 pauseText.text = LanguageManager.CurrentLanguage.pauseMenu.pause_title;
 
                 //Resume
-                TextMeshProUGUI continueText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(pauseMenu, "Resume"), "Text"));
+                TextMeshProUGUI continueText = pauseMenu.FindPath("Resume", "Text").TMP();
                 continueText.text = LanguageManager.CurrentLanguage.pauseMenu.pause_resume;
 
                 //Checkpoint
-                TextMeshProUGUI checkpointText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(pauseMenu, "Restart Checkpoint"), "Text"));
+                TextMeshProUGUI checkpointText = pauseMenu.FindPath("Restart Checkpoint", "Text").TMP();
                 checkpointText.text = LanguageManager.CurrentLanguage.pauseMenu.pause_respawn;
                 //SKIP button 
                 if (GetCurrentSceneName().Contains("Intermission"))
                 {
-                    TextMeshProUGUI skipText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(pauseMenu, "Restart Checkpoint (1)"), "Text"));
+                    TextMeshProUGUI skipText = pauseMenu.FindPath("Restart Checkpoint (1)", "Text").TMP();
                     skipText.text = LanguageManager.CurrentLanguage.pauseMenu.pause_skip;
                 }
                 //Restart mission
-                TextMeshProUGUI restartText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(pauseMenu, "Restart Mission"), "Text"));
+                TextMeshProUGUI restartText = pauseMenu.FindPath("Restart Mission", "Text").TMP();
                 restartText.text = LanguageManager.CurrentLanguage.pauseMenu.pause_restart;
 
                 //Options
-                TextMeshProUGUI optionsText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(pauseMenu, "Options"), "Text"));
+                TextMeshProUGUI optionsText = pauseMenu.FindPath("Options", "Text").TMP();
                 optionsText.text = LanguageManager.CurrentLanguage.pauseMenu.pause_options;
 
                 //Quit
-                TextMeshProUGUI quitText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(pauseMenu, "Quit Mission"), "Text"));
+                TextMeshProUGUI quitText = pauseMenu.FindPath("Quit Mission", "Text").TMP();
                 quitText.text = LanguageManager.CurrentLanguage.pauseMenu.pause_quit;
 
                 //Quit+Restart windows
-                GameObject pauseDialogs = GetGameObjectChild(canvasObj, "PauseMenuDialogs");
+                GameObject pauseDialogs = canvasObj.Child("PauseMenuDialogs");
 
                 //Quit
-                GameObject quitDialog = GetGameObjectChild(GetGameObjectChild(pauseDialogs, "Quit Confirm"), "Panel");
-                TextMeshProUGUI quitDialogText = GetTextMeshProUGUI(GetGameObjectChild(quitDialog, "Text (2)"));
+                GameObject quitDialog = pauseDialogs.FindPath("Quit Confirm", "Panel");
+                TextMeshProUGUI quitDialogText = quitDialog.Child("Text (2)").TMP();
                 quitDialogText.text = LanguageManager.CurrentLanguage.pauseMenu.pause_quitConfirm;
 
-                TextMeshProUGUI quitDialogTooltip = GetTextMeshProUGUI(GetGameObjectChild(quitDialog, "Text (1)"));
+                TextMeshProUGUI quitDialogTooltip = quitDialog.Child("Text (1)").TMP();
                 quitDialogTooltip.text = LanguageManager.CurrentLanguage.pauseMenu.pause_disableWindow;
 
-                TextMeshProUGUI quitDialogYes = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(quitDialog, "Confirm"), "Text"));
+                TextMeshProUGUI quitDialogYes = quitDialog.FindPath("Confirm", "Text").TMP();
                 quitDialogYes.text = LanguageManager.CurrentLanguage.pauseMenu.pause_quitConfirmYes;
 
-                TextMeshProUGUI quitDialogNo = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(quitDialog, "Cancel"), "Text"));
+                TextMeshProUGUI quitDialogNo = quitDialog.FindPath("Cancel", "Text").TMP();
                 quitDialogNo.text = LanguageManager.CurrentLanguage.pauseMenu.pause_quitConfirmNo;
 
                 //Restart
-                GameObject restartDialog = GetGameObjectChild(GetGameObjectChild(pauseDialogs, "Restart Confirm"), "Panel");
+                GameObject restartDialog = pauseDialogs.FindPath("Restart Confirm", "Panel");
 
-                TextMeshProUGUI restartDialogText = GetTextMeshProUGUI(GetGameObjectChild(restartDialog, "Text"));
+                TextMeshProUGUI restartDialogText = restartDialog.Child("Text").TMP();
                 restartDialogText.text = LanguageManager.CurrentLanguage.pauseMenu.pause_restartConfirm;
 
-                TextMeshProUGUI restartDialogTooltip = GetTextMeshProUGUI(GetGameObjectChild(restartDialog, "Text (1)"));
+                TextMeshProUGUI restartDialogTooltip = restartDialog.Child("Text (1)").TMP();
                 restartDialogTooltip.text = LanguageManager.CurrentLanguage.pauseMenu.pause_disableWindow;
 
-                TextMeshProUGUI restartDialogYes = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(restartDialog, "Confirm"), "Text"));
+                TextMeshProUGUI restartDialogYes = restartDialog.FindPath("Confirm", "Text").TMP();
                 restartDialogYes.text = LanguageManager.CurrentLanguage.pauseMenu.pause_restartConfirmYes;
 
-                TextMeshProUGUI restartDialogNo = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(restartDialog, "Cancel"), "Text"));
+                TextMeshProUGUI restartDialogNo = restartDialog.FindPath("Cancel", "Text").TMP();
                 restartDialogNo.text = LanguageManager.CurrentLanguage.pauseMenu.pause_restartConfirmNo;
             }
             catch (Exception e)

@@ -147,7 +147,7 @@ namespace UltrakULL.HarmonyPatches
                 if (canvas != null)
                 {
                     // Look for BlackScreen inside Canvas
-                    blackScreen = GetGameObjectChild(canvas, "BlackScreen");
+                    blackScreen = canvas.Child("BlackScreen");
                 }
                 
                 // If not found via GetGameObjectChild, try normal search

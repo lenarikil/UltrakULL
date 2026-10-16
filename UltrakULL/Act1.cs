@@ -14,15 +14,15 @@ namespace UltrakULL
         {
             try
             {
-                GameObject hellMapObject = GetGameObjectChild(GetGameObjectChild(canvasObj, "Hellmap"),"Hellmap Act 1");
+                GameObject hellMapObject = canvasObj.FindPath("Hellmap", "Hellmap Act 1");
 
-                TextMeshProUGUI hellmapLimbo = GetTextMeshProUGUI(GetGameObjectChild(hellMapObject, "Text"));
+                TextMeshProUGUI hellmapLimbo = hellMapObject.Child("Text").TMP();
                 hellmapLimbo.text = LanguageManager.CurrentLanguage.misc.hellmap_limbo;
 
-                TextMeshProUGUI hellmapLust = GetTextMeshProUGUI(GetGameObjectChild(hellMapObject, "Text (1)"));
+                TextMeshProUGUI hellmapLust = hellMapObject.Child("Text (1)").TMP();
                 hellmapLust.text = LanguageManager.CurrentLanguage.misc.hellmap_lust;
 
-                TextMeshProUGUI hellmapGluttony = GetTextMeshProUGUI(GetGameObjectChild(hellMapObject, "Text (2)"));
+                TextMeshProUGUI hellmapGluttony = hellMapObject.Child("Text (2)").TMP();
                 hellmapGluttony.text = LanguageManager.CurrentLanguage.misc.hellmap_gluttony;
             }
             catch(Exception e)
@@ -45,20 +45,17 @@ namespace UltrakULL
             if (currentLevel.Contains("2-1"))
             {
                 GameObject outdoorsArenas = GetInactiveRootObject("3-4 - Outdoors Arenas");
-                GameObject stuff = GetGameObjectChild(outdoorsArenas, "3-4 Stuff");
-                Transform stuffTransform = stuff.transform;
-                //"Crane control"
-                GameObject crane = stuffTransform.Find("Crane (Moveable)").gameObject;
-                GameObject secretScreen = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild( crane, "Cube (19)"), "Cube"), "UsableScreen New"), "InteractiveScreen"), "Canvas"), "Background");
+                GameObject stuff = outdoorsArenas.Child("3-4 Stuff");
 
-                TextMeshProUGUI craneControl = GetTextMeshProUGUI(GetGameObjectChild(secretScreen, "Text (TMP) (1)"));
-                craneControl.text = LanguageManager.CurrentLanguage.act1.act1_lustFirst_crane;
+                //"Crane control"
+                stuff
+                    .FindPath("Crane (Moveable)", "Cube (19)", "Cube", "UsableScreen New", "InteractiveScreen", "Canvas", "Background", "Text (TMP) (1)")
+                    .SetTMPText(LanguageManager.CurrentLanguage.act1.act1_lustFirst_crane);
 
                 //"Test Elevators" ( 3 - 4 - Outdoors Arenas / 3 - 4 Stuff(Clone) / UsableScreen New / InteractiveScreen / Canvas / Background / InteractiveScreen Button / Text (TMP) )
-                GameObject elevator = stuffTransform.Find("UsableScreen New").gameObject;
-                GameObject elevatorScreen = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(elevator, "InteractiveScreen"), "Canvas"), "Background"), "InteractiveScreen Button");
-                TextMeshProUGUI elevatorButton = GetTextMeshProUGUI(GetGameObjectChild(elevatorScreen, "Text (TMP)"));
-                elevatorButton.text = LanguageManager.CurrentLanguage.act1.act1_lustFirst_elevator;
+                stuff
+                    .FindPath("UsableScreen New", "InteractiveScreen", "Canvas", "Background", "InteractiveScreen Button", "Text (TMP)")
+                    .SetTMPText(LanguageManager.CurrentLanguage.act1.act1_lustFirst_elevator);
             }
         }
     }

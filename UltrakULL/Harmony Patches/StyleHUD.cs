@@ -46,11 +46,36 @@ namespace UltrakULL.Harmony_Patches
     [HarmonyPatch(typeof(StyleHUD), "UpdateFreshnessSlider")]
     public static class LocalizeWeaponFreshnessText
     {
+        // UpdateFreshnessSlider runs every frame during combat; cache the localized
+        // string per freshness state and only write the TMP text when it changes.
+        private static readonly string[] freshnessTexts = new string[4];
+        private static JsonFormat cachedFreshnessLanguage;
+
         [HarmonyPrefix]
         public static bool UpdateFreshnessSlider_MyPatch(StyleHUD __instance, GunControl ___gc)
         {
             StyleFreshnessState freshnessState = __instance.GetFreshnessState(___gc.currentWeapon);
-            __instance.freshnessSliderText.text = StyleBonusStrings.GetWeaponFreshness(freshnessState);
+
+            int stateIndex = (int)freshnessState;
+            if (stateIndex < 0 || stateIndex >= freshnessTexts.Length)
+            {
+                __instance.freshnessSliderText.text = StyleBonusStrings.GetWeaponFreshness(freshnessState);
+                return false;
+            }
+
+            if (!ReferenceEquals(cachedFreshnessLanguage, LanguageManager.CurrentLanguage))
+            {
+                cachedFreshnessLanguage = LanguageManager.CurrentLanguage;
+                for (int i = 0; i < freshnessTexts.Length; i++)
+                    freshnessTexts[i] = null;
+            }
+
+            string text = freshnessTexts[stateIndex] ?? (freshnessTexts[stateIndex] = StyleBonusStrings.GetWeaponFreshness(freshnessState));
+
+            if (__instance.freshnessSliderText.text != text)
+            {
+                __instance.freshnessSliderText.text = text;
+            }
 
             return false;
         }

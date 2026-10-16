@@ -12,12 +12,12 @@ namespace UltrakULL
     {
         public void PatchOpeningCredits(ref GameObject canvasObj)
         {
-            GameObject openingCredsParent = GetGameObjectChild(canvasObj, "HurtScreen");
+            GameObject openingCredsParent = canvasObj.Child("HurtScreen");
 
-            TextMeshProUGUI openingCredsFirst = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(openingCredsParent, "Text 1 Sound"), "Text (1)"));
+            TextMeshProUGUI openingCredsFirst = openingCredsParent.FindPath("Text 1 Sound", "Text (1)").TMP();
             openingCredsFirst.text = LanguageManager.CurrentLanguage.prelude.prelude_first_openingCredits1;
 
-            TextMeshProUGUI openingCredsSecond = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(openingCredsParent, "Text 2 Sound"), "Text (2)"));
+            TextMeshProUGUI openingCredsSecond = openingCredsParent.FindPath("Text 2 Sound", "Text (2)").TMP();
             openingCredsSecond.text = LanguageManager.CurrentLanguage.prelude.prelude_first_openingCredits2;
         }
 

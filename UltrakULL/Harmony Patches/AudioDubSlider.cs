@@ -5,7 +5,6 @@ using ULTRAKILL;
 using System;
 using UltrakULL.json;
 using UltrakULL.audio;
-using static UltrakULL.CommonFunctions;
 using UltrakULL;
 using SettingsMenu.Components;
 using UnityEngine.SceneManagement;
@@ -31,15 +30,15 @@ namespace UltrakULL.Harmony_Patches
                         GameObject AudioPage = __instance.gameObject;
                         AudioPage.SetActive(true);
 
-                        GameObject AudioPageContainer = GetGameObjectChild(AudioPage, "Container");
-                        GameObject originalSlider = GetGameObjectChild(AudioPageContainer, "Subtitles");
+                        GameObject AudioPageContainer = AudioPage.Child("Container");
+                        GameObject originalSlider = AudioPageContainer.Child("Subtitles");
 
                         // ---- Dialogue Dub ----
                         GameObject dubSlider = GameObject.Instantiate(originalSlider, AudioPageContainer.transform);
                         dubSlider.GetComponent<RectTransform>().anchoredPosition = new Vector2(300f, -225f);
                         dubSlider.name = "Dialogue Dub";
 
-                        GameObject oldToggleObj = GetGameObjectChild(dubSlider, "Toggle(Clone)");
+                        GameObject oldToggleObj = dubSlider.Child("Toggle(Clone)");
                         Toggle oldToggle = oldToggleObj.GetComponent<Toggle>();
 
                         GameObject newToggleObj = GameObject.Instantiate(oldToggleObj, oldToggleObj.transform.parent);
@@ -48,13 +47,13 @@ namespace UltrakULL.Harmony_Patches
 
                         Toggle dubToggle = newToggleObj.GetComponent<Toggle>();
 
-                        GameObject oldCheckmark = GetGameObjectChild(GetGameObjectChild(oldToggleObj, "Background"), "Checkmark");
-                        GameObject oldFakeCheck = GetGameObjectChild(GetGameObjectChild(oldToggleObj, "Background"), "FakeCheck");
+                        GameObject oldCheckmark = oldToggleObj.FindPath("Background", "Checkmark");
+                        GameObject oldFakeCheck = oldToggleObj.FindPath("Background", "FakeCheck");
                         oldCheckmark.SetActive(false);
                         oldFakeCheck.SetActive(false);
 
-                        GameObject background = GetGameObjectChild(newToggleObj, "Background");
-                        GameObject checkmark = GetGameObjectChild(background, "Checkmark");
+                        GameObject background = newToggleObj.Child("Background");
+                        GameObject checkmark = background.Child("Checkmark");
 
                         dubToggle.targetGraphic = background.GetComponent<Image>();
                         dubToggle.graphic = checkmark.GetComponent<Image>();
@@ -64,16 +63,16 @@ namespace UltrakULL.Harmony_Patches
 
                         dubToggle.transition = Selectable.Transition.ColorTint;
 
-                        GameObject.Destroy(GetGameObjectChild(dubSlider, "Reset Button Variant(Clone)"));
+                        GameObject.Destroy(dubSlider.Child("Reset Button Variant(Clone)"));
 
                         try
                         {
-                            GetTextMeshProUGUI(GetGameObjectChild(dubSlider, "Text")).text = LanguageManager.CurrentLanguage.options.audio_dubbing;
+                            dubSlider.Child("Text").TMP().text = LanguageManager.CurrentLanguage.options.audio_dubbing;
                         }
                         catch (Exception e)
                         {
                             Logging.Error("[AudioDubSlider] Failed to set localized text, using fallback. Error: " + e);
-                            GetTextMeshProUGUI(GetGameObjectChild(dubSlider, "Text")).text = "DUBBED AUDIO";
+                            dubSlider.Child("Text").TMP().text = "DUBBED AUDIO";
                         }
                         Logging.Info("[AudioDubSlider] Successful creation of the AudioDubSlider");
 
@@ -82,7 +81,7 @@ namespace UltrakULL.Harmony_Patches
                         extraSlider.GetComponent<RectTransform>().anchoredPosition = new Vector2(650f, -225f);
                         extraSlider.name = "ExtraOption";
 
-                        GameObject extraOldToggleObj = GetGameObjectChild(extraSlider, "Toggle(Clone)");
+                        GameObject extraOldToggleObj = extraSlider.Child("Toggle(Clone)");
                         Toggle extraOldToggle = extraOldToggleObj.GetComponent<Toggle>();
 
                         GameObject extraNewToggleObj = GameObject.Instantiate(extraOldToggleObj, extraOldToggleObj.transform.parent);
@@ -91,13 +90,13 @@ namespace UltrakULL.Harmony_Patches
 
                         Toggle extraToggle = extraNewToggleObj.GetComponent<Toggle>();
 
-                        GameObject extraOldCheckmark = GetGameObjectChild(GetGameObjectChild(extraOldToggleObj, "Background"), "Checkmark");
-                        GameObject extraOldFakeCheck = GetGameObjectChild(GetGameObjectChild(extraOldToggleObj, "Background"), "FakeCheck");
+                        GameObject extraOldCheckmark = extraOldToggleObj.FindPath("Background", "Checkmark");
+                        GameObject extraOldFakeCheck = extraOldToggleObj.FindPath("Background", "FakeCheck");
                         extraOldCheckmark.SetActive(false);
                         extraOldFakeCheck.SetActive(false);
 
-                        GameObject extraBackground = GetGameObjectChild(extraNewToggleObj, "Background");
-                        GameObject extraCheckmark = GetGameObjectChild(extraBackground, "Checkmark");
+                        GameObject extraBackground = extraNewToggleObj.Child("Background");
+                        GameObject extraCheckmark = extraBackground.Child("Checkmark");
 
                         extraToggle.targetGraphic = extraBackground.GetComponent<Image>();
                         extraToggle.graphic = extraCheckmark.GetComponent<Image>();
@@ -107,7 +106,7 @@ namespace UltrakULL.Harmony_Patches
 
                         extraToggle.transition = Selectable.Transition.ColorTint;
 
-                        GameObject.Destroy(GetGameObjectChild(extraSlider, "Reset Button Variant(Clone)"));
+                        GameObject.Destroy(extraSlider.Child("Reset Button Variant(Clone)"));
 
                         extraToggle.onValueChanged.AddListener(delegate
                         {
@@ -118,8 +117,8 @@ namespace UltrakULL.Harmony_Patches
 
                         string extraLabel = LanguageManager.CurrentLanguage?.options?.audio_dubbing_extra;
                         if (!String.IsNullOrWhiteSpace(extraLabel))
-                        { GetTextMeshProUGUI(GetGameObjectChild(extraSlider, "Text")).text = extraLabel; }
-                        else { GetTextMeshProUGUI(GetGameObjectChild(extraSlider, "Text")).text = "EXTRA AUDIO DUBBING"; }
+                        { extraSlider.Child("Text").TMP().text = extraLabel; }
+                        else { extraSlider.Child("Text").TMP().text = "EXTRA AUDIO DUBBING"; }
 
                         Action<bool> updateExtraInteractable = (bool active) =>
                         {
@@ -138,7 +137,7 @@ namespace UltrakULL.Harmony_Patches
                         bookSlider.GetComponent<RectTransform>().anchoredPosition = new Vector2(650f, -280f);
                         bookSlider.name = "BookAudioDubbing";
 
-                        GameObject bookOldToggleObj = GetGameObjectChild(bookSlider, "Toggle(Clone)");
+                        GameObject bookOldToggleObj = bookSlider.Child("Toggle(Clone)");
                         Toggle bookOldToggle = bookOldToggleObj.GetComponent<Toggle>();
 
                         GameObject bookNewToggleObj = GameObject.Instantiate(bookOldToggleObj, bookOldToggleObj.transform.parent);
@@ -147,13 +146,13 @@ namespace UltrakULL.Harmony_Patches
 
                         Toggle bookToggle = bookNewToggleObj.GetComponent<Toggle>();
 
-                        GameObject bookOldCheckmark = GetGameObjectChild(GetGameObjectChild(bookOldToggleObj, "Background"), "Checkmark");
-                        GameObject bookOldFakeCheck = GetGameObjectChild(GetGameObjectChild(bookOldToggleObj, "Background"), "FakeCheck");
+                        GameObject bookOldCheckmark = bookOldToggleObj.FindPath("Background", "Checkmark");
+                        GameObject bookOldFakeCheck = bookOldToggleObj.FindPath("Background", "FakeCheck");
                         bookOldCheckmark.SetActive(false);
                         bookOldFakeCheck.SetActive(false);
 
-                        GameObject bookBackground = GetGameObjectChild(bookNewToggleObj, "Background");
-                        GameObject bookCheckmark = GetGameObjectChild(bookBackground, "Checkmark");
+                        GameObject bookBackground = bookNewToggleObj.Child("Background");
+                        GameObject bookCheckmark = bookBackground.Child("Checkmark");
 
                         bookToggle.targetGraphic = bookBackground.GetComponent<Image>();
                         bookToggle.graphic = bookCheckmark.GetComponent<Image>();
@@ -163,7 +162,7 @@ namespace UltrakULL.Harmony_Patches
 
                         bookToggle.transition = Selectable.Transition.ColorTint;
 
-                        GameObject.Destroy(GetGameObjectChild(bookSlider, "Reset Button Variant(Clone)"));
+                        GameObject.Destroy(bookSlider.Child("Reset Button Variant(Clone)"));
 
                         bookToggle.onValueChanged.AddListener(delegate
                         {
@@ -174,8 +173,8 @@ namespace UltrakULL.Harmony_Patches
 
                         string bookLabel = LanguageManager.CurrentLanguage?.options?.audio_bookAudioDubbing;
                         if (!String.IsNullOrWhiteSpace(bookLabel))
-                        { GetTextMeshProUGUI(GetGameObjectChild(bookSlider, "Text")).text = bookLabel; }
-                        else { GetTextMeshProUGUI(GetGameObjectChild(bookSlider, "Text")).text = "BOOK AUDIO DUBBING"; }
+                        { bookSlider.Child("Text").TMP().text = bookLabel; }
+                        else { bookSlider.Child("Text").TMP().text = "BOOK AUDIO DUBBING"; }
 
                         Action<bool> updateBookInteractable = (bool active) =>
                         {

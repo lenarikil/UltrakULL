@@ -2,7 +2,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection.Emit;
 using System.Text;
@@ -24,6 +23,10 @@ namespace UltrakULL
     private static float lastCacheTime = 0f;
     private static readonly Dictionary<(GameObject, string), GameObject> childCache = new Dictionary<(GameObject, string), GameObject>();
     private static float lastChildCacheTime = 0f;
+
+    // Prevents repeated "no TextMeshProUGUI" warnings when the same object is queried
+    // every frame (e.g. through the fluent .TMP() helper).
+    private static readonly HashSet<string> missingTmpWarnings = new HashSet<string>();
 
     private static Dictionary<string, string> LocalizedInputs;
 
@@ -183,21 +186,22 @@ namespace UltrakULL
             }
         }
 
+        // Cached against the active language instance; recomputed only when it changes.
+        private static JsonFormat cachedEnglishLanguage;
+        private static bool cachedUsingEnglish;
+
         public static bool isUsingEnglish()
         {
-            return (LanguageManager.CurrentLanguage.metadata.langDisplayName == "English");
+            var current = LanguageManager.CurrentLanguage;
+            if (!ReferenceEquals(cachedEnglishLanguage, current))
+            {
+                cachedEnglishLanguage = current;
+                cachedUsingEnglish = current != null && current.metadata.langDisplayName == "English";
+            }
+
+            return cachedUsingEnglish;
         }
 
-        public static ColorBlock UkButtonColors = new ColorBlock()
-        {
-			normalColor = new Color(0, 0, 0, 0.512f),
-			highlightedColor = new Color(1, 1, 1, 0.502f),
-			pressedColor = new Color(1, 0, 0, 1),
-			selectedColor = new Color(0, 0, 0, 0.512f),
-			disabledColor = new Color(0.7843f, 0.7843f, 0.7843f, 0.502f),
-			colorMultiplier = 1f,
-			fadeDuration = 0.1f
-		};
 		
 		public static string PreviousHudMessage;
 		
@@ -321,12 +325,12 @@ namespace UltrakULL
 
 			GameObject coreGame = GameObject.Find("Player");
 
-			GameObject resultsPanel = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(coreGame, "Main Camera"), "HUD Camera"), "HUD"), "FinishCanvas"), "Panel"); 
-			GameObject resultsTitle = GetGameObjectChild(resultsPanel, "Title");
+			GameObject resultsPanel = coreGame.FindPath("Main Camera", "HUD Camera", "HUD", "FinishCanvas", "Panel");
+			GameObject resultsTitle = resultsPanel.Child("Title");
 
 			if (levelName != null)
 			{
-                TextMeshProUGUI resultsTitleLevelName = GetTextMeshProUGUI(GetGameObjectChild(resultsTitle, "Text"));
+                TextMeshProUGUI resultsTitleLevelName = resultsTitle.Child("Text").TMP();
                 resultsTitleLevelName.enableWordWrapping = false;
                 resultsTitleLevelName.text = levelName;
                 //Disable the levelFinderComponent, so the level name doesn't get reverted when the results panel appears.
@@ -339,42 +343,42 @@ namespace UltrakULL
             if (levelChallenge != null)
 			{
                 //Challenge description
-                GameObject challengeDescription = GetGameObjectChild(resultsPanel, "Challenge");
-                TextMeshProUGUI challengeDescriptionText = GetTextMeshProUGUI(GetGameObjectChild(challengeDescription, "ChallengeText"));
+                GameObject challengeDescription = resultsPanel.Child("Challenge");
+                TextMeshProUGUI challengeDescriptionText = challengeDescription.Child("ChallengeText").TMP();
                 challengeDescriptionText.text = levelChallenge;
             }
 
             //Time
             //For some bizzare reason, the timer is labelled as "ff". Hakita were you cutting corners? :D
-            GameObject timeTitle = GetGameObjectChild(resultsPanel, "ff");
-			TextMeshProUGUI timeTitleText = GetTextMeshProUGUI(GetGameObjectChild(timeTitle, "Text"));
+            GameObject timeTitle = resultsPanel.Child("ff");
+			TextMeshProUGUI timeTitleText = timeTitle.Child("Text").TMP();
 			timeTitleText.text = LanguageManager.CurrentLanguage.misc.stats_time;
 
 			//Kills
-			GameObject killsTitle = GetGameObjectChild(resultsPanel, "Kills - Info");
-			TextMeshProUGUI killsTitleText = GetTextMeshProUGUI(GetGameObjectChild(killsTitle, "Text"));
+			GameObject killsTitle = resultsPanel.Child("Kills - Info");
+			TextMeshProUGUI killsTitleText = killsTitle.Child("Text").TMP();
 			killsTitleText.text = LanguageManager.CurrentLanguage.misc.stats_kills;
 
 			//Style
-			GameObject styleTitle = GetGameObjectChild(resultsPanel, "Style - Info");
-			TextMeshProUGUI styleTitleText = GetTextMeshProUGUI(GetGameObjectChild(styleTitle, "Text"));
+			GameObject styleTitle = resultsPanel.Child("Style - Info");
+			TextMeshProUGUI styleTitleText = styleTitle.Child("Text").TMP();
 			styleTitleText.text = LanguageManager.CurrentLanguage.misc.stats_style;
 
 			//Secrets
-			GameObject secretsTitle = GetGameObjectChild(resultsPanel, "Secrets -  Title");
-			TextMeshProUGUI secretsTitleText = GetTextMeshProUGUI(GetGameObjectChild(secretsTitle, "Text"));
+			GameObject secretsTitle = resultsPanel.Child("Secrets -  Title");
+			TextMeshProUGUI secretsTitleText = secretsTitle.Child("Text").TMP();
 			secretsTitleText.text = LanguageManager.CurrentLanguage.misc.stats_secrets;
 
 			//Challenge title
-			GameObject challengeTitle = GetGameObjectChild(resultsPanel, "Challenge - Title");
-			TextMeshProUGUI challengeTitleText = GetTextMeshProUGUI(GetGameObjectChild(challengeTitle, "Text"));
+			GameObject challengeTitle = resultsPanel.Child("Challenge - Title");
+			TextMeshProUGUI challengeTitleText = challengeTitle.Child("Text").TMP();
 			challengeTitleText.text = LanguageManager.CurrentLanguage.misc.stats_challenge;
 
 			//Total points
-			TextMeshProUGUI totalPointsText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(resultsPanel, "Total Points"),"Text (1)"));
+			TextMeshProUGUI totalPointsText = resultsPanel.FindPath("Total Points", "Text (1)").TMP();
 			totalPointsText.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_total + ":";
 
-            TextMeshProUGUI totalPoints = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(resultsPanel, "Total Points"), "Text"));
+            TextMeshProUGUI totalPoints = resultsPanel.FindPath("Total Points", "Text").TMP();
             totalPoints.text = "+0" + "<color=orange>" + LanguageManager.CurrentLanguage.shop.shop_moneyCount + "</color>";
         }
 
@@ -413,33 +417,6 @@ namespace UltrakULL
             return null;
         }
 
-        public static Transform RecursiveFindChild(Transform parent, string childName)
-        {
-            foreach (Transform child in parent)
-            {
-                if (child.name == childName)
-                    return child;
-
-                Transform result = RecursiveFindChild(child, childName);
-                if (result != null)
-                    return result;
-            }
-            return null;
-        }
-        private static void PrintChildrenTree(Transform parent, int indentLevel)
-        {
-            string indent = new string(' ', indentLevel * 2);
-
-            for (int i = 0; i < parent.childCount; i++)
-            {
-                Transform child = parent.GetChild(i);
-                Logging.Info($"{indent}- {child.name}");
-                if (child.childCount > 0)
-                {
-                    PrintChildrenTree(child, indentLevel + 1);
-                }
-            }
-        }
 
         public static Text GetTextfromGameObject(GameObject objectToUse)
 		{
@@ -455,7 +432,7 @@ namespace UltrakULL
             }
 
             TextMeshProUGUI tmp = objectToUse.GetComponent<TextMeshProUGUI>();
-            if (tmp == null)
+            if (tmp == null && missingTmpWarnings.Add(objectToUse.name))
                 Logging.Warn($"[GetTextMeshProUGUI] '{objectToUse.name}' not have any TextMeshProUGUI's");
 
             return tmp;
@@ -544,78 +521,6 @@ namespace UltrakULL
 				}
 			}
 			return stringBuilder.ToString();
-		}
-		public static void ExportAudioClipToWav(AudioClip clip, string clipName, string exportDir = null)
-		{
-			try
-			{
-				if (exportDir == null)
-				{
-					exportDir = Path.Combine(AudioSwapper.SpeechFolder, "export");
-				}
-				Directory.CreateDirectory(exportDir);
-				string text = Path.Combine(exportDir, clipName + ".wav");
-				if (File.Exists(text))
-				{
-					Logging.Info("[AudioExport] WAV file already exists: " + text);
-					return;
-				}
-				byte[] bytes = EncodeAudioClipToWav(clip);
-				File.WriteAllBytes(text, bytes);
-				Logging.Info("[AudioExport] Exported " + clipName + ".wav to " + text);
-			}
-			catch (Exception arg)
-			{
-				Logging.Error($"[AudioExport] Failed to export {clipName}: {arg}");
-			}
-		}
-
-		public static byte[] EncodeAudioClipToWav(AudioClip clip)
-		{
-			int channels = clip.channels;
-			int frequency = clip.frequency;
-			float[] array = new float[clip.samples * channels];
-			clip.GetData(array, 0);
-			short[] array2 = new short[array.Length];
-			for (int i = 0; i < array.Length; i++)
-			{
-				float num = array[i];
-				if (num > 1f)
-				{
-					num = 1f;
-				}
-				if (num < -1f)
-				{
-					num = -1f;
-				}
-				array2[i] = (short)(num * 32767f);
-			}
-			byte[] array3 = new byte[44];
-			using (MemoryStream output = new MemoryStream(array3))
-			{
-				using (BinaryWriter binaryWriter = new BinaryWriter(output))
-				{
-					binaryWriter.Write(new char[4] { 'R', 'I', 'F', 'F' });
-					binaryWriter.Write(36 + array2.Length * 2);
-					binaryWriter.Write(new char[4] { 'W', 'A', 'V', 'E' });
-					binaryWriter.Write(new char[4] { 'f', 'm', 't', ' ' });
-					binaryWriter.Write(16);
-					binaryWriter.Write((short)1);
-					binaryWriter.Write((short)channels);
-					binaryWriter.Write(frequency);
-					binaryWriter.Write(frequency * channels * 2);
-					binaryWriter.Write((short)(channels * 2));
-					binaryWriter.Write((short)16);
-					binaryWriter.Write(new char[4] { 'd', 'a', 't', 'a' });
-					binaryWriter.Write(array2.Length * 2);
-				}
-			}
-			byte[] array4 = new byte[array2.Length * 2];
-			Buffer.BlockCopy(array2, 0, array4, 0, array4.Length);
-			byte[] array5 = new byte[array3.Length + array4.Length];
-			Buffer.BlockCopy(array3, 0, array5, 0, array3.Length);
-			Buffer.BlockCopy(array4, 0, array5, array3.Length, array4.Length);
-			return array5;
 		}
     }
 }

@@ -35,7 +35,7 @@ namespace UltrakULL.Harmony_Patches
                 ___anyPercentLabel.text = LanguageManager.CurrentLanguage.frontend.leaderboard_anyPercent;
                 ___pRankLabel.text = LanguageManager.CurrentLanguage.frontend.leaderboard_pPercent;
 
-                Text noItems = GetTextfromGameObject(GetGameObjectChild(___noItemsPanel,"Text"));
+                Text noItems = ___noItemsPanel.Child("Text").Text();
                 noItems.text = LanguageManager.CurrentLanguage.frontend.leaderboard_noEntries;
 
             }
@@ -44,6 +44,12 @@ namespace UltrakULL.Harmony_Patches
         [HarmonyPatch(typeof(LevelEndLeaderboard),"Update")]
         public class LevelLeaderboardEndPatch
         {
+            // Update runs every frame while the results panel is shown; cache the TMP
+            // references and only write when the target text actually changes.
+            private static GameObject cachedPanel;
+            private static TextMeshProUGUI cachedConnecting;
+            private static TextMeshProUGUI cachedReminder;
+
             [HarmonyPostfix]
             public static void LevelLeaderboardEndPatch_Postfix(ref bool ___displayPRank, ref TMP_Text ___leaderboardType, ref GameObject ___loadingPanel)
             {
@@ -51,13 +57,41 @@ namespace UltrakULL.Harmony_Patches
                 {
                     return;
                 }
-                ___leaderboardType.text = (___displayPRank ? LanguageManager.CurrentLanguage.frontend.leaderboard_pPercent : LanguageManager.CurrentLanguage.frontend.leaderboard_anyPercent);
-                
-                TextMeshProUGUI connecting = GetTextMeshProUGUI(___loadingPanel);
-                connecting.text = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_connectingToSteam;
 
-                TextMeshProUGUI reminder = GetTextMeshProUGUI(GetGameObjectChild(___loadingPanel.transform.parent.gameObject, "SettingsReminder"));
-                reminder.text = LanguageManager.CurrentLanguage.frontend.leaderboard_reminder;
+                string typeText = (___displayPRank ? LanguageManager.CurrentLanguage.frontend.leaderboard_pPercent : LanguageManager.CurrentLanguage.frontend.leaderboard_anyPercent);
+                if (___leaderboardType != null && ___leaderboardType.text != typeText)
+                {
+                    ___leaderboardType.text = typeText;
+                }
+
+                if (!ReferenceEquals(cachedPanel, ___loadingPanel))
+                {
+                    cachedPanel = ___loadingPanel;
+                    cachedConnecting = null;
+                    cachedReminder = null;
+                }
+
+                if (cachedConnecting == null && ___loadingPanel != null)
+                {
+                    cachedConnecting = ___loadingPanel.TMP();
+                }
+
+                if (cachedReminder == null && ___loadingPanel != null)
+                {
+                    cachedReminder = ___loadingPanel.transform.parent.gameObject.Child("SettingsReminder").TMP();
+                }
+
+                string connectingText = LanguageManager.CurrentLanguage.cyberGrind.cybergrind_connectingToSteam;
+                if (cachedConnecting != null && cachedConnecting.text != connectingText)
+                {
+                    cachedConnecting.text = connectingText;
+                }
+
+                string reminderText = LanguageManager.CurrentLanguage.frontend.leaderboard_reminder;
+                if (cachedReminder != null && cachedReminder.text != reminderText)
+                {
+                    cachedReminder.text = reminderText;
+                }
             }
         }
         

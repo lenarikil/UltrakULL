@@ -2,7 +2,6 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using static UltrakULL.CommonFunctions;
 using UltrakULL.json;
 using System.Data;
 using System.Threading.Tasks;
@@ -17,53 +16,53 @@ namespace UltrakULL
 		{
 			try
 			{
-				GameObject titleObject = GetGameObjectChild(GetGameObjectChild(mainMenu, "Main Menu (1)"), "LeftSide");
+				GameObject titleObject = mainMenu.FindPath("Main Menu (1)", "LeftSide");
 
 				//Early access tag
-				TextMeshProUGUI earlyAccessText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(titleObject, "Text (3)"), "Text"));
+				TextMeshProUGUI earlyAccessText = titleObject.FindPath("Text (3)", "Text").TMP();
 				earlyAccessText.text = LanguageManager.CurrentLanguage.frontend.mainmenu_earlyAccess;
-				TextMeshProUGUI earlyAccessBackground = GetTextMeshProUGUI(GetGameObjectChild(titleObject, "Text (3)"));
+				TextMeshProUGUI earlyAccessBackground = titleObject.Child("Text (3)").TMP();
 				earlyAccessBackground.text = "<mark=#000000>" + LanguageManager.CurrentLanguage.frontend.mainmenu_earlyAccess;
 
 				//V1 Initialization strings
-				TextMeshProUGUI v1InitText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(titleObject, "Text (2)"), "Text (1)"));
+				TextMeshProUGUI v1InitText = titleObject.FindPath("Text (2)", "Text (1)").TMP();
 				v1InitText.text = LanguageManager.CurrentLanguage.frontend.mainmenu_v1Init;
-				TextMeshProUGUI v1InitBackground = GetTextMeshProUGUI(GetGameObjectChild(titleObject, "Text (2)")); // Yep. Background is a TMP too. 
+				TextMeshProUGUI v1InitBackground = titleObject.Child("Text (2)").TMP(); // Yep. Background is a TMP too.
 				v1InitBackground.text = "<mark=#000000>" + LanguageManager.CurrentLanguage.frontend.mainmenu_v1Init;
 
 				//Init Socials
-				TextMeshProUGUI initSocialsText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(titleObject, "Panel"), "Text (2)"), "Text"));
+				TextMeshProUGUI initSocialsText = titleObject.FindPath("Panel", "Text (2)", "Text").TMP();
 				initSocialsText.text = LanguageManager.CurrentLanguage.frontend.mainmenu_initSocials;
-				TextMeshProUGUI initSocialsBackground = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(titleObject, "Panel"), "Text (2)")); // Yep. Background is a TMP too. 
+				TextMeshProUGUI initSocialsBackground = titleObject.FindPath("Panel", "Text (2)").TMP(); // Yep. Background is a TMP too.
 				initSocialsBackground.text = "<mark=#000000>" + LanguageManager.CurrentLanguage.frontend.mainmenu_initSocials;
 
-				GameObject holidayObject = GetGameObjectChild(titleObject, "Holiday Greetings"); 
+				GameObject holidayObject = titleObject.Child("Holiday Greetings");
 				//Halloween
-				TextMeshProUGUI halloweenText = GetTextMeshProUGUI(GetGameObjectChild(holidayObject, "Text (Halloween)"));
+				TextMeshProUGUI halloweenText = holidayObject.Child("Text (Halloween)").TMP();
 				halloweenText.text = LanguageManager.CurrentLanguage.frontend.mainmenu_halloween;
 
 				//Easter
-				TextMeshProUGUI easterText = GetTextMeshProUGUI(GetGameObjectChild(holidayObject, "Text (Easter)"));
+				TextMeshProUGUI easterText = holidayObject.Child("Text (Easter)").TMP();
 				easterText.text = LanguageManager.CurrentLanguage.frontend.mainmenu_easter;
 
 				//Christmas
-				TextMeshProUGUI christmasText = GetTextMeshProUGUI(GetGameObjectChild(holidayObject, "Text (Christmas)"));
+				TextMeshProUGUI christmasText = holidayObject.Child("Text (Christmas)").TMP();
 				christmasText.text = LanguageManager.CurrentLanguage.frontend.mainmenu_christmas;
 
 				//Play button
-				TextMeshProUGUI playButtonText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(titleObject, "Continue"), "Text"));
+				TextMeshProUGUI playButtonText = titleObject.FindPath("Continue", "Text").TMP();
 				playButtonText.text = LanguageManager.CurrentLanguage.frontend.mainmenu_play;
 
 				//Options button
-				TextMeshProUGUI optionsButtontext = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(titleObject, "Options"), "Text"));
+				TextMeshProUGUI optionsButtontext = titleObject.FindPath("Options", "Text").TMP();
 				optionsButtontext.text = LanguageManager.CurrentLanguage.frontend.mainmenu_options;
 
 				//Credits button
-				TextMeshProUGUI creditsButtontext = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(titleObject, "Credits"), "Text"));
+				TextMeshProUGUI creditsButtontext = titleObject.FindPath("Credits", "Text").TMP();
 				creditsButtontext.text = LanguageManager.CurrentLanguage.frontend.mainmenu_credits;
 
 				//Quit button
-				TextMeshProUGUI quitButtontext = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(titleObject, "Quit"), "Text"));
+				TextMeshProUGUI quitButtontext = titleObject.FindPath("Quit", "Text").TMP();
 				quitButtontext.text = LanguageManager.CurrentLanguage.frontend.mainmenu_quit;
 			}
 			catch (Exception e)
@@ -77,10 +76,10 @@ namespace UltrakULL
 		{
 			try
 			{
-				GameObject aboutEncoreObject = GetGameObjectChild(GetGameObjectChild(mainMenu, "EncorePopUp (1)"), "Image");
+				GameObject aboutEncoreObject = mainMenu.FindPath("EncorePopUp (1)", "Image");
 
 				//About Encore Title
-				TextMeshProUGUI aboutEncoreTitleText = GetTextMeshProUGUI(GetGameObjectChild(aboutEncoreObject, "Text (TMP) (1)"));
+				TextMeshProUGUI aboutEncoreTitleText = aboutEncoreObject.Child("Text (TMP) (1)").TMP();
 				if (LanguageManager.CurrentLanguage.frontend.aboutEncoreTitle != "")
 				{
 					aboutEncoreTitleText.text = LanguageManager.CurrentLanguage.frontend.aboutEncoreTitle;
@@ -90,7 +89,7 @@ namespace UltrakULL
 					Logging.Warn("No aboutEncoreTitle text found in the language file. Using default: " + aboutEncoreTitleText.text);
 				}
 				//About Encore Main text
-				TextMeshProUGUI aboutEncoreMainText = GetTextMeshProUGUI(GetGameObjectChild(aboutEncoreObject, "Text (TMP)"));
+				TextMeshProUGUI aboutEncoreMainText = aboutEncoreObject.Child("Text (TMP)").TMP();
 				if (LanguageManager.CurrentLanguage.frontend.aboutEncoreMain != "")
 				{
 					aboutEncoreMainText.text = LanguageManager.CurrentLanguage.frontend.aboutEncoreMain;
@@ -101,8 +100,8 @@ namespace UltrakULL
 				}
 
 				//About Encore Button //Umm, id dont know, need to translate "Ok" button, but... OK
-				GameObject aboutEncoreButtonTextObject = GetGameObjectChild(GetGameObjectChild(aboutEncoreObject, "General (1)"), "Text");
-				TextMeshProUGUI aboutEncoreButtonText = GetTextMeshProUGUI(aboutEncoreButtonTextObject);
+				GameObject aboutEncoreButtonTextObject = aboutEncoreObject.FindPath("General (1)", "Text");
+				TextMeshProUGUI aboutEncoreButtonText = aboutEncoreButtonTextObject.TMP();
 				if (LanguageManager.CurrentLanguage.frontend.aboutEncoreButton != "")
 				{
 					aboutEncoreButtonText.text = LanguageManager.CurrentLanguage.frontend.aboutEncoreButton;
@@ -113,10 +112,10 @@ namespace UltrakULL
 				}
 
 				//Encore available PopUp
-				GameObject encoreAvailableObject = GetGameObjectChild(GetGameObjectChild(mainMenu, "EncorePopUp"), "Image");
+				GameObject encoreAvailableObject = mainMenu.FindPath("EncorePopUp", "Image");
 
 				//Encore available Main text
-				TextMeshProUGUI encoreAvailableMainText = GetTextMeshProUGUI(GetGameObjectChild(encoreAvailableObject, "Text (TMP)"));
+				TextMeshProUGUI encoreAvailableMainText = encoreAvailableObject.Child("Text (TMP)").TMP();
 				if (LanguageManager.CurrentLanguage.frontend.encoreAvailableMainText != "")
 				{
 					encoreAvailableMainText.text = LanguageManager.CurrentLanguage.frontend.encoreAvailableMainText;
@@ -127,8 +126,8 @@ namespace UltrakULL
 				}
 
 				//Encore available Button //Umm, id dont know, need to translate "Ok" button, but... OK
-				GameObject encoreAvailableButtonTextObject = GetGameObjectChild(GetGameObjectChild(encoreAvailableObject, "General (1)"), "Text");
-				TextMeshProUGUI encoreAvailableButtonText = GetTextMeshProUGUI(encoreAvailableButtonTextObject);
+				GameObject encoreAvailableButtonTextObject = encoreAvailableObject.FindPath("General (1)", "Text");
+				TextMeshProUGUI encoreAvailableButtonText = encoreAvailableButtonTextObject.TMP();
 				if (LanguageManager.CurrentLanguage.frontend.encoreAvailableButton != "")
 				{
 					encoreAvailableButtonText.text = LanguageManager.CurrentLanguage.frontend.encoreAvailableButton;
@@ -200,57 +199,57 @@ namespace UltrakULL
 		{
 			try
 			{
-				GameObject difficultyObject = GetGameObjectChild(GetGameObjectChild(frontEnd, "Difficulty Select (1)"),"Interactables");
+				GameObject difficultyObject = frontEnd.FindPath("Difficulty Select (1)", "Interactables");
 
 				//Difficulty header text (note: this can't fit much without reducing the default font size.)
-				TextMeshProUGUI difficultyText = GetTextMeshProUGUI(difficultyObject.transform.Find("Title").gameObject);
+				TextMeshProUGUI difficultyText = difficultyObject.Child("Title").TMP();
 				difficultyText.text = "--" + LanguageManager.CurrentLanguage.frontend.difficulty_title + "--";
 
 				//Easy header text
-				GameObject easyObject = difficultyObject.transform.Find("Easy").gameObject;
-				TextMeshProUGUI easyText = GetTextMeshProUGUI(easyObject);
+				GameObject easyObject = difficultyObject.Child("Easy");
+				TextMeshProUGUI easyText = easyObject.TMP();
 				easyText.text =LanguageManager.CurrentLanguage.frontend.difficulty_easy;
 
 				//Normal header text
-				TextMeshProUGUI normalText = GetTextMeshProUGUI(difficultyObject.transform.Find("Normal").gameObject);
+				TextMeshProUGUI normalText = difficultyObject.Child("Normal").TMP();
 				normalText.text = LanguageManager.CurrentLanguage.frontend.difficulty_normal;
 
 				//Hard header text
-				TextMeshProUGUI hardText = GetTextMeshProUGUI(difficultyObject.transform.Find("Hard").gameObject);
+				TextMeshProUGUI hardText = difficultyObject.Child("Hard").TMP();
 				hardText.text = LanguageManager.CurrentLanguage.frontend.difficulty_hard;
 
 				//Harmless header
-				GameObject harmlessTextObject = GetGameObjectChild(difficultyObject, "Casual Easy");
-				TextMeshProUGUI harmlessText = GetTextMeshProUGUI(harmlessTextObject.transform.Find("Name").gameObject);
+				GameObject harmlessTextObject = difficultyObject.Child("Casual Easy");
+				TextMeshProUGUI harmlessText = harmlessTextObject.Child("Name").TMP();
 				harmlessText.text = LanguageManager.CurrentLanguage.frontend.difficulty_harmless;
 
 				//Lenient header
-				GameObject lenientTextObject = GetGameObjectChild(difficultyObject, "Casual Hard");
-				TextMeshProUGUI lenientText = GetTextMeshProUGUI(lenientTextObject.transform.Find("Name").gameObject);
+				GameObject lenientTextObject = difficultyObject.Child("Casual Hard");
+				TextMeshProUGUI lenientText = lenientTextObject.Child("Name").TMP();
 				lenientText.text = LanguageManager.CurrentLanguage.frontend.difficulty_lenient;
 
 				//Standard header
-				GameObject standardTextObject = GetGameObjectChild(difficultyObject, "Standard");
-				TextMeshProUGUI standardText = GetTextMeshProUGUI(standardTextObject.transform.Find("Name").gameObject);
+				GameObject standardTextObject = difficultyObject.Child("Standard");
+				TextMeshProUGUI standardText = standardTextObject.Child("Name").TMP();
 				standardText.text = LanguageManager.CurrentLanguage.frontend.difficulty_standard + " <color=orange>*</color>";
 
 				//Violent header
-				GameObject violentTextObject = GetGameObjectChild(difficultyObject, "Violent");
-				TextMeshProUGUI violentText = GetTextMeshProUGUI(violentTextObject.transform.Find("Name").gameObject);
+				GameObject violentTextObject = difficultyObject.Child("Violent");
+				TextMeshProUGUI violentText = violentTextObject.Child("Name").TMP();
 				violentText.text = LanguageManager.CurrentLanguage.frontend.difficulty_violent;
 
 				//Brutal header
-				GameObject brutalTextObject = GetGameObjectChild(difficultyObject, "Brutal");
-				TextMeshProUGUI brutalText = GetTextMeshProUGUI(brutalTextObject.transform.Find("Name").gameObject);
+				GameObject brutalTextObject = difficultyObject.Child("Brutal");
+				TextMeshProUGUI brutalText = brutalTextObject.Child("Name").TMP();
 				brutalText.text = LanguageManager.CurrentLanguage.frontend.difficulty_brutal;
 
 						//UKMD header
-						GameObject umdTextObject = GetGameObjectChild(difficultyObject, "V1 Must Die");
-						TextMeshProUGUI umdText = GetTextMeshProUGUI(umdTextObject.transform.Find("Name").gameObject);
+						GameObject umdTextObject = difficultyObject.Child("V1 Must Die");
+						TextMeshProUGUI umdText = umdTextObject.Child("Name").TMP();
 						umdText.text = LanguageManager.CurrentLanguage.frontend.difficulty_umd;
 
 
-				TextMeshProUGUI underConstructionText = GetTextMeshProUGUI(GetGameObjectChild(umdTextObject, "Under Construction"));
+				TextMeshProUGUI underConstructionText = umdTextObject.Child("Under Construction").TMP();
 				underConstructionText.text = LanguageManager.CurrentLanguage.frontend.difficulty_underConstruction;
 
 
@@ -266,8 +265,8 @@ namespace UltrakULL
 				}
 
 				//Tooltip
-				GameObject assistTip = GetGameObjectChild(difficultyObject, "Assist Tip");
-				TextMeshProUGUI assistTipText = GetTextMeshProUGUI(assistTip);
+				GameObject assistTip = difficultyObject.Child("Assist Tip");
+				TextMeshProUGUI assistTipText = assistTip.TMP();
 				assistTipText.text = LanguageManager.CurrentLanguage.frontend.difficulty_tweakReminder;
 			}
 			catch (Exception e)
@@ -282,15 +281,15 @@ namespace UltrakULL
 		{
 			try
 			{
-				GameObject difficultyObject = GetGameObjectChild(GetGameObjectChild(frontEnd, "Difficulty Select (1)"), "Interactables");
+				GameObject difficultyObject = frontEnd.FindPath("Difficulty Select (1)", "Interactables");
 
 				//Harmless title
-				GameObject harmlessObject = GetGameObjectChild(difficultyObject, "Harmless Info");
-				TextMeshProUGUI harmlessTitle = GetTextMeshProUGUI(harmlessObject.transform.Find("Title (1)").gameObject);
+				GameObject harmlessObject = difficultyObject.Child("Harmless Info");
+				TextMeshProUGUI harmlessTitle = harmlessObject.Child("Title (1)").TMP();
 				harmlessTitle.text = "--" + LanguageManager.CurrentLanguage.frontend.difficulty_harmless + "--";
 
 				//Harmless descriptor
-				TextMeshProUGUI harmlessDescriptor = GetTextMeshProUGUI(harmlessObject.transform.Find("Text").gameObject);
+				TextMeshProUGUI harmlessDescriptor = harmlessObject.Child("Text").TMP();
 				harmlessDescriptor.text =
 					LanguageManager.CurrentLanguage.frontend.difficulty_harmlessDescription1
 					+ "\n\n"
@@ -299,12 +298,12 @@ namespace UltrakULL
 					+ "<color=green>" + LanguageManager.CurrentLanguage.frontend.difficulty_harmlessDescription3 + "</color>";
 
 				//Lenient title
-				GameObject lenientObject = GetGameObjectChild(difficultyObject, "Lenient Info");
-				TextMeshProUGUI lenientTitle = GetTextMeshProUGUI(lenientObject.transform.Find("Title (1)").gameObject);
+				GameObject lenientObject = difficultyObject.Child("Lenient Info");
+				TextMeshProUGUI lenientTitle = lenientObject.Child("Title (1)").TMP();
 				lenientTitle.text = "--" + LanguageManager.CurrentLanguage.frontend.difficulty_lenient + "--";
 
 				//Lenient descriptor
-				TextMeshProUGUI lenientDescriptor = GetTextMeshProUGUI(lenientObject.transform.Find("Text").gameObject);
+				TextMeshProUGUI lenientDescriptor = lenientObject.Child("Text").TMP();
 				lenientDescriptor.text =
 					LanguageManager.CurrentLanguage.frontend.difficulty_lenientDescription1
 					+ "\n\n"
@@ -313,12 +312,12 @@ namespace UltrakULL
 					+ "<color=yellow>" + LanguageManager.CurrentLanguage.frontend.difficulty_lenientDescription3 + "</color>";
 
 				//Standard title
-				GameObject standardObject = GetGameObjectChild(difficultyObject, "Standard Info");
-				TextMeshProUGUI standardTitle = GetTextMeshProUGUI(standardObject.transform.Find("Title (1)").gameObject);
+				GameObject standardObject = difficultyObject.Child("Standard Info");
+				TextMeshProUGUI standardTitle = standardObject.Child("Title (1)").TMP();
 				standardTitle.text = "--" + LanguageManager.CurrentLanguage.frontend.difficulty_standard + "--";
 
 				//Standard descriptor
-				TextMeshProUGUI standardDescriptor = GetTextMeshProUGUI(standardObject.transform.Find("Text").gameObject);
+				TextMeshProUGUI standardDescriptor = standardObject.Child("Text").TMP();
 				standardDescriptor.text =
 					LanguageManager.CurrentLanguage.frontend.difficulty_standardDescription1
 					+ "\n\n"
@@ -327,12 +326,12 @@ namespace UltrakULL
 					+ "<color=orange>" + LanguageManager.CurrentLanguage.frontend.difficulty_standardDescription3 + "</color>";
 
 				//Violent title
-				GameObject violentObject = GetGameObjectChild(difficultyObject, "Violent Info");
-				TextMeshProUGUI violentTitle = GetTextMeshProUGUI(violentObject.transform.Find("Title (1)").gameObject);
+				GameObject violentObject = difficultyObject.Child("Violent Info");
+				TextMeshProUGUI violentTitle = violentObject.Child("Title (1)").TMP();
 				violentTitle.text = "--" + LanguageManager.CurrentLanguage.frontend.difficulty_violent + "--";
 
 				//Violent descriptor
-				TextMeshProUGUI violentDescriptor = GetTextMeshProUGUI(violentObject.transform.Find("Text").gameObject);
+				TextMeshProUGUI violentDescriptor = violentObject.Child("Text").TMP();
 				violentDescriptor.text =
 					LanguageManager.CurrentLanguage.frontend.difficulty_violentDescription1
 					+ "\n\n"
@@ -341,12 +340,12 @@ namespace UltrakULL
 					+ "<color=red>" + LanguageManager.CurrentLanguage.frontend.difficulty_violentDescription3 + "</color>";
 
 				//Brutal title
-				GameObject brutalObject = GetGameObjectChild(difficultyObject, "Brutal Info");
-				TextMeshProUGUI brutalTitle = GetTextMeshProUGUI(brutalObject.transform.Find("Title (1)").gameObject);
+				GameObject brutalObject = difficultyObject.Child("Brutal Info");
+				TextMeshProUGUI brutalTitle = brutalObject.Child("Title (1)").TMP();
 				brutalTitle.text = "--" + LanguageManager.CurrentLanguage.frontend.difficulty_brutal + "--";
 
 				//Brutal descriptor
-				TextMeshProUGUI brutalDescriptor = GetTextMeshProUGUI(brutalObject.transform.Find("Text").gameObject);
+				TextMeshProUGUI brutalDescriptor = brutalObject.Child("Text").TMP();
 				brutalDescriptor.text =
 					"<color=white>" + LanguageManager.CurrentLanguage.frontend.difficulty_brutalDescription1
 					+ "\n\n"
@@ -495,51 +494,51 @@ namespace UltrakULL
 
 		private static void PatchChapterSelect(GameObject frontEnd)
 		{
-			GameObject chapterObject = GetGameObjectChild(GetGameObjectChild(frontEnd, "Chapter Select"), "Chapters");
-			TextMeshProUGUI chapterText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(frontEnd, "Chapter Select"), "Title (1)"));
+			GameObject chapterObject = frontEnd.FindPath("Chapter Select", "Chapters");
+			TextMeshProUGUI chapterText = frontEnd.FindPath("Chapter Select", "Title (1)").TMP();
 			chapterText.text = "--" + LanguageManager.CurrentLanguage.frontend.chapter_title + "--";
 
 			//Start patching the Primary and Secondary chapters type titles
-			GameObject primaryObject = GetGameObjectChild(GetGameObjectChild(chapterObject, "Primary"), "Title");
-			TextMeshProUGUI primaryText = GetTextMeshProUGUI(primaryObject);
+			GameObject primaryObject = chapterObject.FindPath("Primary", "Title");
+			TextMeshProUGUI primaryText = primaryObject.TMP();
 			primaryText.text = LanguageManager.CurrentLanguage.frontend.chapter_type_primary;
 
-			GameObject secondaryObject = GetGameObjectChild(GetGameObjectChild(chapterObject, "Secondary"), "Title");
-			TextMeshProUGUI secondaryText = GetTextMeshProUGUI(secondaryObject);
+			GameObject secondaryObject = chapterObject.FindPath("Secondary", "Title");
+			TextMeshProUGUI secondaryText = secondaryObject.TMP();
 			secondaryText.text = LanguageManager.CurrentLanguage.frontend.chapter_type_secondary;
 			// End patching the Primary and Secondary chapters type titles
 
-			GameObject preludeObject = GetGameObjectChild(chapterObject, "Prelude");
-			TextMeshProUGUI preludeText = GetTextMeshProUGUI(preludeObject.transform.Find("Name").gameObject);
+			GameObject preludeObject = chapterObject.Child("Prelude");
+			TextMeshProUGUI preludeText = preludeObject.Child("Name").TMP();
 			preludeText.text = LanguageManager.CurrentLanguage.frontend.chapter_prelude;
 
-			GameObject act1Object = GetGameObjectChild(chapterObject, "Act I");
-			TextMeshProUGUI act1Text = GetTextMeshProUGUI(act1Object.transform.Find("Name").gameObject);
+			GameObject act1Object = chapterObject.Child("Act I");
+			TextMeshProUGUI act1Text = act1Object.Child("Name").TMP();
 			act1Text.text = LanguageManager.CurrentLanguage.frontend.chapter_act1;
 
-			GameObject act2Object = GetGameObjectChild(chapterObject, "Act II");
-			TextMeshProUGUI act2Text = GetTextMeshProUGUI(act2Object.transform.Find("Name").gameObject);
+			GameObject act2Object = chapterObject.Child("Act II");
+			TextMeshProUGUI act2Text = act2Object.Child("Name").TMP();
 			act2Text.text = LanguageManager.CurrentLanguage.frontend.chapter_act2;
 
-			GameObject act3Object = GetGameObjectChild(chapterObject, "Act III");
-			TextMeshProUGUI act3Text = GetTextMeshProUGUI(act3Object.transform.Find("Name").gameObject);
+			GameObject act3Object = chapterObject.Child("Act III");
+			TextMeshProUGUI act3Text = act3Object.Child("Name").TMP();
 			act3Text.text = LanguageManager.CurrentLanguage.frontend.chapter_act3;
 
-			GameObject encoreObject = GetGameObjectChild(chapterObject, "Encore");
-			TextMeshProUGUI encoreText = GetTextMeshProUGUI(encoreObject.transform.Find("Name").gameObject);
+			GameObject encoreObject = chapterObject.Child("Encore");
+			TextMeshProUGUI encoreText = encoreObject.Child("Name").TMP();
 			encoreText.text = LanguageManager.CurrentLanguage.frontend.chapter_encore;
 
 
-			GameObject primeObject = GetGameObjectChild(chapterObject, "Prime");
-			TextMeshProUGUI primeText = GetTextMeshProUGUI(primeObject.transform.Find("Name").gameObject);
+			GameObject primeObject = chapterObject.Child("Prime");
+			TextMeshProUGUI primeText = primeObject.Child("Name").TMP();
 			primeText.text = LanguageManager.CurrentLanguage.frontend.chapter_prime;
 
-			GameObject cgObject = GetGameObjectChild(chapterObject, "The Cyber Grind");
-			TextMeshProUGUI cgText = GetTextMeshProUGUI(cgObject.transform.Find("Name").gameObject);
+			GameObject cgObject = chapterObject.Child("The Cyber Grind");
+			TextMeshProUGUI cgText = cgObject.Child("Name").TMP();
 			cgText.text = LanguageManager.CurrentLanguage.frontend.chapter_cyberGrind;
 
-			GameObject sandboxObject = GetGameObjectChild(chapterObject, "Sandbox");
-			TextMeshProUGUI sandboxText = GetTextMeshProUGUI(sandboxObject.transform.Find("Name").gameObject);
+			GameObject sandboxObject = chapterObject.Child("Sandbox");
+			TextMeshProUGUI sandboxText = sandboxObject.Child("Name").TMP();
 			sandboxText.text = LanguageManager.CurrentLanguage.frontend.chapter_sandbox;
 
 			if (LanguageManager.IsRightToLeft)
@@ -557,299 +556,299 @@ namespace UltrakULL
 
 		private static void PatchLevelSelectPrelude(GameObject frontEnd)
 		{
-			GameObject lsPreludeObject = GetGameObjectChild(frontEnd, "Level Select (Prelude)");
+			GameObject lsPreludeObject = frontEnd.Child("Level Select (Prelude)");
 			
-			GameObject preludeHeader = GetGameObjectChild(GetGameObjectChild(lsPreludeObject,"Overture"),"Header");
+			GameObject preludeHeader = lsPreludeObject.FindPath("Overture", "Header");
 
 			//Prelude title
-			TextMeshProUGUI preludeTitleText = GetTextMeshProUGUI(GetGameObjectChild(preludeHeader,"Text"));
+			TextMeshProUGUI preludeTitleText = preludeHeader.Child("Text").TMP();
 			preludeTitleText.text = LanguageManager.CurrentLanguage.frontend.layer_prelude;
 			preludeTitleText.fontSize = 46;
 
 			//Prelude secret mission title
-			TextMeshProUGUI secretText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(preludeHeader, "Secret Mission"), "Text").gameObject);
+			TextMeshProUGUI secretText = preludeHeader.FindPath("Secret Mission", "Text").TMP();
 			secretText.text = LanguageManager.CurrentLanguage.frontend.chapter_secretMission;
 			
 
-			GameObject preludeObject = GetGameObjectChild(GetGameObjectChild(lsPreludeObject, "Overture"),"Level Row");
+			GameObject preludeObject = lsPreludeObject.FindPath("Overture", "Level Row");
 			
 			//0-1 challenge
-			GameObject firstObject = GetGameObjectChild(preludeObject, "0-1 Panel");
-			TextMeshProUGUI firstChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(firstObject,"Panel"), "Text"));
+			GameObject firstObject = preludeObject.Child("0-1 Panel");
+			TextMeshProUGUI firstChallenge = firstObject.FindPath("Panel", "Text").TMP();
 			firstChallenge.text = PreludeStrings.GetLevelChallenge("Level 0-1");
 
 			//0-2 challenge
-			GameObject secondObject = GetGameObjectChild(preludeObject, "0-2 Panel");
-			TextMeshProUGUI secondChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(secondObject, "Panel (2)"), "Text"));
+			GameObject secondObject = preludeObject.Child("0-2 Panel");
+			TextMeshProUGUI secondChallenge = secondObject.FindPath("Panel (2)", "Text").TMP();
 			secondChallenge.text = PreludeStrings.GetLevelChallenge("Level 0-2");
 
 			//0-3 challenge
-			GameObject thirdObject = GetGameObjectChild(preludeObject, "0-3 Panel");
-			TextMeshProUGUI thirdChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(thirdObject, "Panel (4)"), "Text"));
+			GameObject thirdObject = preludeObject.Child("0-3 Panel");
+			TextMeshProUGUI thirdChallenge = thirdObject.FindPath("Panel (4)", "Text").TMP();
 			thirdChallenge.text = PreludeStrings.GetLevelChallenge("Level 0-3");
 
 			//0-4 challenge
-			GameObject fourthObject = GetGameObjectChild(preludeObject, "0-4 Panel");
-			TextMeshProUGUI fourthChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(fourthObject, "Panel (6)"), "Text"));
+			GameObject fourthObject = preludeObject.Child("0-4 Panel");
+			TextMeshProUGUI fourthChallenge = fourthObject.FindPath("Panel (6)", "Text").TMP();
 			fourthChallenge.text = PreludeStrings.GetLevelChallenge("Level 0-4");
 
 			//0-5 challenge
-			GameObject fifthObject = GetGameObjectChild(preludeObject, "0-5 Panel");
+			GameObject fifthObject = preludeObject.Child("0-5 Panel");
 
-			TextMeshProUGUI fifthChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(fifthObject, "Panel (6)"), "Text"));
+			TextMeshProUGUI fifthChallenge = fifthObject.FindPath("Panel (6)", "Text").TMP();
 			fifthChallenge.text = PreludeStrings.GetLevelChallenge("Level 0-5");
 			
 			//Full intro panel why this is not using the TMPro
-			GameObject fullIntroObject = GetGameObjectChild(GetGameObjectChild(lsPreludeObject, "FullIntroPopup"), "Panel");
+			GameObject fullIntroObject = lsPreludeObject.FindPath("FullIntroPopup", "Panel");
 
-			Text fullIntroText = GetTextfromGameObject(fullIntroObject.transform.Find("Text").gameObject);
+			Text fullIntroText = fullIntroObject.Child("Text").Text();
 			fullIntroText.text = LanguageManager.CurrentLanguage.frontend.level_fullIntroPrompt;
 
-			UnityEngine.UI.Text fullIntroYesText = GetTextfromGameObject(GetGameObjectChild(fullIntroObject, "Button (1)").transform.Find("Text").gameObject);
+			UnityEngine.UI.Text fullIntroYesText = fullIntroObject.FindPath("Button (1)", "Text").Text();
 			fullIntroYesText.text = LanguageManager.CurrentLanguage.frontend.level_fullIntroPromptYes;
 
-			Text fullIntroNoText = GetTextfromGameObject(GetGameObjectChild(fullIntroObject, "Button").transform.Find("Text").gameObject);
+			Text fullIntroNoText = fullIntroObject.FindPath("Button", "Text").Text();
 			fullIntroNoText.text = LanguageManager.CurrentLanguage.frontend.level_fullIntroPromptNo;
 
-			Text fullIntroCancelText = GetTextfromGameObject(GetGameObjectChild(fullIntroObject, "Button (2)").transform.Find("Text").gameObject);
+			Text fullIntroCancelText = fullIntroObject.FindPath("Button (2)", "Text").Text();
 			fullIntroCancelText.text = LanguageManager.CurrentLanguage.frontend.level_fullIntroPromptCancel;
 		}
 
 		//Patches all text strings in the Act 1 menu.
 		private static void PatchLevelSelectAct1(GameObject frontEnd)
 		{
-			GameObject act1Object = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(frontEnd, "Level Select (Act I)"), "Scroll Rect"), "Contents");
+			GameObject act1Object = frontEnd.FindPath("Level Select (Act I)", "Scroll Rect", "Contents");
 
-			GameObject limboObject = GetGameObjectChild(act1Object, "Layer 1 Limbo");
-			GameObject lustObject = GetGameObjectChild(act1Object, "Layer 2 Lust");
-			GameObject gluttonyObject = GetGameObjectChild(act1Object, "Layer 3 Gluttony");
+			GameObject limboObject = act1Object.Child("Layer 1 Limbo");
+			GameObject lustObject = act1Object.Child("Layer 2 Lust");
+			GameObject gluttonyObject = act1Object.Child("Layer 3 Gluttony");
 
 			//Layer 1 - Limbo
-			GameObject limboHeader = GetGameObjectChild(limboObject,"Header");
+			GameObject limboHeader = limboObject.Child("Header");
 
-			TextMeshProUGUI limboTitle = GetTextMeshProUGUI(GetGameObjectChild(limboHeader, "Text"));
+			TextMeshProUGUI limboTitle = limboHeader.Child("Text").TMP();
 			limboTitle.text = LanguageManager.CurrentLanguage.frontend.layer_limbo;
 
-			TextMeshProUGUI limboSecretMissionText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(limboHeader, "Secret Mission"), "Text"));
+			TextMeshProUGUI limboSecretMissionText = limboHeader.FindPath("Secret Mission", "Text").TMP();
 			limboSecretMissionText.text = LanguageManager.CurrentLanguage.frontend.chapter_secretMission;
 	
 			//Main levels
-			GameObject limboContent = GetGameObjectChild(limboObject,"Level Row");
+			GameObject limboContent = limboObject.Child("Level Row");
 
-			TextMeshProUGUI limboFirstChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(limboContent, "1-1 Panel"), "Panel"), "Text"));
+			TextMeshProUGUI limboFirstChallenge = limboContent.FindPath("1-1 Panel", "Panel", "Text").TMP();
 			limboFirstChallenge.text = Act1Strings.GetLevelChallenge("Level 1-1");
 
-			TextMeshProUGUI limboSecondChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(limboContent, "1-2 Panel"), "Panel (2)"), "Text"));
+			TextMeshProUGUI limboSecondChallenge = limboContent.FindPath("1-2 Panel", "Panel (2)", "Text").TMP();
 			limboSecondChallenge.text = Act1Strings.GetLevelChallenge("Level 1-2");
 
-			TextMeshProUGUI limboThirdChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(limboContent, "1-3 Panel"), "Panel (4)"), "Text"));
+			TextMeshProUGUI limboThirdChallenge = limboContent.FindPath("1-3 Panel", "Panel (4)", "Text").TMP();
 			limboThirdChallenge.text = Act1Strings.GetLevelChallenge("Level 1-3");
 
-			TextMeshProUGUI limboClimaxChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(limboContent, "1-4 Panel"), "Panel (6)"), "Text"));
+			TextMeshProUGUI limboClimaxChallenge = limboContent.FindPath("1-4 Panel", "Panel (6)", "Text").TMP();
 			limboClimaxChallenge.text = Act1Strings.GetLevelChallenge("Level 1-4");
 
 			//Layer 2 - Lust
-			GameObject lustHeader = GetGameObjectChild(lustObject,"Header");
+			GameObject lustHeader = lustObject.Child("Header");
 
-			TextMeshProUGUI lustTitle = GetTextMeshProUGUI(GetGameObjectChild(lustHeader, "Text"));
+			TextMeshProUGUI lustTitle = lustHeader.Child("Text").TMP();
 			lustTitle.text = LanguageManager.CurrentLanguage.frontend.layer_lust;
 
-			TextMeshProUGUI lustSecretMissionText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(lustHeader, "Secret Mission"), "Text"));
+			TextMeshProUGUI lustSecretMissionText = lustHeader.FindPath("Secret Mission", "Text").TMP();
 			lustSecretMissionText.text = LanguageManager.CurrentLanguage.frontend.chapter_secretMission;
 			
-			GameObject lustContent = GetGameObjectChild(lustObject,"Level Row");
+			GameObject lustContent = lustObject.Child("Level Row");
 
 			//Main levels
-			TextMeshProUGUI lustFirstChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(lustContent, "2-1 Panel"),  "Panel"), "Text"));
+			TextMeshProUGUI lustFirstChallenge = lustContent.FindPath("2-1 Panel", "Panel", "Text").TMP();
 			lustFirstChallenge.text = Act1Strings.GetLevelChallenge("Level 2-1");
 
-			TextMeshProUGUI lustSecondChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(lustContent, "2-2 Panel"), "Panel (2)"), "Text"));
+			TextMeshProUGUI lustSecondChallenge = lustContent.FindPath("2-2 Panel", "Panel (2)", "Text").TMP();
 			lustSecondChallenge.text = Act1Strings.GetLevelChallenge("Level 2-2");
 
-			TextMeshProUGUI lustThirdChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(lustContent, "2-3 Panel"), "Panel (4)"), "Text"));
+			TextMeshProUGUI lustThirdChallenge = lustContent.FindPath("2-3 Panel", "Panel (4)", "Text").TMP();
 			lustThirdChallenge.text = Act1Strings.GetLevelChallenge("Level 2-3");
 
-			TextMeshProUGUI lustClimaxChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(lustContent, "2-4 Panel"), "Panel (6)"), "Text"));
+			TextMeshProUGUI lustClimaxChallenge = lustContent.FindPath("2-4 Panel", "Panel (6)", "Text").TMP();
 			lustClimaxChallenge.text = Act1Strings.GetLevelChallenge("Level 2-4");
 
 			//Layer 3 - Gluttony
-			GameObject gluttonyHeader = GetGameObjectChild(gluttonyObject,"Header");
+			GameObject gluttonyHeader = gluttonyObject.Child("Header");
 
-			TextMeshProUGUI gluttonyTitle = GetTextMeshProUGUI(GetGameObjectChild(gluttonyHeader, "Text"));
+			TextMeshProUGUI gluttonyTitle = gluttonyHeader.Child("Text").TMP();
 			gluttonyTitle.text = LanguageManager.CurrentLanguage.frontend.layer_gluttony;
 			
 			//Main levels
-			GameObject gluttonyContent = GetGameObjectChild(gluttonyObject,"Level Row");
+			GameObject gluttonyContent = gluttonyObject.Child("Level Row");
 
-			TextMeshProUGUI gluttonyFirstChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(gluttonyContent, "3-1 Panel"), "Panel"), "Text"));
+			TextMeshProUGUI gluttonyFirstChallenge = gluttonyContent.FindPath("3-1 Panel", "Panel", "Text").TMP();
 			gluttonyFirstChallenge.text = Act1Strings.GetLevelChallenge("Level 3-1");
 
-			TextMeshProUGUI gluttonySecondChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(gluttonyContent, "3-2 Panel"),"Panel (2)"), "Text"));
+			TextMeshProUGUI gluttonySecondChallenge = gluttonyContent.FindPath("3-2 Panel", "Panel (2)", "Text").TMP();
 			gluttonySecondChallenge.text = Act1Strings.GetLevelChallenge("Level 3-2");
 
 		}
 
 		private static void PatchLevelSelectAct2(GameObject frontEnd)
 		{
-			GameObject act2Object = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(frontEnd, "Level Select (Act II)"), "Scroll Rect"), "Contents");
+			GameObject act2Object = frontEnd.FindPath("Level Select (Act II)", "Scroll Rect", "Contents");
 
-			GameObject greedObject = GetGameObjectChild(act2Object, "Layer 4 Greed");
-			GameObject wrathObject = GetGameObjectChild(act2Object, "Layer 5 Wrath");
-			GameObject heresyObject = GetGameObjectChild(act2Object, "Layer 6 Heresy");
+			GameObject greedObject = act2Object.Child("Layer 4 Greed");
+			GameObject wrathObject = act2Object.Child("Layer 5 Wrath");
+			GameObject heresyObject = act2Object.Child("Layer 6 Heresy");
 
 			//Layer 4 - Greed
-			GameObject greedHeader = GetGameObjectChild(greedObject,"Header");
+			GameObject greedHeader = greedObject.Child("Header");
 
-			TextMeshProUGUI greedTitle = GetTextMeshProUGUI(GetGameObjectChild(greedHeader, "Text"));
+			TextMeshProUGUI greedTitle = greedHeader.Child("Text").TMP();
 			greedTitle.text = LanguageManager.CurrentLanguage.frontend.layer_greed;
 
-			TextMeshProUGUI greedSecretMissionText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(greedHeader, "Secret Mission"), "Text"));
+			TextMeshProUGUI greedSecretMissionText = greedHeader.FindPath("Secret Mission", "Text").TMP();
 			greedSecretMissionText.text = LanguageManager.CurrentLanguage.frontend.chapter_secretMission;
 			
 			//Main levels
-			GameObject greedContent = GetGameObjectChild(greedObject,"Level Row");
+			GameObject greedContent = greedObject.Child("Level Row");
 
 
-			TextMeshProUGUI greedFirstChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(greedContent, "4-1 Panel"), "Panel"), "Text"));
+			TextMeshProUGUI greedFirstChallenge = greedContent.FindPath("4-1 Panel", "Panel", "Text").TMP();
 			greedFirstChallenge.text = Act2Strings.GetLevelChallenge("Level 4-1");
 
-			TextMeshProUGUI greedSecondChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(greedContent, "4-2 Panel"), "Panel (2)"), "Text"));
+			TextMeshProUGUI greedSecondChallenge = greedContent.FindPath("4-2 Panel", "Panel (2)", "Text").TMP();
 			greedSecondChallenge.text = Act2Strings.GetLevelChallenge("Level 4-2");
 
-			TextMeshProUGUI greedThirdChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(greedContent, "4-3 Panel"), "Panel (4)"), "Text"));
+			TextMeshProUGUI greedThirdChallenge = greedContent.FindPath("4-3 Panel", "Panel (4)", "Text").TMP();
 			greedThirdChallenge.text = Act2Strings.GetLevelChallenge("Level 4-3");
 
-			TextMeshProUGUI greedClimaxChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(greedContent, "4-4 Panel"), "Panel (6)"), "Text"));
+			TextMeshProUGUI greedClimaxChallenge = greedContent.FindPath("4-4 Panel", "Panel (6)", "Text").TMP();
 			greedClimaxChallenge.text = Act2Strings.GetLevelChallenge("Level 4-4");
 
 			
 			//Layer 5 - Wrath
-			GameObject wrathHeader =  GetGameObjectChild(wrathObject, "Header");
+			GameObject wrathHeader =  wrathObject.Child("Header");
 
-			TextMeshProUGUI wrathTitle = GetTextMeshProUGUI(GetGameObjectChild(wrathHeader, "Text"));
+			TextMeshProUGUI wrathTitle = wrathHeader.Child("Text").TMP();
 			wrathTitle.text = LanguageManager.CurrentLanguage.frontend.layer_wrath;
 
-			TextMeshProUGUI wrathSecretMissionText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(wrathHeader, "Secret Mission"), "Text"));
+			TextMeshProUGUI wrathSecretMissionText = wrathHeader.FindPath("Secret Mission", "Text").TMP();
 			wrathSecretMissionText.text = LanguageManager.CurrentLanguage.frontend.chapter_secretMission;
 			
 			//Main levels
-			GameObject wrathContent = GetGameObjectChild(wrathObject,"Level Row");
+			GameObject wrathContent = wrathObject.Child("Level Row");
 
-			TextMeshProUGUI wrathFirstChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(wrathContent, "5-1 Panel"), "Panel"), "Text"));
+			TextMeshProUGUI wrathFirstChallenge = wrathContent.FindPath("5-1 Panel", "Panel", "Text").TMP();
 			wrathFirstChallenge.text = Act2Strings.GetLevelChallenge("Level 5-1");
 
-			TextMeshProUGUI wrathSecondChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(wrathContent, "5-2 Panel"),"Panel (2)"), "Text"));
+			TextMeshProUGUI wrathSecondChallenge = wrathContent.FindPath("5-2 Panel", "Panel (2)", "Text").TMP();
 			wrathSecondChallenge.text = Act2Strings.GetLevelChallenge("Level 5-2");
 
-			TextMeshProUGUI wrathThirdChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(wrathContent, "5-3 Panel"), "Panel (4)"), "Text"));
+			TextMeshProUGUI wrathThirdChallenge = wrathContent.FindPath("5-3 Panel", "Panel (4)", "Text").TMP();
 			wrathThirdChallenge.text = Act2Strings.GetLevelChallenge("Level 5-3");
 
-			TextMeshProUGUI wrathFourthChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(wrathContent, "5-4 Panel"),"Panel (6)"), "Text"));
+			TextMeshProUGUI wrathFourthChallenge = wrathContent.FindPath("5-4 Panel", "Panel (6)", "Text").TMP();
 			wrathFourthChallenge.text = Act2Strings.GetLevelChallenge("Level 5-4");
 
 
 			//Layer 6 - Heresy
-			GameObject heresyHeader = GetGameObjectChild(heresyObject,"Header");
+			GameObject heresyHeader = heresyObject.Child("Header");
 
-			TextMeshProUGUI heresyTitle = GetTextMeshProUGUI(GetGameObjectChild(heresyHeader, "Text"));
+			TextMeshProUGUI heresyTitle = heresyHeader.Child("Text").TMP();
 			heresyTitle.text = LanguageManager.CurrentLanguage.frontend.layer_heresy;
 			
 			//Main levels
-			GameObject heresyContent = GetGameObjectChild(heresyObject,"Level Row");
+			GameObject heresyContent = heresyObject.Child("Level Row");
 
 
-			TextMeshProUGUI heresyFirstChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(heresyContent, "1-1 Panel"), "Panel"), "Text"));
+			TextMeshProUGUI heresyFirstChallenge = heresyContent.FindPath("1-1 Panel", "Panel", "Text").TMP();
 			heresyFirstChallenge.text = Act2Strings.GetLevelChallenge("Level 6-1");
 
-			TextMeshProUGUI heresySecondChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(heresyContent, "1-2 Panel"), "Panel (2)"), "Text"));
+			TextMeshProUGUI heresySecondChallenge = heresyContent.FindPath("1-2 Panel", "Panel (2)", "Text").TMP();
 			heresySecondChallenge.text = Act2Strings.GetLevelChallenge("Level 6-2");
 		}
 		
 		private static void PatchLevelSelectAct3(GameObject frontEnd)
 		{
-			GameObject act3Object = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(frontEnd, "Level Select (Act III)"), "Scroll Rect"), "Contents");
+			GameObject act3Object = frontEnd.FindPath("Level Select (Act III)", "Scroll Rect", "Contents");
 
-			GameObject violenceObject = GetGameObjectChild(act3Object, "Layer 7 Violence");
-			GameObject fraudObject = GetGameObjectChild(act3Object, "Layer 8 Fraud");
-			GameObject treacheryObject = GetGameObjectChild(act3Object, "Layer 9 Treachery");
+			GameObject violenceObject = act3Object.Child("Layer 7 Violence");
+			GameObject fraudObject = act3Object.Child("Layer 8 Fraud");
+			GameObject treacheryObject = act3Object.Child("Layer 9 Treachery");
 
 			//Layer 7 - Violence
-			GameObject violenceHeader = GetGameObjectChild(violenceObject,"Header");
+			GameObject violenceHeader = violenceObject.Child("Header");
 
-			TextMeshProUGUI violenceTitle = GetTextMeshProUGUI(GetGameObjectChild(violenceHeader, "Text"));
+			TextMeshProUGUI violenceTitle = violenceHeader.Child("Text").TMP();
 			violenceTitle.text = LanguageManager.CurrentLanguage.frontend.layer_violence;
 
-			TextMeshProUGUI violenceSecretMissionText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(violenceHeader, "Secret Mission"), "Text"));
+			TextMeshProUGUI violenceSecretMissionText = violenceHeader.FindPath("Secret Mission", "Text").TMP();
 			violenceSecretMissionText.text = LanguageManager.CurrentLanguage.frontend.chapter_secretMission;
 			
 			//Main levels
-			GameObject violenceContent = GetGameObjectChild(violenceObject,"Level Row");
+			GameObject violenceContent = violenceObject.Child("Level Row");
 
 
-			TextMeshProUGUI violenceFirstChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(violenceContent, "7-1 Panel"), "Panel"), "Text"));
+			TextMeshProUGUI violenceFirstChallenge = violenceContent.FindPath("7-1 Panel", "Panel", "Text").TMP();
 			violenceFirstChallenge.text = Act3Strings.GetLevelChallenge("Level 7-1");
 
-			TextMeshProUGUI violenceSecondChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(violenceContent, "7-2 Panel"), "Panel (2)"), "Text"));
+			TextMeshProUGUI violenceSecondChallenge = violenceContent.FindPath("7-2 Panel", "Panel (2)", "Text").TMP();
 			violenceSecondChallenge.text = Act3Strings.GetLevelChallenge("Level 7-2");
 
-			TextMeshProUGUI violenceThirdChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(violenceContent, "7-3 Panel"), "Panel (4)"), "Text"));
+			TextMeshProUGUI violenceThirdChallenge = violenceContent.FindPath("7-3 Panel", "Panel (4)", "Text").TMP();
 			violenceThirdChallenge.text = Act3Strings.GetLevelChallenge("Level 7-3");
 
-			TextMeshProUGUI violenceClimaxChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(violenceContent, "7-4 Panel"), "Panel (6)"), "Text"));
+			TextMeshProUGUI violenceClimaxChallenge = violenceContent.FindPath("7-4 Panel", "Panel (6)", "Text").TMP();
 			violenceClimaxChallenge.text = Act3Strings.GetLevelChallenge("Level 7-4");
 
 			
 			//Layer 8 - Fraud
-			GameObject fraudHeader = GetGameObjectChild(fraudObject,"Header");
+			GameObject fraudHeader = fraudObject.Child("Header");
 
-			TextMeshProUGUI fraudTitle = GetTextMeshProUGUI(GetGameObjectChild(fraudHeader, "Text"));
+			TextMeshProUGUI fraudTitle = fraudHeader.Child("Text").TMP();
 			fraudTitle.text = LanguageManager.CurrentLanguage.frontend.layer_fraud;
 
-			TextMeshProUGUI fraudSecretMissionText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(fraudHeader, "Secret Mission"), "Text"));
+			TextMeshProUGUI fraudSecretMissionText = fraudHeader.FindPath("Secret Mission", "Text").TMP();
 			fraudSecretMissionText.text = LanguageManager.CurrentLanguage.frontend.chapter_secretMission;
 			
 			//Main levels
-			GameObject fraudContent = GetGameObjectChild(fraudObject,"Level Row");
+			GameObject fraudContent = fraudObject.Child("Level Row");
 
 
-			TextMeshProUGUI fraudFirstChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(fraudContent, "8-1 Panel"), "Panel"), "Text"));
+			TextMeshProUGUI fraudFirstChallenge = fraudContent.FindPath("8-1 Panel", "Panel", "Text").TMP();
 			fraudFirstChallenge.text = Act3Strings.GetLevelChallenge("Level 8-1");
 
-			TextMeshProUGUI fraudSecondChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(fraudContent, "8-2 Panel"), "Panel (2)"), "Text"));
+			TextMeshProUGUI fraudSecondChallenge = fraudContent.FindPath("8-2 Panel", "Panel (2)", "Text").TMP();
 			fraudSecondChallenge.text = Act3Strings.GetLevelChallenge("Level 8-2");
 
-			TextMeshProUGUI fraudThirdChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(fraudContent, "8-3 Panel"), "Panel (4)"), "Text"));
+			TextMeshProUGUI fraudThirdChallenge = fraudContent.FindPath("8-3 Panel", "Panel (4)", "Text").TMP();
 			fraudThirdChallenge.text = Act3Strings.GetLevelChallenge("Level 8-3");
 
-			TextMeshProUGUI fraudClimaxChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(fraudContent, "8-4 Panel"), "Panel (6)"), "Text"));
+			TextMeshProUGUI fraudClimaxChallenge = fraudContent.FindPath("8-4 Panel", "Panel (6)", "Text").TMP();
 			fraudClimaxChallenge.text = Act3Strings.GetLevelChallenge("Level 8-4");
 
 
 			//Layer 9 - Treachery
-			GameObject treacheryHeader = GetGameObjectChild(treacheryObject,"Header");
+			GameObject treacheryHeader = treacheryObject.Child("Header");
 
-			TextMeshProUGUI treacheryTitle = GetTextMeshProUGUI(GetGameObjectChild(treacheryHeader, "Text"));
+			TextMeshProUGUI treacheryTitle = treacheryHeader.Child("Text").TMP();
 			treacheryTitle.text = LanguageManager.CurrentLanguage.frontend.layer_treachery;
 			
 			//Main levels
-			GameObject treacheryContent = GetGameObjectChild(treacheryObject,"Level Row");
+			GameObject treacheryContent = treacheryObject.Child("Level Row");
 
 
-			TextMeshProUGUI treacheryFirstChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(treacheryContent, "9-1 Panel"), "Panel"), "Text"));
+			TextMeshProUGUI treacheryFirstChallenge = treacheryContent.FindPath("9-1 Panel", "Panel", "Text").TMP();
 			treacheryFirstChallenge.text = Act3Strings.GetLevelChallenge("Level 9-1");
 
-			TextMeshProUGUI treacherySecondChallenge = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(treacheryContent, "9-2 Panel"), "Panel (2)"), "Text"));
+			TextMeshProUGUI treacherySecondChallenge = treacheryContent.FindPath("9-2 Panel", "Panel (2)", "Text").TMP();
 			treacherySecondChallenge.text = Act3Strings.GetLevelChallenge("Level 9-2");
 		}
 
 		private static void PatchLevelSelectEncore(GameObject frontEnd)
 		{
-			GameObject lsEncoreObject = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(frontEnd, "Level Select (Encore)"), "Scroll Rect"), "Contents");
+			GameObject lsEncoreObject = frontEnd.FindPath("Level Select (Encore)", "Scroll Rect", "Contents");
 
-			GameObject encoreHeader = GetGameObjectChild(GetGameObjectChild(lsEncoreObject, "Encores"), "Header");
+			GameObject encoreHeader = lsEncoreObject.FindPath("Encores", "Header");
 
 			//Encore title
-			TextMeshProUGUI preludeTitleText = GetTextMeshProUGUI(GetGameObjectChild(encoreHeader, "Text"));
+			TextMeshProUGUI preludeTitleText = encoreHeader.Child("Text").TMP();
 			preludeTitleText.text = LanguageManager.CurrentLanguage.frontend.chapter_encore;
 			preludeTitleText.fontSize = 46;
 			
@@ -857,18 +856,18 @@ namespace UltrakULL
 
 		private static void PatchLevelSelectPrime(GameObject frontEnd)
 		{
-			GameObject primeObject = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(frontEnd, "Level Select (Prime)"), "Prime Sanctums"),"Header");
-			TextMeshProUGUI primeTitle = GetTextMeshProUGUI(GetGameObjectChild(primeObject, "Text"));
+			GameObject primeObject = frontEnd.FindPath("Level Select (Prime)", "Prime Sanctums", "Header");
+			TextMeshProUGUI primeTitle = primeObject.Child("Text").TMP();
 			primeTitle.text = LanguageManager.CurrentLanguage.frontend.layer_prime;
 		}
 		private static void PatchTextArroundV1(GameObject mainMenu)
 		{
-			GameObject textV1 = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(mainMenu, "Main Menu (1)"), "BackgroundSwapper"), "Text (TMP)"), "V1Text");
-			TextMeshProUGUI wingModule = GetTextMeshProUGUI(GetGameObjectChild(textV1, "Text (TMP)"));
-			TextMeshProUGUI armModuleFactory = GetTextMeshProUGUI(GetGameObjectChild(textV1, "Text (TMP) (1)"));
-			TextMeshProUGUI armModuleFeedbacker = GetTextMeshProUGUI(GetGameObjectChild(textV1, "Text (TMP) (2)"));
-			TextMeshProUGUI visualCortexModule = GetTextMeshProUGUI(GetGameObjectChild(textV1, "Text (TMP) (3)"));
-			TextMeshProUGUI legModule = GetTextMeshProUGUI(GetGameObjectChild(textV1, "Text (TMP) (4)"));
+			GameObject textV1 = mainMenu.FindPath("Main Menu (1)", "BackgroundSwapper", "Text (TMP)", "V1Text");
+			TextMeshProUGUI wingModule = textV1.Child("Text (TMP)").TMP();
+			TextMeshProUGUI armModuleFactory = textV1.Child("Text (TMP) (1)").TMP();
+			TextMeshProUGUI armModuleFeedbacker = textV1.Child("Text (TMP) (2)").TMP();
+			TextMeshProUGUI visualCortexModule = textV1.Child("Text (TMP) (3)").TMP();
+			TextMeshProUGUI legModule = textV1.Child("Text (TMP) (4)").TMP();
 			if (!string.IsNullOrEmpty(LanguageManager.CurrentLanguage.frontend.wingModule))
 				wingModule.text = LanguageManager.CurrentLanguage.frontend.wingModule;
 			if (!string.IsNullOrEmpty(LanguageManager.CurrentLanguage.frontend.armModuleFactory))

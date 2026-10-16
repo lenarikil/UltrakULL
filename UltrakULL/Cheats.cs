@@ -13,27 +13,27 @@ namespace UltrakULL
     {
         public static void PatchCheatConsentPanel(ref GameObject canvasObj)
         {
-            GameObject cheatsMenu = GetGameObjectChild(canvasObj, "Cheat Menu");
-            GameObject cheatsConsentObject = GetGameObjectChild(cheatsMenu, "Cheats Consent");
+            GameObject cheatsMenu = canvasObj.Child("Cheat Menu");
+            GameObject cheatsConsentObject = cheatsMenu.Child("Cheats Consent");
 
-            GameObject cheatsConsentTextObject = GetGameObjectChild(cheatsConsentObject, "Text");
+            GameObject cheatsConsentTextObject = cheatsConsentObject.Child("Text");
 
             //Consent window
-            TextMeshProUGUI cheatsConsentText = GetTextMeshProUGUI(cheatsConsentTextObject);
+            TextMeshProUGUI cheatsConsentText = cheatsConsentTextObject.TMP();
             cheatsConsentText.text =
                 LanguageManager.CurrentLanguage.cheats.cheats_disclaimer1 + "\n\n"
                 + LanguageManager.CurrentLanguage.cheats.cheats_disclaimer2;
 
-            TextMeshProUGUI cheatsConsentYesText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(cheatsConsentObject, "Yes"), "Text"));
+            TextMeshProUGUI cheatsConsentYesText = cheatsConsentObject.FindPath("Yes", "Text").TMP();
             cheatsConsentYesText.text = LanguageManager.CurrentLanguage.cheats.cheats_disclaimerYes;
             cheatsConsentYesText.fontSize = 22;
 
-            TextMeshProUGUI cheatsConsentNoText = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(cheatsConsentObject, "No"), "Text"));
+            TextMeshProUGUI cheatsConsentNoText = cheatsConsentObject.FindPath("No", "Text").TMP();
             cheatsConsentNoText.text = LanguageManager.CurrentLanguage.cheats.cheats_disclaimerNo;
 
-            GameObject cheatsPanelObject = GetGameObjectChild(cheatsMenu, "Cheats Manager");
+            GameObject cheatsPanelObject = cheatsMenu.Child("Cheats Manager");
 
-            TextMeshProUGUI cheatsPanelObjectTitle = GetTextMeshProUGUI(GetGameObjectChild(cheatsPanelObject, "Title"));
+            TextMeshProUGUI cheatsPanelObjectTitle = cheatsPanelObject.Child("Title").TMP();
             cheatsPanelObjectTitle.text = LanguageManager.CurrentLanguage.cheats.cheats_panelTitle;
 
             //Need to disable the TextOverride component.
@@ -43,12 +43,12 @@ namespace UltrakULL
             
 
             //Cheat confirmation panel
-            GameObject cheatsEnabledConfirmationObject = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(canvasObj, "Cheat Menu"), "Cheats Overlay"),"Cheats Enabled");
+            GameObject cheatsEnabledConfirmationObject = canvasObj.FindPath("Cheat Menu", "Cheats Overlay", "Cheats Enabled");
 
-            TextMeshProUGUI cheatsEnabledConfirmationTitleText = GetTextMeshProUGUI(GetGameObjectChild(cheatsEnabledConfirmationObject, "Title"));
+            TextMeshProUGUI cheatsEnabledConfirmationTitleText = cheatsEnabledConfirmationObject.Child("Title").TMP();
             cheatsEnabledConfirmationTitleText.text = LanguageManager.CurrentLanguage.cheats.cheats_cheatsEnabled;
 
-            GameObject cheatsDetailsTipObject = GetGameObjectChild(cheatsEnabledConfirmationObject, "Details Tip");
+            GameObject cheatsDetailsTipObject = cheatsEnabledConfirmationObject.Child("Details Tip");
             Component[] cheatsDetailsTipComponents = cheatsDetailsTipObject.GetComponents(typeof(Component));
             foreach (Component comp in cheatsDetailsTipComponents)
             {
@@ -59,7 +59,7 @@ namespace UltrakULL
                 }
             }
 
-            TextMeshProUGUI cheatsEnabledConfirmationButtonsText = GetTextMeshProUGUI(cheatsDetailsTipObject);
+            TextMeshProUGUI cheatsEnabledConfirmationButtonsText = cheatsDetailsTipObject.TMP();
             //This code is temporarily commented out as it is not known if the gamepad button prompt needs to be translated
 
             //if (MonoSingleton<InputManager>.Instance.LastButtonDevice is DualShockGamepad) { cheatsEnabledConfirmationButtonsText.text = "Never gonna give you up"*/; }
@@ -69,7 +69,7 @@ namespace UltrakULL
             cheatsEnabledConfirmationButtonsText.text = LanguageManager.CurrentLanguage.cheats.cheats_cheatsOpenButtons;
 
             //Teleport menu title
-            TextMeshProUGUI cheatsTeleportMenuTitle = GetTextMeshProUGUI(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(canvasObj,"Cheat Menu"),"Cheats Teleport"),"Title"));
+            TextMeshProUGUI cheatsTeleportMenuTitle = canvasObj.FindPath("Cheat Menu", "Cheats Teleport", "Title").TMP();
             cheatsTeleportMenuTitle.text = LanguageManager.CurrentLanguage.cheats.cheats_teleport;
         }
 

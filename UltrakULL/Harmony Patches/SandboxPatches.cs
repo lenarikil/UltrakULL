@@ -23,7 +23,7 @@ namespace UltrakULL.Harmony_Patches
             }
             GameObject canvas = GetInactiveRootObject("Canvas");
 
-            GameObject dupeSaveList = GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(GetGameObjectChild(canvas,"Cheat Menu"),"Sandbox Saves"),"Scroll View"),"Viewport"),"Content");
+            GameObject dupeSaveList = canvas.FindPath("Cheat Menu", "Sandbox Saves", "Scroll View", "Viewport", "Content");
 
             TextMeshProUGUI[] tmpList = dupeSaveList.GetComponentsInChildren<TextMeshProUGUI>();
             foreach (TextMeshProUGUI textObject in tmpList)

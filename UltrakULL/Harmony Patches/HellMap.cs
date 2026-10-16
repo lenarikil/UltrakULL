@@ -10,8 +10,6 @@ using TMPro;
 using UltrakULL.json;
 using UnityEngine;
 
-using static UltrakULL.CommonFunctions;
-
 namespace UltrakULL.Harmony_Patches
 {
 	[HarmonyPatch(typeof(HellMap), "Start")]
@@ -71,14 +69,14 @@ namespace UltrakULL.Harmony_Patches
 					break;
 			}
 
-			GameObject actHellMap = GetGameObjectChild(root, $"Hellmap Act {iAct}");
+			GameObject actHellMap = root.Child($"Hellmap Act {iAct}");
 			if (actHellMap == null)
 			{
 				Logging.Message($"Hellmap RtlFixLevel is FUCKED!!");
 				return;
 			}
 
-			GameObject levelObject = GetGameObjectChild(actHellMap, levelName);
+			GameObject levelObject = actHellMap.Child(levelName);
 			if (levelObject == null)
 			{
 				Logging.Message($"Hellmap RtlFixLevel is FUCKED!!");
@@ -95,12 +93,12 @@ namespace UltrakULL.Harmony_Patches
 
 			if (useHinduNumerals)
 			{
-				GameObject textObject = GetGameObjectChild(levelObject, "Text");
+				GameObject textObject = levelObject.Child("Text");
 				if (textObject == null)
 				{
 					return;
 				}
-				TextMeshProUGUI textMesh = GetTextMeshProUGUI(textObject);
+				TextMeshProUGUI textMesh = textObject.TMP();
 				if (textMesh == null)
 				{
 					return;
