@@ -53,13 +53,9 @@ using System.Reflection;
 
 namespace UltrakULL
 {
-	[BepInPlugin(Guid, InternalName, InternalVersion)]
+	[BepInPlugin(PluginInfo.Guid, PluginInfo.Name, PluginInfo.Version)]
 	public class MainPatch : BaseUnityPlugin
 	{
-		private const string Guid = "clearwater.ultrakill.ultrakull";
-		private const string InternalName = "clearwater.ultrakull.ultrakULL";
-		private const string InternalVersion = "1.3.1"; //Why was the mod version still 1.3.0?
-
 		public static MainPatch Instance;
 		public bool ready;
         // Using inherited Config from BaseUnityPlugin
@@ -72,7 +68,7 @@ namespace UltrakULL
 		
 		public static string GetVersion()
 		{
-			return InternalVersion;
+			return PluginInfo.Version;
 		}
 
 		public void OnApplicationQuit()
@@ -151,7 +147,7 @@ namespace UltrakULL
 		{
 			Debug.unityLogger.filterLogType = LogType.Exception;
 
-			Logging.Warn("UltrakULL Loading... | Version v." + InternalVersion);
+			Logging.Warn("UltrakULL Loading... | Version v." + PluginInfo.Version);
 			try
 			{
 				Logging.Warn("--- Checking for updates ---");
@@ -175,7 +171,7 @@ namespace UltrakULL
 				Core.LoadFonts();
 
                 Logging.Warn("--- Patching vanilla game functions ---");
-				Harmony harmony = new Harmony(InternalName);
+				Harmony harmony = new Harmony(PluginInfo.Name);
 				harmony.PatchAll();
 
 				Logging.Warn(" --- All done. Enjoy! ---");

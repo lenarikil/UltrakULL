@@ -1,15 +1,15 @@
 ﻿using System.Reflection;
 using System.Runtime.InteropServices;
+using UltrakULL;
 
 // General Information about an assembly is controlled through the following
-// set of attributes. Change these attribute values to modify the information
-// associated with an assembly.
-[assembly: AssemblyTitle("UltrakULL")]
-[assembly: AssemblyDescription("")]
+// set of attributes. The values come from PluginInfo so metadata is defined once.
+[assembly: AssemblyTitle(PluginInfo.DisplayName)]
+[assembly: AssemblyDescription(PluginInfo.Description)]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("UltrakULL")]
-[assembly: AssemblyCopyright("Copyright ©  2023")]
+[assembly: AssemblyCompany(PluginInfo.Company)]
+[assembly: AssemblyProduct(PluginInfo.DisplayName)]
+[assembly: AssemblyCopyright(PluginInfo.Copyright)]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -28,8 +28,7 @@ using System.Runtime.InteropServices;
 //      Build Number
 //      Revision
 //
-// You can specify all the values or you can default the Build and Revision Numbers
-// by using the '*' as shown below:
-// [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+// The mod version is defined once in PluginInfo.Version.
+[assembly: AssemblyVersion(PluginInfo.Version)]
+[assembly: AssemblyFileVersion(PluginInfo.Version)]
+[assembly: AssemblyInformationalVersion(PluginInfo.Version)]
