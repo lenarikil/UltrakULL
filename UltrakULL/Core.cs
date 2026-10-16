@@ -737,7 +737,10 @@ namespace UltrakULL
                             buttonText.fontSize = 16;
                             buttonText.color = Color.white;
 
-                            GameObject panel = new GameObject("DropdownPanel");
+                            // Named "StatusPanel" (not "DropdownPanel") to avoid a false positive
+                            // in third-party UI-skin mods that match Image objects by the path
+                            // substring "Dropdown/Dropdown" and overwrite the panel's size.
+                            GameObject panel = new GameObject("StatusPanel");
                             panel.transform.SetParent(ultrakullLogo.transform, false);
                             RectTransform panelRect = panel.AddComponent<RectTransform>();
                             panelRect.anchorMin = new Vector2(1, 1);
