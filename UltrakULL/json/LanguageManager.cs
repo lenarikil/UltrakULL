@@ -13,6 +13,7 @@ using UltrakULL.audio;
 using UltrakULL.Harmony_Patches;
 using UltrakULL.Harmony_Patches.AudioSwaps;
 using UltrakULL.Harmony_Patches.Subtitles;
+using UltrakULL.UI.Notifications;
 using UnityEngine.SceneManagement;
 using static UltrakULL.CommonFunctions;
 
@@ -480,9 +481,30 @@ namespace UltrakULL.json
                 InjectLanguageButton.updateLanguageButtonText();
                 LoadingTextPatch.updateLoadingText();
 
-                if (GetCurrentSceneName() != "Main Menu")
+                string sceneName = GetCurrentSceneName();
+                // Skip Bootstrap/Intro: SetCurrentLanguage can run once during startup
+                // when the configured language file is broken (en-GB fallback).
+                if (sceneName != "Bootstrap" && sceneName != "Intro")
                 {
-                    MonoSingleton<HudMessageReceiver>.Instance.SendHudMessage("<color=orange>Language changes will not fully take effect until the current mission is quit or restarted.</color>");
+                    // Use the NEW language's strings (CurrentLanguage is already switched here);
+                    // empty keys fall back to English.
+                    Notifications notif = CurrentLanguage.notifications;
+                    string title = NotificationText.Localize(notif?.languageChanged_title,
+                        NotificationText.LanguageChangedTitle, "lang", langName);
+
+                    if (sceneName == "Main Menu")
+                    {
+                        // The menu re-patches everything, so the new language is fully applied.
+                        string body = NotificationText.Localize(notif?.languageChanged_menuBody,
+                            NotificationText.LanguageChangedMenuBody);
+                        NotificationRouter.Current.Success(title, body, 5f);
+                    }
+                    else
+                    {
+                        string body = NotificationText.Localize(notif?.languageChanged_levelBody,
+                            NotificationText.LanguageChangedLevelBody);
+                        NotificationRouter.Current.Warning(title, body, 6f);
+                    }
                 }
             }
             else

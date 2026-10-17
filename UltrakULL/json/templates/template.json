@@ -1,7 +1,7 @@
 {
   "metadata": {
     "langName": "te-mp",
-    "langAuthor": "Clearwater",
+    "langAuthor": "UltrakULL ReFORKED Team and Collaborators",
     "langVersion": "0.1",
     "langDisplayName": "Template",
     "langRTL": false,
@@ -188,7 +188,8 @@
     "prelude_first_groundSlam2": "",
     "prelude_second_shop": "",
     "prelude_second_doorClip": "",
-    "prelude_second_changeEquipped": "",
+    "prelude_second_changeEquipped1": "",
+    "prelude_second_changeEquipped2": "",
     "prelude_third_needShotgun": "",
     "prelude_third_shotgun1": "",
     "prelude_third_shotgun2": "",
@@ -209,7 +210,8 @@
     "act1_limboFourth_hank1": "",
     "act1_limboFourth_hank2": "",
     "act1_limboFourth_alternateRevolver": "",
-    "act1_limboFourth_newArm": "",
+    "act1_limboFourth_newArm1": "",
+    "act1_limboFourth_newArm2": "",
     "act1_limboSecret_noclipSkip": "",
     "act1_lustFirst_knuckleblaster1": "",
     "act1_lustFirst_knuckleblaster2": "",
@@ -218,6 +220,7 @@
     "act1_lustFirst_elevator": "",
     "act1_lustSecond_feedbacker1": "",
     "act1_lustSecond_feedbacker2": "",
+    "act1_lustSecond_feedbacker3": "",
     "act1_lustSecond_railcannon": "",
     "act1_lustSecond_checkPoints": "",
     "act1_lustThird_water": "",
@@ -260,7 +263,8 @@
   },
   "act3": {
     "act3_violenceFirst_doorOpens": "",
-    "act3_violenceSecond_guttermanTutorial": "",
+    "act3_violenceSecond_guttermanTutorial1": "",
+    "act3_violenceSecond_guttermanTutorial2": "",
     "act3_violenceSecond_guttermanTutorialNoKB": "",
     "act3_violenceSecond_biggerBoom": "",
     "act3_violenceSecond_gateControlTitle": "",
@@ -1125,6 +1129,7 @@
     "controls_weaponTitle": "",
     "controls_primaryFire": "",
     "controls_secondaryFire": "",
+    "controls_changeVariation": "",
     "controls_nextVariation": "",
     "controls_previousVariation": "",
     "controls_revolver": "",
@@ -3345,5 +3350,21 @@
     "sandbox_shop_iconsTitle": "",
     "sandbox_shop_default": "",
     "sandbox_shop_pitr": ""
+  },
+  "notifications": {
+    "startup_title": "",
+    "startup_languageLine": "",
+    "startup_upToDate": "",
+    "startup_updateAvailable": "",
+    "startup_updateCheckFailed": "",
+    "startup_viewUpdate": "",
+    "languageChanged_title": "",
+    "languageChanged_menuBody": "",
+    "languageChanged_levelBody": "",
+    "download_downloading": "",
+    "download_updated": "",
+    "download_new": "",
+    "download_selectHint": "",
+    "download_error": ""
   }
 }

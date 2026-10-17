@@ -192,5 +192,14 @@ namespace UltrakULL
 				this.ready = false;
 			}
 		}
+
+		// Pending notifications (e.g. the update toast) are shown here instead of relying
+		// on scene-load timing, since the update check runs in the background.
+		private void Update()
+		{
+			if (!this.ready)
+				return;
+			Core.TryShowPendingNotifications();
+		}
 	}
 }

@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using TMPro;
 using UltrakULL.json;
+using UltrakULL.UI.Notifications;
 using static UltrakULL.CommonFunctions;
 using System.Linq;
 using UnityEngine.EventSystems;
@@ -347,7 +348,9 @@ namespace UltrakULL.Harmony_Patches
 
         public static void downloadLanguageFile(string languageTag, string languageName)
         {
-            MonoSingleton<HudMessageReceiver>.Instance.SendHudMessage("<color=orange>DOWNLOADING...</color>");
+            Notifications notif = LanguageManager.CurrentLanguage.notifications;
+            NotificationRouter.Current.Info("UltrakULL",
+                NotificationText.Localize(notif?.download_downloading, NotificationText.Downloading), 2.5f);
             
             string fileName = languageTag + ".json";
 
@@ -374,11 +377,13 @@ namespace UltrakULL.Harmony_Patches
                     //If a new lang file was downloaded, display a notif to the user to enter a level or reload the menu.
                     if(langFileLocallyExists(languageTag))
                     {
-                        messageNotif = "Language file \"" + languageName + "\" has been updated.";
+                        messageNotif = NotificationText.Localize(notif?.download_updated,
+                            NotificationText.DownloadUpdated, "lang", languageName);
                     }
                     else
                     {
-                        messageNotif = "A new language file \"" + languageName + "\" has been downloaded.";
+                        messageNotif = NotificationText.Localize(notif?.download_new,
+                            NotificationText.DownloadNew, "lang", languageName);
                         newLangDownloaded = true;
                     }
 
@@ -390,7 +395,11 @@ namespace UltrakULL.Harmony_Patches
                        
                     
                     MonoSingleton<HudMessageReceiver>.Instance.ClearMessage();
-                    MonoSingleton<HudMessageReceiver>.Instance.SendHudMessage("<color=green>" + messageNotif + "</color>");
+                    NotificationRouter.Current.Success("UltrakULL",
+                        messageNotif + (newLangDownloaded
+                            ? NotificationText.Localize(notif?.download_selectHint, NotificationText.DownloadSelectHint)
+                            : ""),
+                        newLangDownloaded ? 6f : 4f);
 
                     if(newLangDownloaded)
                     {
@@ -406,7 +415,8 @@ namespace UltrakULL.Harmony_Patches
             }
             catch(Exception e)
             {
-                MonoSingleton<HudMessageReceiver>.Instance.SendHudMessage("<color=red>A download error occured, file has not been saved.</color>");
+                NotificationRouter.Current.Error("UltrakULL",
+                    NotificationText.Localize(notif?.download_error, NotificationText.DownloadError), 5f);
                 Logging.Error("Attempted to download from: " + languageFileUrl);
                 Logging.Error(e.ToString());
             }

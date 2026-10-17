@@ -3350,5 +3350,21 @@
     "sandbox_shop_iconsTitle": "Icon Packs",
     "sandbox_shop_default": "Default",
     "sandbox_shop_pitr": "PITR"
+  },
+  "notifications": {
+    "startup_title": "UltrakULL v{version} loaded",
+    "startup_languageLine": "Language: {lang}",
+    "startup_upToDate": "You are using the latest version.",
+    "startup_updateAvailable": "Update available: v{latestVersion}.",
+    "startup_updateCheckFailed": "Unable to check for updates. Check console for info.",
+    "startup_viewUpdate": "VIEW UPDATE",
+    "languageChanged_title": "Language changed to {lang}",
+    "languageChanged_menuBody": "The new language is now active.",
+    "languageChanged_levelBody": "Language changes will not fully take effect until the current mission is quit or restarted.",
+    "download_downloading": "Downloading language file...",
+    "download_updated": "Language file \"{lang}\" has been updated.",
+    "download_new": "A new language file \"{lang}\" has been downloaded.",
+    "download_selectHint": " Select it in Language tab.",
+    "download_error": "Download failed. Check console for details."
   }
 }

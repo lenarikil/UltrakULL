@@ -46,6 +46,7 @@ namespace UltrakULL.json
         public Weapon weapon;
 
         public SandboxStrings sandbox;
+        public Notifications notifications;
     }
 
     public class FishingStrings
@@ -3646,5 +3647,28 @@ namespace UltrakULL.json
         public string sandbox_shop_iconsTitle;
         public string sandbox_shop_default;
         public string sandbox_shop_pitr;
+    }
+
+    // Localized strings for mod notifications (Notiffy / internal toasts).
+    // Empty or null values fall back to the built-in English text at runtime.
+    // Placeholders: {version}, {latestVersion}, {lang}.
+    public class Notifications
+    {
+        public string startup_title;
+        public string startup_languageLine;
+        public string startup_upToDate;
+        public string startup_updateAvailable;
+        public string startup_updateCheckFailed;
+        public string startup_viewUpdate;
+
+        public string languageChanged_title;
+        public string languageChanged_menuBody;
+        public string languageChanged_levelBody;
+
+        public string download_downloading;
+        public string download_updated;
+        public string download_new;
+        public string download_selectHint;
+        public string download_error;
     }
 }
