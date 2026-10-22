@@ -147,6 +147,18 @@ namespace UltrakULL
 		{
 			Debug.unityLogger.filterLogType = LogType.Exception;
 
+			// Unity's Mono runtime defaults to legacy TLS, which GitHub Pages (the catalog
+			// and language-file host) rejects. Enable TLS 1.2 before any HTTP request so the
+			// online browser and downloads can actually connect on modern servers.
+			try
+			{
+				System.Net.ServicePointManager.SecurityProtocol |= System.Net.SecurityProtocolType.Tls12;
+			}
+			catch (Exception e)
+			{
+				Logging.Warn("Could not enable TLS 1.2: " + e.Message);
+			}
+
 			Logging.Warn("UltrakULL Loading... | Version v." + PluginInfo.Version);
 			try
 			{

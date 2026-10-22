@@ -17,6 +17,9 @@ namespace UltrakULL.Harmony_Patches
 		[HarmonyPrefix]
 		public static void Patch(FinalRank __instance, ref string rank)
 		{
+			// Built-in English keeps the game's original rank letters.
+			if (UltrakULL.CommonFunctions.isUsingEnglish()) return;
+
 			try
 			{
 				if (!enablepatchSetRank) { return; }
@@ -98,6 +101,9 @@ namespace UltrakULL.Harmony_Patches
             [HarmonyPostfix]
 			public static void Patch(FinalRank __instance, ref string __result, int[] ranksToCheck, float value, bool reverse, bool addToRankScore = false)
 			{
+                // Built-in English keeps the game's original rank letters.
+                if (UltrakULL.CommonFunctions.isUsingEnglish()) return;
+
                 try
                 {
                     string rank = __result;
@@ -177,10 +183,12 @@ namespace UltrakULL.Harmony_Patches
 		[HarmonyPatch(typeof(LevelSelectPanel), nameof(LevelSelectPanel.CheckScore))]
 		public static class LevelSelectPanel_CheckScorePatch
 		{
-            static bool enableLevelSelectfix = true;
             [HarmonyPostfix]
 			public static void Postfix(LevelSelectPanel __instance)
 			{
+                // Built-in English keeps the game's original rank letters.
+                if (UltrakULL.CommonFunctions.isUsingEnglish()) return;
+
                 try
 				{
                     TextMeshProUGUI componentInChildren = __instance.transform.Find("Stats").Find("Rank").GetComponentInChildren<TextMeshProUGUI>();
@@ -262,7 +270,6 @@ namespace UltrakULL.Harmony_Patches
                     if (LanguageManager.CurrentLanguage.ranks == null)
                     { Logging.Warn("Category \"Ranks\" is missing from the language file!"); return; }
                     Logging.Warn(e.ToString());
-					enableLevelSelectfix = false;
                     return;
 				}
 			}

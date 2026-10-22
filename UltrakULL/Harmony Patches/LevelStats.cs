@@ -15,12 +15,54 @@ namespace UltrakULL.Harmony_Patches
     public static class LocalizeLevelStatNames
     {
         private static StatsManager sman = MonoSingleton<StatsManager>.Instance;
-        
+
+        /// <summary>
+        /// The name of the level as the game writes it. It is kept, so the built-in
+        /// English can be put back on a language switch.
+        /// </summary>
+        private static string gameLevelName;
+
         [HarmonyPostfix]
         public static void LevelStatsStart_Postfix(LevelStats __instance)//, StatsManager ___sman)
         {
+            if (__instance != null && __instance.levelName != null)
+            {
+                // The game wrote the name of the level a moment ago.
+                gameLevelName = __instance.levelName.text;
+            }
+
+            ApplyLevelName(__instance);
+        }
+
+        /// <summary>
+        /// Applies the active language to the name of the level in the stats screen.
+        ///
+        /// The game writes the name of the level only once, when the level starts, so
+        /// a language switch did not reach it and it kept the previous language.
+        /// </summary>
+        public static void Reapply()
+        {
+            LevelStats[] stats = UnityEngine.Object.FindObjectsOfType<LevelStats>(true);
+            for (int i = 0; i < stats.Length; i++)
+            {
+                ApplyLevelName(stats[i]);
+            }
+        }
+
+        private static void ApplyLevelName(LevelStats __instance)
+        {
+            if (__instance == null || __instance.levelName == null)
+            {
+                return;
+            }
+
             if(isUsingEnglish())
             {
+                // The built-in English is the game's own text.
+                if (!string.IsNullOrEmpty(gameLevelName))
+                {
+                    __instance.levelName.text = gameLevelName;
+                }
                 return;
             }
             if (__instance.secretLevel)

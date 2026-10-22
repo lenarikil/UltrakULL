@@ -28,10 +28,21 @@ namespace UltrakULL
             {
                 lines = Lines.Select(line => new SubtitledAudioSource.SubtitleDataLine
                 {
-                    subtitle = ColorIfNecessary(LanguageManager.CurrentLanguage.subtitles.GetField(line.Reference), line.Color),
+                    subtitle = LocalizeLine(line),
                     time = line.Delay
                 }).ToArray()
             };
+        }
+
+        private static string LocalizeLine(Line line)
+        {
+            string text = ColorIfNecessary(LanguageManager.CurrentLanguage.subtitles.GetField(line.Reference), line.Color);
+
+            // The key is remembered with the text, so a subtitle that is on screen
+            // can be written again in another language.
+            LiveSubtitles.RegisterText(line.Reference, text, line.Color);
+
+            return text;
         }
 
         private static string ColorIfNecessary(string line, string color)

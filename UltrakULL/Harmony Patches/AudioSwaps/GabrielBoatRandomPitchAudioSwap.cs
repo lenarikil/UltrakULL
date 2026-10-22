@@ -21,23 +21,15 @@ namespace UltrakULL.Harmony_Patches
                     return;
 
                 var aud = __instance.GetComponent<AudioSource>();
-                if (aud == null || aud.clip == null)
+                if (!IsHologramVoice(aud))
                     return;
 
-                string clipName = aud.clip.name;
-                if (clipName != "gab_HologramFiltered")
-                    return;
                 AudioSwapper.LogAudioSourceDiagnostics(aud, "GabrielBoat:Flicker");
                 string localizedPath = Path.Combine(AudioSwapper.SpeechFolder, "gabrielBoat", "gabrielBoat");
 
-                AudioSwapper.SwapClipWithFileAsync(aud.clip, localizedPath, newClip =>
-                {
-                    if (newClip != null && ActiveDubbingEnabled())
-                    {
-                        aud.clip = newClip;
-                        Logging.Message($"[Flicker] Swapped clip '{clipName}' → '{newClip.name}'");
-                    }
-                });
+                // The swap keeps the playback time, so the speech of the hologram
+                // follows a language switch in the middle of the line.
+                AudioSwapper.SwapSourceClip(aud, localizedPath);
             }
             catch (System.Exception e)
             {
@@ -56,23 +48,13 @@ namespace UltrakULL.Harmony_Patches
                     return;
 
                 var aud = __instance.GetComponent<AudioSource>();
-                if (aud == null || aud.clip == null)
+                if (!IsHologramVoice(aud))
                     return;
 
-                string clipName = aud.clip.name;
-                if (clipName != "gab_HologramFiltered")
-                    return;
                 AudioSwapper.LogAudioSourceDiagnostics(aud, "GabrielBoat:RandomPitchStart");
                 string localizedPath = Path.Combine(AudioSwapper.SpeechFolder, "gabrielBoat", "gabrielBoat");
 
-                AudioSwapper.SwapClipWithFileAsync(aud.clip, localizedPath, newClip =>
-                {
-                    if (newClip != null && ActiveDubbingEnabled())
-                    {
-                        aud.clip = newClip;
-                        Logging.Message($"[RandomPitch] Swapped clip '{clipName}' → '{newClip.name}'");
-                    }
-                });
+                AudioSwapper.SwapSourceClip(aud, localizedPath);
             }
             catch (System.Exception e)
             {
@@ -91,28 +73,36 @@ namespace UltrakULL.Harmony_Patches
                     return;
 
                 var aud = __instance.GetComponent<AudioSource>();
-                if (aud == null || aud.clip == null)
+                if (!IsHologramVoice(aud))
                     return;
 
-                string clipName = aud.clip.name;
-                if (clipName != "gab_HologramFiltered")
-                    return;
                 AudioSwapper.LogAudioSourceDiagnostics(aud, "GabrielBoat:RandomPitchOnEnable");
                 string localizedPath = Path.Combine(AudioSwapper.SpeechFolder, "gabrielBoat", "gabrielBoat");
 
-                AudioSwapper.SwapClipWithFileAsync(aud.clip, localizedPath, newClip =>
-                {
-                    if (newClip != null && ActiveDubbingEnabled())
-                    {
-                        aud.clip = newClip;
-                        Logging.Message($"[RandomPitch Enable] Swapped clip '{clipName}' → '{newClip.name}'");
-                    }
-                });
+                AudioSwapper.SwapSourceClip(aud, localizedPath);
             }
             catch (System.Exception e)
             {
                 Logging.Warn("[RandomPitch OnEnable] Swap error: " + e.Message);
             }
+        }
+
+        /// <summary>
+        /// True when the source plays the speech of the boat hologram.
+        ///
+        /// The name of the game's own clip is checked, because the name of the
+        /// current clip changes with the language.
+        /// </summary>
+        private static bool IsHologramVoice(AudioSource aud)
+        {
+            if (aud == null)
+                return false;
+
+            AudioClip gameClip = AudioSwapper.GetOriginalClip(aud);
+            if (gameClip == null)
+                gameClip = aud.clip;
+
+            return gameClip != null && gameClip.name == "gab_HologramFiltered";
         }
 
         private static bool ActiveDubbingEnabled()

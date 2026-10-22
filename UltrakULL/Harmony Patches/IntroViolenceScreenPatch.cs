@@ -22,6 +22,9 @@ public static class IntroViolenceScreenPatch
     [HarmonyPostfix]
     private static void StartPatch(IntroViolenceScreen __instance)
     {
+        // Built-in English keeps the game's original violence screen.
+        if (UltrakULL.CommonFunctions.isUsingEnglish()) return;
+
         Transform canvasTransform = __instance.transform.parent;
         if (canvasTransform == null) return;
 
@@ -79,7 +82,7 @@ public static class IntroViolenceScreenPatch
         tmp.overflowMode = TextOverflowModes.Overflow;
         tmp.color = new Color(1, 1, 1, startAlpha);
         tmp.enableWordWrapping = false;
-        TextMeshProFontSwap.SwapTMPFont(ref tmp);
+        TextMeshProFontSwap.SwapFont(tmp);
         //tmp.autoSizeTextContainer = true;
 
         RectTransform rectTransform = textObj.GetComponent<RectTransform>();

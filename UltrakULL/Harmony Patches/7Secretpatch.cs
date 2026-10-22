@@ -88,6 +88,9 @@ namespace UltrakULL.Harmony_Patches
         [HarmonyPatch("Start"), HarmonyPostfix]
         public static void Start_Postfix(BloodCheckerManager __instance, Dictionary<GameObject, List<BloodAbsorber>> ___rooms, GameObject ___pondToDoEntry)
         {
+            // Built-in English keeps the game's original checklist text.
+            if (UltrakULL.CommonFunctions.isUsingEnglish()) return;
+
             //Patching Checklist names here
             try
             {
@@ -130,6 +133,9 @@ namespace UltrakULL.Harmony_Patches
         [HarmonyPatch("UpdateDisplay"), HarmonyPostfix]
         public static void UpdateDisplayPostfix(BloodCheckerManager __instance, BloodAbsorber bA)
         {
+            // Built-in English keeps the game's original checklist text.
+            if (UltrakULL.CommonFunctions.isUsingEnglish()) return;
+
             try
             {
                 __instance.toDoText.text = LanguageManager.CurrentLanguage.washing.wash_ToDo;

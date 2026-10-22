@@ -40,23 +40,21 @@ namespace UltrakULL
         public static TMP_FontAsset CJKFontTMP;
         public static TMP_FontAsset JaFontTMP;
         public static TMP_FontAsset ArabicFontTMP;
-  public static TMP_FontAsset HebrewFontTMP;
-        public static Material GlobalFontTMPOverlayMat;
-        public static Material CJKFontTMPOverlayMat;
-        public static Material jaFontTMPOverlayMat;
+        public static TMP_FontAsset HebrewFontTMP;
         public static Sprite[] CustomRankImages;
+
+        // The mod bundle's own overlay material. Its shader is the bundle's copy
+        // of "TextMeshPro/Distance Field Overlay" and, unlike the game's copy,
+        // it includes the compiled UNDERLAY variant (no game material uses
+        // overlay + underlay, so the game's copy has that variant stripped).
+        // Overlay material presets with shadows must be cloned from this one.
+        public static Material GlobalFontTMPOverlayMat;
 
         // Custom fonts loaded from external files
         public static TMP_FontAsset CustomMainFontTMP;
         public static TMP_FontAsset CustomMuseumFontTMP;
         public static TMP_FontAsset CustomTerminalFontTMP;
         public static TMP_FontAsset CustomSecretTerminalFontTMP;
-        
-        // Materials for custom TMP fonts (overlay)
-        public static Material CustomMainFontTMPOverlayMat;
-        public static Material CustomMuseumFontTMPOverlayMat;
-        public static Material CustomTerminalFontTMPOverlayMat;
-        public static Material CustomSecretTerminalFontTMPOverlayMat;
 
         private static bool startupNotifShown = false;
 
@@ -69,6 +67,10 @@ namespace UltrakULL
         //Encapsulation function to patch all of the front end.
         public static void PatchFrontEnd(GameObject frontEnd)
         {
+            // Built-in English leaves the front end untouched (vanilla text).
+            // The language menu is injected separately and remains available.
+            if (isUsingEnglish()) return;
+
             MainMenu.Patch(frontEnd);
             Options options = new Options(ref frontEnd);
         }
@@ -338,6 +340,12 @@ namespace UltrakULL
                     return null;
                 }
 
+                // CreateFontAsset leaves the name empty. The file name makes the
+                // font recognizable in logs and by the font swap, whose
+                // classification reads font names (a terminal font file named
+                // after Tahoma keeps terminals on the terminal font).
+                tmpFont.name = Path.GetFileNameWithoutExtension(fontPath);
+
                 ApplyStrikeoutMetrics(tmpFont, fontPath, samplingPointSize);
 
                 Logging.Message($"CreateTMPFontFromFile: successfully created TMP font asset '{tmpFont.name}'");
@@ -402,10 +410,6 @@ namespace UltrakULL
             CustomMuseumFontTMP = null;
             CustomTerminalFontTMP = null;
             CustomSecretTerminalFontTMP = null;
-            CustomMainFontTMPOverlayMat = null;
-            CustomMuseumFontTMPOverlayMat = null;
-            CustomTerminalFontTMPOverlayMat = null;
-            CustomSecretTerminalFontTMPOverlayMat = null;
 
             if (LanguageManager.CurrentLanguage?.metadata?.fonts == null)
             {
@@ -414,10 +418,10 @@ namespace UltrakULL
             }
 
             var fonts = LanguageManager.CurrentLanguage.metadata.fonts;
-            
+
             // Debug log font fields
             Logging.Message($"Custom font fields - MainFont: '{fonts.MainFont}', MuseumFont: '{fonts.MuseumFont}', TerminalFont: '{fonts.TerminalFont}', SecretTerminalFont: '{fonts.SecretTerminalFont}'");
-            
+
             // Check if any font field is non-empty
             if (string.IsNullOrEmpty(fonts.MainFont) &&
                 string.IsNullOrEmpty(fonts.MuseumFont) &&
@@ -428,9 +432,8 @@ namespace UltrakULL
                 return;
             }
 
-            string langName = LanguageManager.CurrentLanguage.metadata.langName;
-            string fontsPath = Path.Combine(Paths.ConfigPath, "ultrakull", "fonts", langName);
-            
+            string fontsPath = LanguageManager.GetLanguageAssetFolder("fonts");
+
             Logging.Message($"Custom fonts directory path: {fontsPath}");
             if (!Directory.Exists(fontsPath))
             {
@@ -440,108 +443,33 @@ namespace UltrakULL
 
             Logging.Message($"Loading custom fonts from: {fontsPath}");
 
-            // Load MainFont
-            if (!string.IsNullOrEmpty(fonts.MainFont))
+            CustomMainFontTMP = TryLoadCustomFont("MainFont", fonts.MainFont, fontsPath);
+            CustomMuseumFontTMP = TryLoadCustomFont("MuseumFont", fonts.MuseumFont, fontsPath);
+            CustomTerminalFontTMP = TryLoadCustomFont("TerminalFont", fonts.TerminalFont, fontsPath);
+            CustomSecretTerminalFontTMP = TryLoadCustomFont("SecretTerminalFont", fonts.SecretTerminalFont, fontsPath);
+        }
+
+        private static TMP_FontAsset TryLoadCustomFont(string fontKind, string fileName, string fontsPath)
+        {
+            if (string.IsNullOrEmpty(fileName))
+                return null;
+
+            string fontPath = FindFontFile(fontsPath, fileName);
+            if (fontPath == null)
             {
-                Logging.Message($"Attempting to load MainFont: '{fonts.MainFont}'");
-                string mainFontPath = FindFontFile(fontsPath, fonts.MainFont);
-                if (mainFontPath != null)
-                {
-                    Logging.Message($"Found MainFont file at: {mainFontPath}");
-                    TMP_FontAsset tmpFont = CreateTMPFontFromFile(mainFontPath);
-                    if (tmpFont != null)
-                    {
-                        CustomMainFontTMP = tmpFont;
-                        CustomMainFontTMPOverlayMat = TMPFontUtils.CreateOverlayMaterial(
-                            tmpFont, GlobalFontTMPOverlayMat, $"{tmpFont.name}_Overlay");
-                        Logging.Message($"Loaded custom MainFont TMP: {fonts.MainFont} (from {Path.GetFileName(mainFontPath)})");
-                    }
-                    else
-                    {
-                        Logging.Error($"CreateTMPFontFromFile returned null for MainFont");
-                    }
-                }
-                else
-                {
-                    Logging.Warn($"Custom MainFont file not found: {fonts.MainFont} (searched with extensions .ttf, .otf, .ttc, .woff, .woff2)");
-                }
+                Logging.Warn($"Custom {fontKind} file not found: {fileName} (searched with extensions .ttf, .otf, .ttc, .woff, .woff2)");
+                return null;
             }
 
-            // Load MuseumFont
-            if (!string.IsNullOrEmpty(fonts.MuseumFont))
+            TMP_FontAsset tmpFont = CreateTMPFontFromFile(fontPath);
+            if (tmpFont == null)
             {
-                string museumFontPath = FindFontFile(fontsPath, fonts.MuseumFont);
-                if (museumFontPath != null)
-                {
-                    TMP_FontAsset tmpFont = CreateTMPFontFromFile(museumFontPath);
-                    if (tmpFont != null)
-                    {
-                        CustomMuseumFontTMP = tmpFont;
-                        CustomMuseumFontTMPOverlayMat = TMPFontUtils.CreateOverlayMaterial(
-                            tmpFont, GlobalFontTMPOverlayMat, $"{tmpFont.name}_Overlay");
-                        Logging.Message($"Loaded custom MuseumFont TMP: {fonts.MuseumFont} (from {Path.GetFileName(museumFontPath)})");
-                    }
-                    else
-                    {
-                        Logging.Error($"CreateTMPFontFromFile returned null for MuseumFont");
-                    }
-                }
-                else
-                {
-                    Logging.Warn($"Custom MuseumFont file not found: {fonts.MuseumFont} (searched with extensions .ttf, .otf, .ttc, .woff, .woff2)");
-                }
+                Logging.Error($"CreateTMPFontFromFile returned null for {fontKind}");
+                return null;
             }
 
-            // Load TerminalFont (optional)
-            if (!string.IsNullOrEmpty(fonts.TerminalFont))
-            {
-                string terminalFontPath = FindFontFile(fontsPath, fonts.TerminalFont);
-                if (terminalFontPath != null)
-                {
-                    TMP_FontAsset tmpFont = CreateTMPFontFromFile(terminalFontPath);
-                    if (tmpFont != null)
-                    {
-                        CustomTerminalFontTMP = tmpFont;
-                        CustomTerminalFontTMPOverlayMat = TMPFontUtils.CreateOverlayMaterial(
-                            tmpFont, GlobalFontTMPOverlayMat, $"{tmpFont.name}_Overlay");
-                        Logging.Message($"Loaded custom TerminalFont TMP: {fonts.TerminalFont} (from {Path.GetFileName(terminalFontPath)})");
-                    }
-                    else
-                    {
-                        Logging.Error($"CreateTMPFontFromFile returned null for TerminalFont");
-                    }
-                    
-                }
-                else
-                {
-                    Logging.Warn($"Custom TerminalFont file not found: {fonts.TerminalFont} (searched with extensions .ttf, .otf, .ttc, .woff, .woff2)");
-                }
-            }
-
-            // Load SecretTerminalFont (optional)
-            if (!string.IsNullOrEmpty(fonts.SecretTerminalFont))
-            {
-                string secretFontPath = FindFontFile(fontsPath, fonts.SecretTerminalFont);
-                if (secretFontPath != null)
-                {
-                    TMP_FontAsset tmpFont = CreateTMPFontFromFile(secretFontPath);
-                    if (tmpFont != null)
-                    {
-                        CustomSecretTerminalFontTMP = tmpFont;
-                        CustomSecretTerminalFontTMPOverlayMat = TMPFontUtils.CreateOverlayMaterial(
-                            tmpFont, GlobalFontTMPOverlayMat, $"{tmpFont.name}_Overlay");
-                        Logging.Message($"Loaded custom SecretTerminalFont TMP: {fonts.SecretTerminalFont} (from {Path.GetFileName(secretFontPath)})");
-                    }
-                    else
-                    {
-                        Logging.Error($"CreateTMPFontFromFile returned null for SecretTerminalFont");
-                    }
-                }
-                else
-                {
-                    Logging.Warn($"Custom SecretTerminalFont file not found: {fonts.SecretTerminalFont} (searched with extensions .ttf, .otf, .ttc, .woff, .woff2)");
-                }
-            }
+            Logging.Message($"Loaded custom {fontKind} TMP: {fileName} (from {Path.GetFileName(fontPath)})");
+            return tmpFont;
         }
 
         /// <summary>
@@ -635,12 +563,9 @@ namespace UltrakULL
                 Font font2 = fontBundle.LoadAsset<Font>("EBGaramond-Regular");
                 TMP_FontAsset font1TMP = fontBundle.LoadAsset<TMP_FontAsset>("VCR_OSD_MONO_EXTENDED_TMP");
                 TMP_FontAsset font2TMP = fontBundle.LoadAsset<TMP_FontAsset>("EBGaramond-Regular_TMP");
-                Material font1TMPTopMat = fontBundle.LoadAsset<Material>("VCR_OSD_MONO_EXTENDED_TMP_Overlay_Material");
-                
+
                 TMP_FontAsset cjkFontTMP = fontBundle.LoadAsset<TMP_FontAsset>("NotoSans-CJK_TMP");
                 TMP_FontAsset jafontTMP = fontBundle.LoadAsset<TMP_FontAsset>("JF-Dot-jiskan16s-2000_TMP");
-                Material cjkFontTMPTopMat = fontBundle.LoadAsset<Material>("NotoSans-CJK_TMP_Overlay_Material");
-                Material jaFontTMPTopMat = fontBundle.LoadAsset<Material>("JF-Dot-jiskan16s-2000_TMP_Overlay_Material");
                 if (font1 && font2)
                 {
                     Logging.Warn("Normal fonts loaded.");
@@ -653,23 +578,30 @@ namespace UltrakULL
                     Logging.Error("FAILED TO LOAD NORMAL FONTS");
                     GlobalFontReady = false;
                 }
-                if(font1TMP && font2TMP && cjkFontTMP && jafontTMP && font1TMPTopMat && cjkFontTMPTopMat && jaFontTMPTopMat)
+                if(font1TMP && font2TMP && cjkFontTMP && jafontTMP)
                 {
                     Logging.Warn("Normal TMP fonts loaded.");
                     GlobalFontTMP = font1TMP;
                     MuseumFontTMP = font2TMP;
                     CJKFontTMP = cjkFontTMP;
                     JaFontTMP = jafontTMP;
-                    GlobalFontTMPOverlayMat = font1TMPTopMat;
-                    CJKFontTMPOverlayMat = cjkFontTMPTopMat;
-                    jaFontTMPOverlayMat = jaFontTMPTopMat;
-                    
+
                     TMPFontReady = true;
                 }
                 else
                 {
                     Logging.Error("FAILED TO LOAD TMP FONTS");
                     TMPFontReady = false;
+                }
+
+                Material overlayMat = fontBundle.LoadAsset<Material>("VCR_OSD_MONO_EXTENDED_TMP_Overlay_Material");
+                if (overlayMat != null)
+                {
+                    GlobalFontTMPOverlayMat = overlayMat;
+                }
+                else
+                {
+                    Logging.Warn("Overlay material not found in the font bundle; overlay text shadows may not render.");
                 }
                 
                 // Load custom fonts after standard fonts and materials are ready
@@ -736,12 +668,119 @@ namespace UltrakULL
             //Logging.Message("Switching scenes...");
             string levelName = GetCurrentSceneName();
             if(levelName == "Intro" || levelName == "Bootstrap")
-            { 
+            {
                 //Don't do anything if we're still booting up the game.
                 //Logging.Warn("In intro, not hooking yet");
                 return;
             }
-            
+
+            // Remember the game's own text before the first localization pass of this
+            // scene, so a later language switch can put the original strings back.
+            OriginalTextSnapshot.Capture();
+
+            // The tracked originals of the previous scene belong to objects that are
+            // gone by now.
+            LiveText.PruneDead();
+            LocalizeBossBar.PruneDead();
+            LocalizedDropdowns.PruneDead();
+            LiveSubtitles.PruneDead();
+            UltrakULL.audio.AudioSwapper.PruneDeadSourceOriginals();
+
+            ApplyLanguageToScene(levelName);
+        }
+
+        /// <summary>
+        /// Applies the active language to the scene that is currently loaded.
+        ///
+        /// The game's own text is the baseline: it is restored first and the active
+        /// language is written on top of it. Switching to the built-in English
+        /// therefore brings back the game's own strings, and switching to another
+        /// language never leaves strings of the previous language behind.
+        ///
+        /// Used by the language switch so the new language is visible right away,
+        /// without reloading the scene.
+        /// </summary>
+        public static void ApplyLanguageToCurrentScene()
+        {
+            string levelName = GetCurrentSceneName();
+            if(levelName == "Intro" || levelName == "Bootstrap")
+                return;
+
+            OriginalTextSnapshot.Restore();
+
+            // The boss bar is only updated by the running game, so the restored
+            // names have to be translated again right away.
+            LocalizeBossBar.Reapply();
+
+            ApplyLanguageToScene(levelName);
+
+            // The screens that the game fills when the player opens them (the shop
+            // terminal, ...) are not part of the localization pass. They are
+            // registered as live groups, so they follow the new language as well
+            // without the player having to close and open them again.
+            LiveText.Reapply();
+
+            // The options of the dropdowns are not text components, so the live
+            // groups cannot put the game's own options back for the built-in
+            // English.
+            LocalizedDropdowns.Reapply();
+
+            // The money counter is written by the game itself, so it needs its own
+            // refresh to follow the new language.
+            UpdateMoneyPatch.Reapply();
+
+            // The price and the ownership text of the shop items are written by the
+            // game when the shop is opened, so they need their own refresh.
+            LocalizeVariationOwnership.Reapply();
+
+            // The button that switches between the standard and the alternate colors
+            // is only written by the game when the colors are switched.
+            GunColorTypeGetterPatch.Reapply();
+
+            // The game builds the cheat menu only once, when it starts. It has to be
+            // rebuilt, so the menu and the cheat list on the HUD follow the new
+            // language as well.
+            Cheats.ReapplyCheatMenu();
+
+            // The enemy bio lives inside the shop, so it is rendered again after the
+            // live groups have put the game's own text back.
+            LocalizeEnemyInfo.Reapply();
+
+            // The screens the game fills when the player opens them follow the new
+            // language as well, so nothing has to be closed and opened again.
+            LocalizeScanningText.Reapply();
+            SelectFish.Reapply();
+            FishingHUDPatch.Reapply();
+            LocalizeSaveSlots.Reapply();
+            LocalizeLevelStatNames.Reapply();
+
+            // The subtitles that are on screen keep their line, only their language
+            // changes.
+            LiveSubtitles.Reapply();
+
+            // The skip hint of a cutscene and the title reveal of the level follow
+            // the new language as well, without starting over.
+            CutsceneSkipTextPatch.Reapply();
+            LocalizeLevelPopup.Reapply();
+            SandboxWorldOptions.Reapply();
+            SpawnMenuPatch.Reapply();
+            LocalizeFinalRankInfo.Reapply();
+
+            // Fonts are normally chosen from TMP's OnEnable hook. Existing UI does
+            // not run that hook during a language switch, so refresh only the active
+            // game's TMP components after every live text reapplication.
+            TextMeshProFontSwap.ReapplyActiveSceneFonts();
+
+            // Textures belong to the language as well, so they are rebuilt and applied
+            // to the scene that is currently loaded.
+            TexturePatcher.ReapplyForLanguageChange();
+        }
+
+        /// <summary>
+        /// Runs the localization of the active language on the current scene.
+        /// </summary>
+        private static void ApplyLanguageToScene(string levelName)
+        {
             //Each scene (level) has an object called Canvas. Most game objects are there.
             GameObject canvasObj = GetInactiveRootObject("Canvas");
             if (!canvasObj)
@@ -753,6 +792,11 @@ namespace UltrakULL
             {
                 TextMeshProFontSwap.ClearFontSwapCache();
                 TextFontSwap.TextFontSwapper.ClearCache();
+
+                // Remember what the text components show right now. Everything the
+                // localization pass below changes is a translation of the mod, the
+                // rest belongs to the game and has to survive a language switch.
+                OriginalTextSnapshot.CapturePassBaseline();
 
                 switch (levelName)
                 {
@@ -775,7 +819,7 @@ namespace UltrakULL
                             if (isUsingEnglish())
                             {
                                 Logging.Warn("Current language is English, not patching.");
-                                return;
+                                break;
                             }
 
                             Logging.Message("Regular scene");
@@ -869,6 +913,11 @@ namespace UltrakULL
                         }
                         break;
                 }
+
+                // The pass has written the active language into the components it
+                // covers. They are the only ones a later language switch takes the
+                // translation off again.
+                OriginalTextSnapshot.MarkTranslated();
             }
         }
 

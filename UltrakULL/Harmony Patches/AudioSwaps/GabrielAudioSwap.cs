@@ -108,9 +108,21 @@ namespace UltrakULL.Harmony_Patches.AudioSwaps
                         AudioSource[] sources = outro.GetComponentsInChildren<AudioSource>(true);
                         foreach (var source in sources)
                         {
-                            if (source != null && source.clip != null && source.clip.name == "gab_BigHurt1")
+                            if (source == null)
+                                continue;
+
+                            // The name of the game's own clip is checked, because the
+                            // current clip may already be a translation whose name
+                            // differs.
+                            AudioClip gameClip = AudioSwapper.GetOriginalClip(source);
+                            if (gameClip == null)
+                                gameClip = source.clip;
+
+                            if (gameClip != null && gameClip.name == "gab_BigHurt1")
                             {
-                                source.clip = savedOutro;
+                                // The playback time is kept, so a line that is in
+                                // the middle of playing does not restart.
+                                AudioSwapper.ApplySourceClip(source, savedOutro);
                                 Logging.Info($"[GabrielAudioSwap] Restored outro clip '{savedOutro.name}' for instance {id}");
                             }
                         }
@@ -243,31 +255,24 @@ namespace UltrakULL.Harmony_Patches.AudioSwaps
 
             foreach (AudioSource source in sources)
             {
-                if (source == null || source.clip == null)
+                if (source == null)
                     continue;
 
-                if (source.clip.name != "gab_BigHurt1")
+                // The source is picked by the name of the game's own clip: the name
+                // of the current clip changes with the language, so a re-swap after
+                // a language switch would miss it.
+                AudioClip gameClip = AudioSwapper.GetOriginalClip(source);
+                if (gameClip == null)
+                    gameClip = source.clip;
+
+                if (gameClip == null || gameClip.name != "gab_BigHurt1")
                     continue;
 
                 string path = folder + "gabrielBigHurt1";
 
-                AudioSwapper.SwapClipWithFileAsync(source.clip, path, (clip) =>
-                {
-                    if (clip == null)
-                        return;
-
-                    try
-                    {
-                        if (source != null)
-                        {
-                            source.clip = clip;
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.LogException(e);
-                    }
-                });
+                // The swap keeps the playback time, so the outro speech follows the
+                // language switch in the middle of the line.
+                AudioSwapper.SwapSourceClip(source, path);
             }
         }
     }

@@ -15,6 +15,9 @@ namespace UltrakULL.Harmony_Patches
 		[HarmonyPostfix]
 		public static void Patch(ref string __result, int rank)
 		{
+			// Built-in English keeps the game's original rank letters.
+			if (UltrakULL.CommonFunctions.isUsingEnglish()) return;
+
 			// string __result;
 #if DEBUG
 			Logging.Info("[DEBUG] RankHelper::GetRankLetter -> CALLED");

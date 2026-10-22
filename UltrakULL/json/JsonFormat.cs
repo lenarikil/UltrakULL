@@ -1,10 +1,17 @@
 using System.Collections.Generic;
 using System.Reflection;
+using Newtonsoft.Json;
 
 namespace UltrakULL.json
 {
     public class JsonFormat
     {
+        // Absolute path of the language pack folder that this instance was loaded from
+        // (the directory that contains translation.json, audio/, textures/, fonts/).
+        // Never serialized because it is a runtime-only detail, not part of the pack.
+        [JsonIgnore]
+        public string RootFolder;
+
         public Metadata metadata;
         public Body body;
 

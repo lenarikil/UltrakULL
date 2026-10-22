@@ -186,20 +186,14 @@ namespace UltrakULL
             }
         }
 
-        // Cached against the active language instance; recomputed only when it changes.
-        private static JsonFormat cachedEnglishLanguage;
-        private static bool cachedUsingEnglish;
-
         public static bool isUsingEnglish()
         {
             var current = LanguageManager.CurrentLanguage;
-            if (!ReferenceEquals(cachedEnglishLanguage, current))
+            if (current != null && current.metadata != null)
             {
-                cachedEnglishLanguage = current;
-                cachedUsingEnglish = current != null && current.metadata.langDisplayName == "English";
+                return current.metadata.langName == "en-GB";
             }
-
-            return cachedUsingEnglish;
+            return false;
         }
 
 		

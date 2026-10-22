@@ -73,6 +73,39 @@ namespace UltrakULL
             cheatsTeleportMenuTitle.text = LanguageManager.CurrentLanguage.cheats.cheats_teleport;
         }
 
+        /// <summary>
+        /// Translates the cheat menu again and re-renders the list of active cheats on
+        /// the HUD.
+        ///
+        /// The game builds the menu only once, when the cheats manager starts, so a
+        /// language switch has to translate the items again. The game refreshes the
+        /// state of every cheat item, and that refresh goes through the patched
+        /// update of the game, so the items are translated in place. Building the menu
+        /// again would destroy and recreate every item, which makes the menu flicker.
+        /// </summary>
+        public static void ReapplyCheatMenu()
+        {
+            CheatsManager cheatsManager = MonoSingleton<CheatsManager>.Instance;
+            if (cheatsManager == null)
+            {
+                // There is no cheat menu in this scene (main menu for example).
+                return;
+            }
+
+            try
+            {
+                cheatsManager.RefreshCheatStates();
+
+                // The headers of the categories are not cheat items, so they are
+                // translated on their own.
+                UltrakULL.Harmony_Patches.CheatsManagerPatch.ReapplyCategories();
+            }
+            catch (Exception e)
+            {
+                HandleError(e);
+            }
+        }
+
         public static string GetCheatStatus(string cheatStatus)
         {
             if(cheatStatus == null) { return null; }

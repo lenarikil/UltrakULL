@@ -45,12 +45,19 @@ namespace UltrakULL.Harmony_Patches
             {
                 if (code.opcode == OpCodes.Ldstr && (string)code.operand == "<color=#FF4343>P</color>")
                 {
-                    code.operand = $"<color=#FF4343>" + LanguageManager.CurrentLanguage.shop.shop_moneyCount + "</color>";
+                    // Keep the vanilla money label when the language has none (built-in English).
+                    string money = LanguageManager.CurrentLanguage != null && LanguageManager.CurrentLanguage.shop != null
+                        ? LanguageManager.CurrentLanguage.shop.shop_moneyCount : null;
+                    if (!string.IsNullOrEmpty(money))
+                        code.operand = $"<color=#FF4343>" + money + "</color>";
                 }
 
                 if (code.opcode == OpCodes.Ldstr && (string)code.operand == "<color=red>1,000,000 P</color>")
                 {
-                    code.operand = $"1,000,000<color=#FF4343> " + LanguageManager.CurrentLanguage.shop.shop_moneyCount + "</color>";
+                    string money = LanguageManager.CurrentLanguage != null && LanguageManager.CurrentLanguage.shop != null
+                        ? LanguageManager.CurrentLanguage.shop.shop_moneyCount : null;
+                    if (!string.IsNullOrEmpty(money))
+                        code.operand = $"1,000,000<color=#FF4343> " + money + "</color>";
                 }
 
                 yield return code;

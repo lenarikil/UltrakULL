@@ -10,7 +10,7 @@ namespace UltrakULL
 {
     public static class Shop
     {
-        private static void PatchShopFrontEnd(ref GameObject shopObject)
+        private static void PatchShopFrontEnd(GameObject shopObject)
         {
             try
             {
@@ -132,7 +132,7 @@ namespace UltrakULL
         }
         
 
-        private static void PatchWeapons(ref GameObject shopObject)
+        private static void PatchWeapons(GameObject shopObject)
         {
             try
             {
@@ -1057,10 +1057,20 @@ namespace UltrakULL
                 
         }
 
-        public static void PatchShopRefactor(ref GameObject shopObject)
+        /// <summary>
+        /// Translates the shop terminal.
+        ///
+        /// The shop is not part of the localization pass: the game fills it when the
+        /// player turns the terminal on and never touches it again, so the texts kept
+        /// the language that was active before a switch. The whole shop is registered
+        /// as a live group, so a language switch puts the game's own text back and
+        /// writes the new language on top of it - the player does not have to leave
+        /// and enter the shop again.
+        /// </summary>
+        public static void PatchShopRefactor(GameObject shopObject)
         {
-            PatchShopFrontEnd(ref shopObject);
-            PatchWeapons(ref shopObject);
+            PatchShopFrontEnd(shopObject);
+            PatchWeapons(shopObject);
         }
         
     }

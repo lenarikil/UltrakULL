@@ -23,7 +23,7 @@ namespace UltrakULL.Harmony_Patches
 	[HarmonyPatch]
 	public static class TexturePatcher
 	{
-		private static string texturesFolder => Path.Combine(Paths.ConfigPath, "ultrakull", "textures", LanguageManager.CurrentLanguage.metadata.langName) + Path.DirectorySeparatorChar;
+		private static string texturesFolder => LanguageManager.GetLanguageAssetFolder("textures") + Path.DirectorySeparatorChar;
 		private static string batchOriginsFolder => Path.Combine(Path.GetDirectoryName(typeof(TexturePatcher).Assembly.Location), "BatchTexturesOrigins") + Path.DirectorySeparatorChar;
 
 		private static bool initialized = false;
@@ -43,6 +43,23 @@ namespace UltrakULL.Harmony_Patches
 		private static readonly HashSet<int> processedObjectIds = new HashSet<int>();
 		private static readonly HashSet<int> processedRawImages = new HashSet<int>();
 		private static Coroutine backgroundChecker;
+
+		// The running scene/UI replacement pass. It has to be stoppable because a
+		// language change invalidates the replacement set it is working with.
+		private static Coroutine sceneChangeCoroutine;
+
+		// The textures the mod replaced, together with the originals they hid. A
+		// language change replaces the whole set, so the originals are needed to put
+		// the game's own textures back (e.g. when the new language has no textures).
+		private static readonly Dictionary<RawImage, Texture> originalRawImageTextures = new Dictionary<RawImage, Texture>();
+		private static readonly Dictionary<Renderer, Dictionary<int, MaterialPropertyBlock>> originalRendererBlocks =
+			new Dictionary<Renderer, Dictionary<int, MaterialPropertyBlock>>();
+
+		// The sprites the mod replaced, together with the originals they hid. The
+		// rank sprites of the style HUD live in the game's own data objects, so
+		// they are remembered separately.
+		private static readonly Dictionary<Image, Sprite> originalUISprites = new Dictionary<Image, Sprite>();
+		private static readonly Dictionary<StyleHUD, Sprite[]> originalRankSprites = new Dictionary<StyleHUD, Sprite[]>();
 
 		// Time (ms) the scene/UI replacement passes may spend on the main thread
 		// before yielding a frame. Keeps scene loads and late activations smooth.
@@ -318,7 +335,7 @@ namespace UltrakULL.Harmony_Patches
 		};
 
 		// Icon pack replacements: iconPackId -> (iconKey -> texture filename)
-		// Place textures in BepInEx/config/ultrakull/textures/<lang>/
+		// Place textures in BepInEx/config/ultrakull/<languagePack>/textures/
 		// Default icons: "Default_<key>.png"
 		// PIRT icons:	"PIRT_<key>.png"
 		private static readonly Dictionary<int, Dictionary<string, string>> globalIconReplacements = new Dictionary<int, Dictionary<string, string>>
@@ -377,6 +394,11 @@ namespace UltrakULL.Harmony_Patches
 
 		private static void EnsureTexturesFolderExists()
 		{
+			// Built-in English has no language pack folder on disk; do not create one.
+			JsonFormat current = LanguageManager.CurrentLanguage;
+			if (current == null || string.IsNullOrEmpty(current.RootFolder))
+				return;
+
 			if (!Directory.Exists(texturesFolder))
 			{
 				Directory.CreateDirectory(texturesFolder);
@@ -534,6 +556,13 @@ namespace UltrakULL.Harmony_Patches
 		[HarmonyPostfix]
 		private static void OnSceneLoaded()
 		{
+			// The tracked originals belong to the previous scene, its objects are
+			// gone by now, so the tracking starts over.
+			ClearOriginalTracking();
+
+			// Built-in English has no translated textures; skip the whole replacement pipeline.
+			if (UltrakULL.CommonFunctions.isUsingEnglish()) return;
+
 			cancellationTokenSource?.Cancel();
 			cancellationTokenSource?.Dispose();
 			cancellationTokenSource = new CancellationTokenSource();
@@ -541,13 +570,43 @@ namespace UltrakULL.Harmony_Patches
 			pendingActivationRoots.Clear();
 			activationDrainRunning = false;
 
-			if (coroutineStarter == null)
-			{
-				var go = new GameObject("TexturePatcher_CoroutineStarter");
-				coroutineStarter = go.AddComponent<DummyMonoBehaviour>();
-			}
+			EnsureCoroutineStarter();
 
-			coroutineStarter.StartCoroutine(ProcessSceneChange());
+			// A running pass belongs to the previous scene, so it is stopped before the
+			// new one starts.
+			StopSceneChangePass();
+			sceneChangeCoroutine = coroutineStarter.StartCoroutine(ProcessSceneChange());
+		}
+
+		private static void EnsureCoroutineStarter()
+		{
+			if (coroutineStarter != null)
+				return;
+
+			var go = new GameObject("TexturePatcher_CoroutineStarter");
+			coroutineStarter = go.AddComponent<DummyMonoBehaviour>();
+		}
+
+		private static void StopSceneChangePass()
+		{
+			if (sceneChangeCoroutine == null || coroutineStarter == null)
+				return;
+
+			coroutineStarter.StopCoroutine(sceneChangeCoroutine);
+			sceneChangeCoroutine = null;
+			isProcessing = false;
+		}
+
+		/// <summary>
+		/// Forgets the originals the mod replaced. Called when a new scene is
+		/// loaded, because the tracked objects belong to the scene that was left.
+		/// </summary>
+		private static void ClearOriginalTracking()
+		{
+			originalRawImageTextures.Clear();
+			originalRendererBlocks.Clear();
+			originalUISprites.Clear();
+			originalRankSprites.Clear();
 		}
 
 		private static IEnumerator ProcessSceneChange()
@@ -593,8 +652,9 @@ namespace UltrakULL.Harmony_Patches
 			}
 			else if (isMainMenu && currentLevel != sceneName)
 			{
-				// Main Menu: only load global textures + icons, replace UI sprites
-				// Skip level-specific, batch textures, and 3D renderer replacement
+				// Main Menu: load the global textures + icons and the menu specific ones
+				// (TextmodeCircuit, TextmodeLogo), then replace them in the scene.
+				// Level specific and batch textures are not used in the menu.
 				currentLevel = sceneName;
 				Logging.Message("[TexturePatcher] Main Menu detected — loading global/icon textures only, preserving cache");
 
@@ -615,6 +675,9 @@ namespace UltrakULL.Harmony_Patches
 					yield break;
 				}
 
+				// The menu logo and the circuit board are plain textures on renderers,
+				// so the renderer pass is needed here as well.
+				yield return ReplaceTexturesInScene(initialPassFrameBudgetMs);
 				yield return ReplaceUISprites(initialPassFrameBudgetMs);
 
 				if (backgroundChecker != null)
@@ -1515,6 +1578,162 @@ namespace UltrakULL.Harmony_Patches
 			rankSprites.Clear();
 		}
 
+		/// <summary>
+		/// Puts the game's own textures back into everything the mod replaced. Used
+		/// when the newly selected language has no textures of its own (the built-in
+		/// English for example), so the previous language's replacements do not stay
+		/// on screen.
+		/// </summary>
+		private static void RestoreOriginalTextures()
+		{
+			int restored = 0;
+
+			foreach (KeyValuePair<RawImage, Texture> pair in originalRawImageTextures)
+			{
+				RawImage raw = pair.Key;
+				if (raw == null)
+					continue;
+
+				try
+				{
+					raw.texture = pair.Value;
+					restored++;
+				}
+				catch (Exception e)
+				{
+					Logging.Warn("[TexturePatcher] Failed to restore a RawImage texture: " + e.Message);
+				}
+			}
+			originalRawImageTextures.Clear();
+
+			foreach (KeyValuePair<Renderer, Dictionary<int, MaterialPropertyBlock>> pair in originalRendererBlocks)
+			{
+				Renderer rend = pair.Key;
+				if (rend == null)
+					continue;
+
+				foreach (KeyValuePair<int, MaterialPropertyBlock> block in pair.Value)
+				{
+					try
+					{
+						rend.SetPropertyBlock(block.Value, block.Key);
+						restored++;
+					}
+					catch (Exception e)
+					{
+						Logging.Warn("[TexturePatcher] Failed to restore a renderer texture: " + e.Message);
+					}
+				}
+			}
+			originalRendererBlocks.Clear();
+
+			foreach (KeyValuePair<Image, Sprite> pair in originalUISprites)
+			{
+				Image img = pair.Key;
+				if (img == null)
+					continue;
+
+				try
+				{
+					img.sprite = pair.Value;
+					restored++;
+				}
+				catch (Exception e)
+				{
+					Logging.Warn("[TexturePatcher] Failed to restore a UI sprite: " + e.Message);
+				}
+			}
+			originalUISprites.Clear();
+
+			foreach (KeyValuePair<StyleHUD, Sprite[]> pair in originalRankSprites)
+			{
+				StyleHUD hud = pair.Key;
+				if (hud == null || hud.ranks == null)
+					continue;
+
+				try
+				{
+					Sprite[] original = pair.Value;
+					int count = Math.Min(hud.ranks.Count, original.Length);
+					for (int i = 0; i < count; i++)
+					{
+						hud.ranks[i].sprite = original[i];
+						restored++;
+					}
+				}
+				catch (Exception e)
+				{
+					Logging.Warn("[TexturePatcher] Failed to restore the rank sprites: " + e.Message);
+				}
+			}
+			originalRankSprites.Clear();
+
+			if (restored > 0)
+				Logging.Message($"[TexturePatcher] Restored {restored} original texture(s).");
+		}
+
+		/// <summary>
+		/// Rebuilds the texture replacements of the newly selected language and applies
+		/// them to the scene that is currently loaded, so a language switch does not
+		/// need a scene reload to show the new language's textures. Switching to a
+		/// language without textures puts the game's own textures back.
+		/// </summary>
+		internal static void ReapplyForLanguageChange()
+		{
+			if (!initialized)
+			{
+				Logging.Warn("[TexturePatcher] Not initialized, cannot reapply the textures.");
+				return;
+			}
+
+			// Stop the running pass: the replacement set belongs to the previous language.
+			cancellationTokenSource?.Cancel();
+			cancellationTokenSource?.Dispose();
+			cancellationTokenSource = new CancellationTokenSource();
+
+			EnsureCoroutineStarter();
+
+			// The pass that is still running belongs to the previous language, so it
+			// is stopped before the originals are restored and a new pass is started.
+			StopSceneChangePass();
+
+			if (backgroundChecker != null)
+			{
+				if (coroutineStarter != null)
+					coroutineStarter.StopCoroutine(backgroundChecker);
+				backgroundChecker = null;
+			}
+
+			// Put the game's own textures back before the previous language's textures go away.
+			RestoreOriginalTextures();
+
+			// The decoded textures live in the previous language's folder, so all of
+			// them are stale now and have to be decoded again.
+			ClearRankSprites();
+			ClearTextureCache();
+			customIconSprites.Clear();
+			currentReplacements = null;
+			replacementResolutionCache.Clear();
+			processedObjectIds.Clear();
+			processedRawImages.Clear();
+			batchTextureCache.Clear();
+			materialCacheValid = false;
+			cachedAllMaterials = null;
+			currentLevel = null;
+			isProcessing = false;
+
+			if (UltrakULL.CommonFunctions.isUsingEnglish())
+			{
+				// The built-in English uses the game's own textures.
+				Logging.Message("[TexturePatcher] Language changed to English, the original textures are back.");
+				return;
+			}
+
+			EnsureTexturesFolderExists();
+
+			sceneChangeCoroutine = coroutineStarter.StartCoroutine(ProcessSceneChange());
+		}
+
 		private static Dictionary<string, (string filename, string type)> GetLevelSpecificTextures(string sceneName)
 		{
 			foreach (var kv in levelTextureMappings)
@@ -1699,9 +1918,31 @@ namespace UltrakULL.Harmony_Patches
 
 				if (modified)
 				{
+					SaveOriginalRendererBlock(rend, m);
 					rend.SetPropertyBlock(propertyBlock, m);
 				}
 			}
+		}
+
+		/// <summary>
+		/// Remembers the property block a renderer had before the mod overrode its
+		/// texture, so the original texture can be restored later.
+		/// </summary>
+		private static void SaveOriginalRendererBlock(Renderer rend, int materialIndex)
+		{
+			Dictionary<int, MaterialPropertyBlock> blocks;
+			if (!originalRendererBlocks.TryGetValue(rend, out blocks))
+			{
+				blocks = new Dictionary<int, MaterialPropertyBlock>();
+				originalRendererBlocks[rend] = blocks;
+			}
+
+			if (blocks.ContainsKey(materialIndex))
+				return;
+
+			MaterialPropertyBlock original = new MaterialPropertyBlock();
+			rend.GetPropertyBlock(original, materialIndex);
+			blocks[materialIndex] = original;
 		}
 
 		/// <summary>
@@ -1723,6 +1964,9 @@ namespace UltrakULL.Harmony_Patches
 
 			if (TryGetReplacement(curTex.name, out var replacement))
 			{
+				if (!originalRawImageTextures.ContainsKey(raw))
+					originalRawImageTextures[raw] = raw.texture;
+
 				raw.texture = replacement;
 			}
 		}
@@ -1917,6 +2161,39 @@ namespace UltrakULL.Harmony_Patches
 			if (hud == null || rankSprites.Count == 0)
 				yield break;
 
+			SetReplacedRankSprites(hud);
+
+			string currentRank = GetRankNameByIndex(hud.rankIndex);
+			if (rankSprites.TryGetValue(currentRank, out var currentSprite))
+			{
+				SetReplacedSprite(hud.rankImage, currentSprite);
+			}
+			else
+			{
+				Logging.Warn($"[TexturePatcher] Missing sprite for current rank: {currentRank}");
+			}
+
+			yield return null;
+		}
+
+		/// <summary>
+		/// Replaces the sprites of the style HUD's rank list and remembers the
+		/// originals, so the game's own rank sprites can be put back later.
+		/// </summary>
+		private static void SetReplacedRankSprites(StyleHUD hud)
+		{
+			if (hud == null || hud.ranks == null)
+				return;
+
+			if (!originalRankSprites.ContainsKey(hud))
+			{
+				Sprite[] original = new Sprite[hud.ranks.Count];
+				for (int i = 0; i < hud.ranks.Count; i++)
+					original[i] = hud.ranks[i].sprite;
+
+				originalRankSprites[hud] = original;
+			}
+
 			int max = Math.Min(hud.ranks.Count, 8);
 
 			for (int i = 0; i < max; i++)
@@ -1931,18 +2208,21 @@ namespace UltrakULL.Harmony_Patches
 					Logging.Warn($"[TexturePatcher] Missing sprite for rank: {rankName}");
 				}
 			}
+		}
 
-			string currentRank = GetRankNameByIndex(hud.rankIndex);
-			if (rankSprites.TryGetValue(currentRank, out var currentSprite))
-			{
-				hud.rankImage.sprite = currentSprite;
-			}
-			else
-			{
-				Logging.Warn($"[TexturePatcher] Missing sprite for current rank: {currentRank}");
-			}
+		/// <summary>
+		/// Replaces the sprite of a UI image and remembers the original one, so the
+		/// game's own sprite can be put back on a language change.
+		/// </summary>
+		private static void SetReplacedSprite(Image img, Sprite replacement)
+		{
+			if (img == null || replacement == null)
+				return;
 
-			yield return null;
+			if (!originalUISprites.ContainsKey(img))
+				originalUISprites[img] = img.sprite;
+
+			img.sprite = replacement;
 		}
 
 
@@ -1967,7 +2247,7 @@ namespace UltrakULL.Harmony_Patches
 				string rankName = GetRankNameByIndex(__instance.rankIndex);
 				if (rankSprites.TryGetValue(rankName, out var sprite))
 				{
-					__instance.rankImage.sprite = sprite;
+					SetReplacedSprite(__instance.rankImage, sprite);
 				}
 				else
 				{
@@ -2091,12 +2371,12 @@ namespace UltrakULL.Harmony_Patches
 
 					if (rankSprites.TryGetValue(spriteName, out var replacement))
 					{
-						img.sprite = replacement;
+						SetReplacedSprite(img, replacement);
 						replaced++;
 					}
 					else if (customIconSprites.TryGetValue(spriteName, out var iconReplacement))
 					{
-						img.sprite = iconReplacement;
+						SetReplacedSprite(img, iconReplacement);
 						replaced++;
 					}
 				}
@@ -2366,6 +2646,9 @@ namespace UltrakULL.Harmony_Patches
 		[HarmonyPostfix]
 		private static void OnIconManagerReload()
 		{
+			// Built-in English has no translated icons.
+			if (UltrakULL.CommonFunctions.isUsingEnglish()) return;
+
 			LoadIconSpritesSync();
 		}
 
@@ -2441,7 +2724,7 @@ namespace UltrakULL.Harmony_Patches
 
 					if (customIconSprites.TryGetValue(img.sprite.name, out var replacement))
 					{
-						img.sprite = replacement;
+						SetReplacedSprite(img, replacement);
 						replaced++;
 					}
 				}
@@ -2459,6 +2742,9 @@ namespace UltrakULL.Harmony_Patches
 		[HarmonyPostfix]
 		private static void OnSpawnMenuRebuildIcons()
 		{
+			// Built-in English has no translated icons.
+			if (UltrakULL.CommonFunctions.isUsingEnglish()) return;
+
 			ApplyIconReplacementsToSpawnMenu();
 		}
 

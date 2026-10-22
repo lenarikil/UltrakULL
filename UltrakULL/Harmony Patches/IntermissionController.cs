@@ -1,14 +1,14 @@
-﻿using BepInEx;
-using HarmonyLib;
+﻿using HarmonyLib;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using BepInEx.Configuration;
+using UltrakULL.audio;
 using UltrakULL.json;
 using UnityEngine;
-using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEngine.Windows;
@@ -26,11 +26,12 @@ namespace UltrakULL.Harmony_Patches
         private static int lastPlayedIndex = 0;
         private static bool isPlaying = false;
         private static AudioSource currentAudioSource = null;
-        private static Coroutine currentCoroutine = null;
 
-        private const float FadeInDelay = 0.3f;
-        private static float timeSinceTransition = 0f;
-        private static bool transitioned = false;
+        // Identifies the newest audio request. A clip that is still loading cannot be
+        // cancelled (AudioSwapper loads it asynchronously), so a newer request or a
+        // skip invalidates the pending one through this token instead. currentIndex
+        // alone cannot do that: the skip path does not advance the index.
+        private static int pendingRequestId = 0;
 
         [HarmonyPrefix]
         [HarmonyPatch("Start")]
@@ -148,12 +149,6 @@ namespace UltrakULL.Harmony_Patches
         }
 
 
-        private static IEnumerator WaitAndPlay(int index, string path, float delay)
-        {
-            yield return new WaitForSeconds(delay);
-            PlayAudioForIndex(index, path);
-        }
-
         private static string GetSanitizedHierarchyPath(Transform transform, int depth)
         {
             List<string> names = new List<string>();
@@ -172,6 +167,10 @@ namespace UltrakULL.Harmony_Patches
 
         private static void StopCurrentAudio()
         {
+            // A clip that is still loading cannot be cancelled, so the pending request
+            // is invalidated here. Its callback sees the new id and drops the clip.
+            pendingRequestId++;
+
             if (currentAudioSource != null)
             {
                 currentAudioSource.Stop();
@@ -185,31 +184,81 @@ namespace UltrakULL.Harmony_Patches
 
         private static void PlayAudioForIndex(int index, string gameObjectName)
         {
-            if ((Convert.ToBoolean(LanguageManager.configFile.Bind("General", "activeDubbing", "False").Value) & Convert.ToBoolean(LanguageManager.configFile.Bind("General", "extraDubbing", "False").Value)) != false)
-            {
-                isPlaying = true;
-                string audioFileName = $"line{index}.ogg";
-                string folderPath = Path.Combine(
-                    Paths.ConfigPath,
-                    "ultrakull",
-                    "audio",
-                    LanguageManager.CurrentLanguage.metadata.langName,
-                    GetCurrentSceneName(),
-                    gameObjectName
-                );
-
-                if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
-
-                string audioPath = Path.Combine(folderPath, audioFileName);
-                string audioUrl = "file:///" + audioPath.Replace("\\", "/");
-
-                Logging.Info($"[LocalizeIntermission] Attempting to play: {audioFileName}");
-                CoroutineHelper.StartSafeCoroutine(PlayAudioCoroutine(audioUrl, audioFileName, index));
-            }
-            else
+            if (!ExtraDubbingEnabled())
             {
                 Logging.Info("[LocalizeIntermission] Audio dubbing or Extra dubbing is disabled :(");
+                return;
             }
+
+            // The built-in English is "no translation": the game's own voice lines are
+            // used, exactly like in every other dubbing path of the mod.
+            if (isUsingEnglish())
+                return;
+
+            isPlaying = true;
+
+            // Language packs keep their audio inside the pack folder (one folder = one
+            // language), so the scene folder is resolved from the pack root instead of
+            // the old "config/ultrakull/audio/<langName>" layout.
+            string folderPath = Path.Combine(
+                LanguageManager.GetLanguageAssetFolder("audio"),
+                GetCurrentSceneName(),
+                gameObjectName
+            );
+
+            EnsureIntermissionAudioFolder(folderPath);
+
+            // The file name is requested without an extension: AudioSwapper then picks
+            // up whichever format the pack ships (ogg, mp3, wav, ...).
+            string audioFileName = $"line{index}";
+            string audioPath = Path.Combine(folderPath, audioFileName);
+
+            Logging.Info($"[LocalizeIntermission] Attempting to play: {audioFileName}");
+
+            int requestId = ++pendingRequestId;
+            AudioSwapper.PreloadClipAsync(audioPath, null, delegate(AudioClip clip)
+            {
+                OnClipLoaded(clip, requestId, index);
+            });
+        }
+
+        /// <summary>
+        /// Creates the folder the extra dubbing lines are expected in. Only packs that
+        /// are actually installed on disk get one - the built-in English has no pack
+        /// folder, so nothing is created for it.
+        /// </summary>
+        private static void EnsureIntermissionAudioFolder(string folderPath)
+        {
+            JsonFormat current = LanguageManager.CurrentLanguage;
+            if (current == null || string.IsNullOrEmpty(current.RootFolder))
+                return;
+
+            if (!Directory.Exists(folderPath))
+                Directory.CreateDirectory(folderPath);
+        }
+
+        /// <summary>
+        /// The extra dubbing is only played when both the regular dubbing and the
+        /// extra dubbing are switched on.
+        /// </summary>
+        private static bool ExtraDubbingEnabled()
+        {
+            try
+            {
+                return IsConfigEnabled("activeDubbing") && IsConfigEnabled("extraDubbing");
+            }
+            catch (Exception e)
+            {
+                Logging.Warn("[LocalizeIntermission] Failed to read the dubbing options: " + e.Message);
+                return false;
+            }
+        }
+
+        private static bool IsConfigEnabled(string key)
+        {
+            string value = LanguageManager.configFile.Bind("General", key, "False", (ConfigDescription)null).Value;
+            return string.Equals(value, "True", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(value, "1", StringComparison.Ordinal);
         }
 
         private static string SanitizeFileName(string name)
@@ -228,63 +277,62 @@ namespace UltrakULL.Harmony_Patches
             return sanitized.ToString();
         }
 
-        private static IEnumerator PlayAudioCoroutine(string audioUrl, string fileName, int expectedIndex)
+        private static void OnClipLoaded(AudioClip clip, int requestId, int expectedIndex)
         {
-            isPlaying = true;
-
-            using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(audioUrl, AudioType.OGGVORBIS))
+            if (requestId != pendingRequestId)
             {
-                yield return www.SendWebRequest();
-
-                if (currentIndex != expectedIndex)
-                {
-                    Logging.Info($"[LocalizeIntermission] Index changed (expected {expectedIndex}, current {currentIndex}), stopping playback.");
-                    yield break;
-                }
-
-                if (www.result != UnityWebRequest.Result.Success)
-                {
-                    Logging.Warn($"[LocalizeIntermission] Error loading audio file '{fileName}': {www.error}");
-                    Logging.Warn($"[LocalizeIntermission] Path: '{audioUrl}'");
-                    isPlaying = false;
-                    yield break;
-                }
-
-                AudioClip clip = DownloadHandlerAudioClip.GetContent(www);
-                if (clip == null || clip.length <= 0f)
-                {
-                    Logging.Warn($"[LocalizeIntermission] File '{fileName}' is corrupted or empty.");
-                    isPlaying = false;
-                    yield break;
-                }
-
-                GameObject audioObject = new GameObject($"Audio_{fileName}");
-                AudioSource source = audioObject.AddComponent<AudioSource>();
-                source.clip = clip;
-                source.playOnAwake = false;
-
-                currentAudioSource = source;
-                UnityEngine.Object.DontDestroyOnLoad(audioObject);
-
-                Logging.Info($"[LocalizeIntermission] Playing: {fileName}");
-                source.Play();
-
-                float timer = 0f;
-                while (timer < clip.length)
-                {
-                    if (currentAudioSource != source || source == null) break;
-                    timer += Time.deltaTime;
-                    yield return null;
-                }
-
-                if (currentAudioSource == source && source != null)
-                {
-                    UnityEngine.Object.Destroy(source.gameObject);
-                    currentAudioSource = null;
-                }
-
+                Logging.Info($"[LocalizeIntermission] Request superseded (expected {expectedIndex}, current {currentIndex}), dropping clip.");
                 isPlaying = false;
+                return;
             }
+
+            if (clip == null)
+            {
+                // AudioSwapper already logged the missing file together with its path.
+                Logging.Info($"[LocalizeIntermission] No dubbing available for 'line{expectedIndex}'.");
+                isPlaying = false;
+                return;
+            }
+
+            if (clip.length <= 0f)
+            {
+                Logging.Warn($"[LocalizeIntermission] File 'line{expectedIndex}' is corrupted or empty.");
+                isPlaying = false;
+                return;
+            }
+
+            string fileName = $"line{expectedIndex}";
+            GameObject audioObject = new GameObject($"Audio_{fileName}");
+            AudioSource source = audioObject.AddComponent<AudioSource>();
+            source.clip = clip;
+            source.playOnAwake = false;
+
+            currentAudioSource = source;
+            UnityEngine.Object.DontDestroyOnLoad(audioObject);
+
+            Logging.Info($"[LocalizeIntermission] Playing: {fileName}");
+            source.Play();
+
+            CoroutineHelper.StartSafeCoroutine(WaitForPlaybackEnd(source, clip));
+        }
+
+        private static IEnumerator WaitForPlaybackEnd(AudioSource source, AudioClip clip)
+        {
+            float timer = 0f;
+            while (timer < clip.length)
+            {
+                if (currentAudioSource != source || source == null) break;
+                timer += Time.deltaTime;
+                yield return null;
+            }
+
+            if (currentAudioSource == source && source != null)
+            {
+                UnityEngine.Object.Destroy(source.gameObject);
+                currentAudioSource = null;
+            }
+
+            isPlaying = false;
         }
 
         public static void ResetAudio()
@@ -293,8 +341,6 @@ namespace UltrakULL.Harmony_Patches
             firstPlayed = false;
             previousWaitingForInput = false;
             isPlaying = false;
-            transitioned = false;
-            timeSinceTransition = 0f;
 
             StopCurrentAudio();
             Logging.Info("[LocalizeIntermission] Resetting audio state on scene start.");

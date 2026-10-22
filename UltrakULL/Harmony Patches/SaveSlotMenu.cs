@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
@@ -107,14 +108,117 @@ namespace UltrakULL.Harmony_Patches
     [HarmonyPatch(typeof(SaveSlotMenu))]
     public static class LocalizeSaveSlots
     {
+        /// <summary>
+        /// The text the game itself puts into the slots. It is captured before the
+        /// mod takes the slots over, so the built-in English can be put back on a
+        /// language switch.
+        /// </summary>
+        private static readonly Dictionary<int, string> selectGameTexts = new Dictionary<int, string>();
+        private static readonly Dictionary<int, string> deleteGameTexts = new Dictionary<int, string>();
+        private static readonly Dictionary<int, string> slotNumberGameTexts = new Dictionary<int, string>();
+
         [HarmonyPatch("UpdateSlotState"), HarmonyPostfix]
         public static void UpdateSlotState_Postfix(SlotRowPanel targetPanel, SaveSlotMenu.SlotData data)
         {
-            if(isUsingEnglish())
+            CaptureGameTexts(targetPanel);
+            ApplySlotState(targetPanel, data);
+        }
+
+        /// <summary>
+        /// Applies the active language to the save slots that are on screen.
+        ///
+        /// The game fills the slots only once, when the save menu opens, so a
+        /// language switch did not reach them and they kept the previous language
+        /// until the menu was closed and opened again.
+        /// </summary>
+        public static void Reapply()
+        {
+            SaveSlotMenu[] menus = UnityEngine.Object.FindObjectsOfType<SaveSlotMenu>(true);
+            for (int i = 0; i < menus.Length; i++)
             {
+                SaveSlotMenu menu = menus[i];
+                if (menu == null || !menu.gameObject.activeInHierarchy)
+                {
+                    continue;
+                }
+
+                SlotRowPanel[] panels = menu.GetComponentsInChildren<SlotRowPanel>(true);
+                SaveSlotMenu.SlotData[] slots = GameProgressSaver.GetSlots();
+
+                for (int j = 0; j < panels.Length; j++)
+                {
+                    SlotRowPanel panel = panels[j];
+                    if (panel == null || panel.slotIndex < 0 || panel.slotIndex >= slots.Length)
+                    {
+                        continue;
+                    }
+
+                    try
+                    {
+                        ApplySlotState(panel, slots[panel.slotIndex]);
+                    }
+                    catch (Exception e)
+                    {
+                        HandleError(e);
+                    }
+                }
+            }
+        }
+
+        private static void CaptureGameTexts(SlotRowPanel targetPanel)
+        {
+            int index = targetPanel.slotIndex;
+            if (selectGameTexts.ContainsKey(index))
+            {
+                // The texts of the game are already known.
                 return;
             }
+
+            TextMeshProUGUI selectText = targetPanel.selectButton.GetComponentInChildren<TextMeshProUGUI>();
+            if (selectText != null)
+            {
+                selectGameTexts[index] = selectText.text;
+            }
+
+            GameObject deleteButtonText = targetPanel.deleteButton.gameObject;
+            GameObject child = deleteButtonText.transform.GetChild(0).gameObject;
+            TextMeshProUGUI deleteText = child.GetComponent<TextMeshProUGUI>();
+            if (deleteText != null)
+            {
+                deleteGameTexts[index] = deleteText.text;
+            }
+
+            slotNumberGameTexts[index] = targetPanel.slotNumberLabel.text;
+        }
+
+        private static void ApplySlotState(SlotRowPanel targetPanel, SaveSlotMenu.SlotData data)
+        {
             bool flag = GameProgressSaver.currentSlot == targetPanel.slotIndex;
+
+            if (isUsingEnglish())
+            {
+                // The built-in English is the game's own text.
+                TextMeshProUGUI selectText = targetPanel.selectButton.GetComponentInChildren<TextMeshProUGUI>();
+                if (selectText != null && selectGameTexts.ContainsKey(targetPanel.slotIndex))
+                {
+                    selectText.text = selectGameTexts[targetPanel.slotIndex];
+                }
+
+                TextMeshProUGUI deleteLabel = targetPanel.deleteButton.gameObject.transform.GetChild(0).gameObject.GetComponent<TextMeshProUGUI>();
+                if (deleteLabel != null && deleteGameTexts.ContainsKey(targetPanel.slotIndex))
+                {
+                    deleteLabel.text = deleteGameTexts[targetPanel.slotIndex];
+                }
+
+                if (slotNumberGameTexts.ContainsKey(targetPanel.slotIndex))
+                {
+                    targetPanel.slotNumberLabel.text = slotNumberGameTexts[targetPanel.slotIndex];
+                }
+
+                targetPanel.stateLabel.text = data.ToString();
+                return;
+            }
+
             targetPanel.selectButton.GetComponentInChildren<TextMeshProUGUI>().text = (flag ? LanguageManager.CurrentLanguage.options.save_selected : LanguageManager.CurrentLanguage.options.save_select);
             targetPanel.stateLabel.text = SaveToString(data.exists, data.highestLvlNumber, data.highestDifficulty);
 
@@ -124,7 +228,13 @@ namespace UltrakULL.Harmony_Patches
             TextMeshProUGUI deleteText = child.GetComponent<TextMeshProUGUI>();
             deleteText.text = LanguageManager.CurrentLanguage.options.save_delete;
 
-            switch (targetPanel.slotNumberLabel.text)
+            // The name of the slot is the one of the game, so the slot can be
+            // translated again after a language switch.
+            string slotNumber = slotNumberGameTexts.ContainsKey(targetPanel.slotIndex)
+                ? slotNumberGameTexts[targetPanel.slotIndex]
+                : targetPanel.slotNumberLabel.text;
+
+            switch (slotNumber)
             {
                 case "Slot 1": { targetPanel.slotNumberLabel.text = LanguageManager.CurrentLanguage.options.save_slot1; break; }
                 case "Slot 2": { targetPanel.slotNumberLabel.text = LanguageManager.CurrentLanguage.options.save_slot2; break; }

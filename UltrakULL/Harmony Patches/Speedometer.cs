@@ -13,6 +13,9 @@ namespace UltrakULL.Harmony_Patches
         [HarmonyPrefix]
         public static bool FixedUpdate_Prefix(TimeSince ___lastUpdate, bool ___classicVersion, TextMeshProUGUI ___textMesh, int ___type)
         {
+            // Built-in English uses the game's original speedometer formatting.
+            if (UltrakULL.CommonFunctions.isUsingEnglish()) return true;
+
             if(!___classicVersion)
             {
                 if (___type == 0)

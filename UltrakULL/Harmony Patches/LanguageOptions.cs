@@ -1,16 +1,17 @@
 ﻿using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 using System.IO;
 using System.Net;
 using System.Net.Http;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using TMPro;
 using UltrakULL.json;
 using UltrakULL.UI.Notifications;
+using UltrakULL.UI.TranslationBrowser;
 using static UltrakULL.CommonFunctions;
 using System.Linq;
 using UnityEngine.EventSystems;
@@ -23,14 +24,33 @@ namespace UltrakULL.Harmony_Patches
         public static TextMeshProUGUI languageButtonText;
         public static TextMeshProUGUI languagePageTitleText;
         private static readonly HttpClient Client = new HttpClient();
-        
-        private static bool hasAlreadyFetchedLanguages = false;
+
         private static List<GameObject> languageButtons = new List<GameObject>();
-        
-        private static GameObject langBrowserPage;
+
         private static GameObject langLocalPage;
         private static GameObject redownloadConfirmPanel;
         private static GameObject referenceButtonTemplate;
+
+        // Exposed so the navigation patches below can react to page/highlight changes
+        // made by the game itself or by other mods (e.g. PluginConfigurator).
+        internal static GameObject LangPage;
+        internal static Image LangNavButtonImage;
+        private static ButtonHighlightParent langNavHighlightParent;
+        private static Transform navigationRailTransform;
+
+        // The game's ButtonHighlightParent stores the active-state visuals privately and,
+        // when 'pressedVersion' is set, swaps sprites instead of using Image.fillCenter.
+        private static Sprite langNavNormalSprite;
+        private static Sprite langNavPressedSprite;
+
+        private static readonly FieldInfo ButtonsField =
+            typeof(ButtonHighlightParent).GetField("buttons", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static readonly FieldInfo ButtonTextsField =
+            typeof(ButtonHighlightParent).GetField("buttonTexts", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static readonly FieldInfo ButtonSpritesField =
+            typeof(ButtonHighlightParent).GetField("buttonSprites", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static readonly FieldInfo PressedVersionField =
+            typeof(ButtonHighlightParent).GetField("pressedVersion", BindingFlags.NonPublic | BindingFlags.Instance);
 
         private static void EnsureReferenceButtonTemplate()
         {
@@ -39,7 +59,9 @@ namespace UltrakULL.Harmony_Patches
 
             var optionsParent = GetInactiveRootObject("Canvas").Child("OptionsMenu").transform;
             var navigationRail = optionsParent.Find("Navigation Rail").gameObject;
-            var buttonPrefab = navigationRail.Child("Back");
+            // Clone a real navigation item (not the narrow "Back" button) so the language
+            // button matches the other page buttons, including its highlight behaviour.
+            var buttonPrefab = navigationRail.Child("General");
 
             referenceButtonTemplate = GameObject.Instantiate(buttonPrefab);
             referenceButtonTemplate.name = "ReferenceButtonTemplate";
@@ -110,6 +132,7 @@ namespace UltrakULL.Harmony_Patches
                     text.richText = richText;
                     text.alignment = TextAlignmentOptions.Center;
                     text.font = Core.GlobalFontTMP;
+                    Harmony_Patches.TextMeshProFontSwap.MarkAsModUI(text);
 
                     if (changeSize)
                     {
@@ -144,238 +167,378 @@ namespace UltrakULL.Harmony_Patches
 
         public static bool langFileLocallyExists(string languageTag)
         {
-            string expectedFileLocation = Path.Combine(BepInEx.Paths.ConfigPath, "ultrakull", languageTag + ".json");
+            string expectedFileLocation = Path.Combine(BepInEx.Paths.ConfigPath, "ultrakull", languageTag, "translation.json");
             return File.Exists(expectedFileLocation);
         }
 
         public static void updateLanguageButtonText()
         {
-            languageButtonText.text = LanguageManager.CurrentLanguage.options.language_languages;
-            languagePageTitleText.text = "--" + LanguageManager.CurrentLanguage.options.language_languages + "--";
+            if (languageButtonText != null)
+            {
+                languageButtonText.text = LanguageManager.CurrentLanguage.options.language_languages;
+            }
+            if (languagePageTitleText != null)
+            {
+                languagePageTitleText.text = "--" + LanguageManager.CurrentLanguage.options.language_languages + "--";
+            }
         }
-        
+
+        /// <summary>
+        /// Hides the Language page (if open) and clears the navigation highlight on its
+        /// button. Safe to call repeatedly and when the page was never created.
+        /// </summary>
+        internal static void HideLanguagePage()
+        {
+            if (langLocalPage != null && langLocalPage.activeSelf)
+            {
+                langLocalPage.SetActive(false);
+            }
+            SetLanguageNavHighlight(false);
+        }
+
+        internal static bool IsLanguageNavButton(Image target)
+        {
+            return LangNavButtonImage != null && target == LangNavButtonImage;
+        }
+
+        /// <summary>
+        /// Shrinks the Language page so its left edge starts to the right of the game's
+        /// navigation rail. The page is cloned from the General page rect, which spans the
+        /// full options width; without this the browser would sit on top of the game's
+        /// settings-page buttons and block them. Called every time the page is opened,
+        /// after the menu has been laid out.
+        /// </summary>
+        private static void FitLanguagePageToRail()
+        {
+            if (langLocalPage == null || navigationRailTransform == null)
+            {
+                return;
+            }
+
+            RectTransform pageRect = langLocalPage.GetComponent<RectTransform>();
+            RectTransform railRect = navigationRailTransform.GetComponent<RectTransform>();
+            RectTransform parentRect = pageRect != null ? pageRect.parent as RectTransform : null;
+            if (pageRect == null || railRect == null || parentRect == null)
+            {
+                return;
+            }
+
+            // Make sure the serialized rects reflect the current layout before measuring.
+            LayoutRebuilder.ForceRebuildLayoutImmediate(parentRect);
+            LayoutRebuilder.ForceRebuildLayoutImmediate(railRect);
+
+            Vector3[] railCorners = new Vector3[4];
+            railRect.GetWorldCorners(railCorners);
+            // corners[2] is the top-right corner; project it into the page's parent space.
+            Vector3 railRightLocal = parentRect.InverseTransformPoint(railCorners[2]);
+
+            // Distance from the parent's left edge to the rail's right edge (+ a small gap).
+            float leftInset = railRightLocal.x - parentRect.rect.xMin + 8f;
+            if (leftInset < 0f)
+            {
+                leftInset = 0f;
+            }
+
+            pageRect.anchorMin = new Vector2(0f, 0f);
+            pageRect.anchorMax = new Vector2(1f, 1f);
+            pageRect.pivot = new Vector2(0.5f, 0.5f);
+            pageRect.offsetMin = new Vector2(leftInset, 0f);
+            pageRect.offsetMax = new Vector2(0f, 0f);
+
+            Logging.Message("[LanguagePage] parent width=" + parentRect.rect.width
+                + " rail right=" + railRightLocal.x + " inset=" + leftInset);
+        }
+
+        /// <summary>
+        /// Mirrors the game's ButtonHighlightParent visuals (filled background + black text
+        /// for the active page, normal otherwise) for the language navigation button, which
+        /// is created after the game has already captured its own button list.
+        /// </summary>
+        internal static void SetLanguageNavHighlight(bool active)
+        {
+            if (LangNavButtonImage != null)
+            {
+                // Mirror the game's own highlight: it either swaps to the "pressed" sprite
+                // (when the navigation rail defines one) or fills the sliced sprite centre.
+                // The button's Image always fills its sliced sprite centre while the page is
+                // active, so keep fillCenter in sync as well.
+                if (langNavPressedSprite != null)
+                {
+                    LangNavButtonImage.sprite = active ? langNavPressedSprite : langNavNormalSprite;
+                }
+                LangNavButtonImage.fillCenter = active;
+            }
+            if (languageButtonText != null)
+            {
+                languageButtonText.color = active ? Color.black : Color.white;
+            }
+        }
+
+        /// <summary>
+        /// Adds the Language button to the game's ButtonHighlightParent list. That list is
+        /// captured in its Start and only contains the buttons that existed at that moment;
+        /// our button is created later (or earlier) than Start, so without this the game
+        /// would never clear the previously-active page button nor highlight ours. When the
+        /// list is not built yet, Start will pick the button up on its own.
+        /// </summary>
+        private static void RegisterNavButtonWithHighlighter(ButtonHighlightParent highlighter, Image image)
+        {
+            if (highlighter == null || image == null)
+            {
+                return;
+            }
+
+            if (ButtonsField == null)
+            {
+                return;
+            }
+
+            langNavPressedSprite = PressedVersionField != null ? PressedVersionField.GetValue(highlighter) as Sprite : null;
+
+            Image[] buttons = ButtonsField.GetValue(highlighter) as Image[];
+            TMP_Text[] texts = ButtonTextsField != null ? ButtonTextsField.GetValue(highlighter) as TMP_Text[] : null;
+            Sprite[] sprites = ButtonSpritesField != null ? ButtonSpritesField.GetValue(highlighter) as Sprite[] : null;
+
+            // The button was cloned from the General page button and may have inherited its
+            // highlighted (pressed) sprite. Find a sibling rail button that is currently in
+            // the normal state and borrow its sprite so our button (and its captured
+            // "original" sprite) never sticks in the pressed look.
+            Sprite normalSprite = null;
+            if (buttons != null)
+            {
+                for (int i = 0; i < buttons.Length; i++)
+                {
+                    Image candidate = buttons[i];
+                    if (candidate == null || candidate == image)
+                    {
+                        continue;
+                    }
+                    if (candidate.transform.parent != image.transform.parent)
+                    {
+                        continue;
+                    }
+                    if (langNavPressedSprite != null && candidate.sprite == langNavPressedSprite)
+                    {
+                        continue;
+                    }
+                    normalSprite = sprites != null && i < sprites.Length && sprites[i] != null
+                        ? sprites[i]
+                        : candidate.sprite;
+                    break;
+                }
+            }
+            langNavNormalSprite = normalSprite != null ? normalSprite : image.sprite;
+            image.sprite = langNavNormalSprite;
+
+            if (buttons == null)
+            {
+                Logging.Message("[LanguageNav] Highlighter list not built yet; Start will include the button.");
+                return;
+            }
+
+            for (int i = 0; i < buttons.Length; i++)
+            {
+                if (buttons[i] == image)
+                {
+                    return;
+                }
+            }
+
+            int length = buttons.Length;
+            Image[] newButtons = new Image[length + 1];
+            TMP_Text[] newTexts = new TMP_Text[length + 1];
+            Sprite[] newSprites = new Sprite[length + 1];
+            for (int i = 0; i < length; i++)
+            {
+                newButtons[i] = buttons[i];
+                newTexts[i] = texts != null ? texts[i] : null;
+                newSprites[i] = sprites != null ? sprites[i] : null;
+            }
+            newButtons[length] = image;
+            newTexts[length] = image.GetComponentInChildren<TMP_Text>();
+            newSprites[length] = image.sprite;
+
+            ButtonsField.SetValue(highlighter, newButtons);
+            if (ButtonTextsField != null)
+            {
+                ButtonTextsField.SetValue(highlighter, newTexts);
+            }
+            if (ButtonSpritesField != null)
+            {
+                ButtonSpritesField.SetValue(highlighter, newSprites);
+            }
+
+            Logging.Message("[LanguageNav] Registered language nav button with the highlighter (total=" + (length + 1) + ").");
+        }
+
+        /// <summary>
+        /// Replicates ButtonHighlightParent.ChangeButton over the list the game captured in
+        /// its Start, then applies the same visual to our own button (which may not be part
+        /// of that list). Doing the loop ourselves guarantees that every other navigation
+        /// button loses its active look even if our button was created after the game
+        /// captured its buttons, and avoids a NullReferenceException when the list has not
+        /// been built yet (nothing is highlighted at that point anyway).
+        /// </summary>
+        internal static void ApplyNavHighlight(Image target)
+        {
+            ButtonHighlightParent highlighter = langNavHighlightParent != null
+                ? langNavHighlightParent
+                : (navigationRailTransform != null
+                    ? navigationRailTransform.GetComponentInParent<ButtonHighlightParent>()
+                    : null);
+
+            Image[] buttons = null;
+            TMP_Text[] texts = null;
+            Sprite[] sprites = null;
+            Sprite pressed = null;
+            if (highlighter != null && ButtonsField != null)
+            {
+                pressed = PressedVersionField != null ? PressedVersionField.GetValue(highlighter) as Sprite : null;
+                buttons = ButtonsField.GetValue(highlighter) as Image[];
+                texts = ButtonTextsField != null ? ButtonTextsField.GetValue(highlighter) as TMP_Text[] : null;
+                sprites = ButtonSpritesField != null ? ButtonSpritesField.GetValue(highlighter) as Sprite[] : null;
+            }
+
+            if (buttons != null)
+            {
+                for (int i = 0; i < buttons.Length; i++)
+                {
+                    Image button = buttons[i];
+                    if (button == null)
+                    {
+                        continue;
+                    }
+
+                    bool isTarget = button == target;
+                    if (pressed != null)
+                    {
+                        button.sprite = isTarget
+                            ? pressed
+                            : (sprites != null && i < sprites.Length && sprites[i] != null ? sprites[i] : button.sprite);
+                    }
+                    else
+                    {
+                        button.fillCenter = isTarget;
+                    }
+
+                    TMP_Text text = texts != null && i < texts.Length ? texts[i] : button.GetComponentInChildren<TMP_Text>();
+                    if (text != null)
+                    {
+                        text.color = isTarget ? Color.black : Color.white;
+                    }
+                }
+            }
+
+            // Our button is not necessarily part of the captured list; make sure it ends up
+            // in the active state regardless. Its Image always fills in while the page is
+            // open, even when the rail highlights the other buttons through sprite swaps.
+            if (target != null)
+            {
+                if (pressed != null)
+                {
+                    target.sprite = pressed;
+                }
+                target.fillCenter = true;
+                TMP_Text ourText = target.GetComponentInChildren<TMP_Text>();
+                if (ourText != null)
+                {
+                    ourText.color = Color.black;
+                }
+            }
+
+            Logging.Message("[LanguageNav] ApplyNavHighlight captured=" + (buttons != null ? buttons.Length : -1)
+                + " pressed=" + (pressed != null) + " targetRegistered="
+                + (buttons != null && Array.IndexOf(buttons, target) >= 0));
+        }
+
         public static void warnBeforeDownload(LanguageInfo lInfo)
         {
             GameObject difficultySelectMenu = GetInactiveRootObject("Canvas").Child("Difficulty Select (1)");
 
             GameObject panelToUse = GetInactiveRootObject("Canvas").FindPath("OptionsMenu", "Assist Options", "Panel");
-            
-            if(redownloadConfirmPanel == null)
+
+            if (redownloadConfirmPanel == null)
             {
-                redownloadConfirmPanel = GameObject.Instantiate(panelToUse,difficultySelectMenu.transform.parent);
+                redownloadConfirmPanel = GameObject.Instantiate(panelToUse, difficultySelectMenu.transform.parent);
             }
 
             redownloadConfirmPanel.name = "ConfirmDownloadPanel";
-            
+
             Text confirmDownloadText = redownloadConfirmPanel.FindPath("Panel", "Text (2)").Text();
-            
+
             confirmDownloadText.fontSize = 22;
             confirmDownloadText.text =
-            "This language has already been downloaded. <color=#34e1eb>Redownload?</color>\n\n" 
-                +"<color=orange>The current file's contents will be overwritten.</color>";
+            "This language has already been downloaded. <color=#34e1eb>Redownload?</color>\n\n"
+                + "<color=orange>The current file's contents will be overwritten.</color>";
 
             Text confirmDownloadTextConfirm = redownloadConfirmPanel.FindPath("Panel", "Text (1)").Text();
             confirmDownloadTextConfirm.text = "";
-            
+
             //Destroy the original buttons and replace them with new ones (at least until I can figure out how to change the listeners of the original buttons)
             GameObject origYes = redownloadConfirmPanel.FindPath("Panel", "Yes");
             GameObject origNo = redownloadConfirmPanel.FindPath("Panel", "No");
             origYes.SetActive(false);
             origNo.SetActive(false);
-            
+
             //Make new buttons here
-            GameObject DownloadYes = CreateButton("YES","DownloadYes");
+            GameObject DownloadYes = CreateButton("YES", "DownloadYes");
             DownloadYes.name = "DownloadYes";
             DownloadYes.transform.position = new Vector3(1150, 300, 0);
             DownloadYes.GetComponentInChildren<RectTransform>().sizeDelta = new Vector2(300f, 50f);
             DownloadYes.GetComponentInChildren<Text>().text = "YES";
             DownloadYes.GetComponentInChildren<Text>().font = Core.GlobalFont;
             DownloadYes.transform.SetParent(redownloadConfirmPanel.transform);
-            
-            GameObject DownloadNo = CreateButton("NO","DownloadNo");
+
+            GameObject DownloadNo = CreateButton("NO", "DownloadNo");
             DownloadNo.name = "DownloadNo";
             DownloadNo.transform.position = new Vector3(750, 300, 0);
             DownloadNo.GetComponentInChildren<RectTransform>().sizeDelta = new Vector2(300f, 50f);
             DownloadNo.GetComponentInChildren<Text>().text = "NO";
             DownloadNo.GetComponentInChildren<Text>().font = Core.GlobalFont;
             DownloadNo.transform.SetParent(redownloadConfirmPanel.transform);
-            
-            DownloadYes.GetComponentInChildren<Button>().onClick.AddListener(delegate { redownloadConfirmPanel.SetActive(false); downloadLanguageFile(lInfo.languageTag,lInfo.languageFullName); });
+
+            DownloadYes.GetComponentInChildren<Button>().onClick.AddListener(delegate { redownloadConfirmPanel.SetActive(false); downloadLanguageFile(lInfo.languageTag, lInfo.languageFullName); });
             DownloadNo.GetComponentInChildren<Button>().onClick.AddListener(delegate { redownloadConfirmPanel.SetActive(false); });
-            
+
             redownloadConfirmPanel.SetActive(true);
         }
 
-        public async static Task getOnlineLanguages(Transform parent, GameObject languagePage)
-        {
-            string masterLanguageUrl = "https://clearwateruk.github.io/mods/ultrakULL/languagesMaster.json";
-            Transform navigationRail = GameObject.Find("Navigation Rail").transform;
-            Transform optionsParent = GetInactiveRootObject("Canvas").Child("OptionsMenu").transform;
-            Transform pagesParent = GameObject.Find("Pages").transform;
-            Transform referencePage = pagesParent.transform.Find("General");
-            Scrollbar referenceScrollbar = referencePage.GetComponentsInChildren<Scrollbar>().FirstOrDefault();
-
-
-            if (langBrowserPage != null)
-            {
-                UnityEngine.Object.Destroy(langBrowserPage);
-                langBrowserPage = null;
-            }
-            if (langBrowserPage == null)
-            {
-                langBrowserPage = new GameObject("LanguageBrowserPage", typeof(RectTransform), typeof(CanvasRenderer));
-                langBrowserPage.transform.SetParent(parent, false);
-                RectTransform pageRect = langBrowserPage.GetComponent<RectTransform>();
-                pageRect.sizeDelta = new Vector2(600, 800);        
-
-                // Title
-                GameObject titleObject = GameObject.Instantiate(navigationRail.Find("Text (7)").gameObject, langBrowserPage.transform);
-                //This causes NRE in the fontswap. idk why but upper one works without it so
-                //GameObject titleObject = new GameObject("Title", typeof(TextMeshProUGUI));
-                titleObject.transform.SetParent(langBrowserPage.transform, false);
-                TextMeshProUGUI langBrowserTitle = titleObject.GetComponent<TextMeshProUGUI>();
-                langBrowserTitle.text = "--LANGUAGE BROWSER--";
-                langBrowserTitle.alignment = TextAlignmentOptions.Center;
-                langBrowserTitle.fontSize = 24;
-                langBrowserTitle.font = Core.GlobalFontTMP;
-                TextMeshProFontSwap.SwapTMPFont(ref langBrowserTitle);
-
-                RectTransform titleRect = langBrowserTitle.rectTransform;
-                titleRect.anchorMin = new Vector2(0.5f, 1);
-                titleRect.anchorMax = new Vector2(0.5f, 1);
-                titleRect.pivot = new Vector2(0.5f, 1);
-                titleRect.anchoredPosition = new Vector2(0, -50);
-                titleRect.sizeDelta = new Vector2(400, 50);
-
-                // ScrollView
-                GameObject scrollView = new GameObject("ScrollView", typeof(RectTransform), typeof(ScrollRect), typeof(Image), typeof(Mask));
-                scrollView.transform.SetParent(langBrowserPage.transform, false);
-                RectTransform scrollRect = scrollView.GetComponent<RectTransform>();
-                scrollRect.anchorMin = new Vector2(0.5f, 0.5f);
-                scrollRect.anchorMax = new Vector2(0.5f, 0.5f);
-                scrollRect.pivot = new Vector2(0.5f, 0.5f);
-                scrollRect.anchoredPosition = new Vector2(0, 0);
-                scrollRect.sizeDelta = new Vector2(550, 600);
-                scrollView.GetComponent<Image>().color = new Color(0, 0, 0, 0.5f);
-                scrollView.GetComponent<Mask>().showMaskGraphic = false;
-
-                // ScrollRect settings to limit side-to-side scrolling
-                ScrollRect scrollRectComponent = scrollView.GetComponent<ScrollRect>();
-                scrollRectComponent.horizontal = false;
-                scrollRectComponent.vertical = true;
-                scrollRectComponent.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHideAndExpandViewport;
-
-                // Adding a scrollbar
-                GameObject scrollbar = GameObject.Instantiate(referenceScrollbar.gameObject, langBrowserPage.transform);
-                scrollbar.transform.SetParent(langBrowserPage.transform, false);
-                RectTransform scrollbarRect = scrollbar.GetComponent<RectTransform>();
-
-                Scrollbar scrollbarComponent = scrollbar.GetComponent<Scrollbar>();
-                scrollbarComponent.direction = Scrollbar.Direction.BottomToTop;
-                scrollRectComponent.verticalScrollbar = scrollbarComponent;
-
-                // Content Container
-                GameObject content = new GameObject("Content", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
-                content.transform.SetParent(scrollView.transform, false);
-                RectTransform contentRect = content.GetComponent<RectTransform>();
-                contentRect.anchorMin = new Vector2(0, 1);
-                contentRect.anchorMax = new Vector2(1, 1);
-                contentRect.pivot = new Vector2(0.5f, 1);
-                contentRect.anchoredPosition = Vector2.zero;
-                contentRect.sizeDelta = new Vector2(0, 0);
-
-                VerticalLayoutGroup vGroup = content.GetComponent<VerticalLayoutGroup>();
-                vGroup.spacing = 10;
-                vGroup.childAlignment = TextAnchor.UpperCenter;
-                vGroup.childForceExpandWidth = true;
-                vGroup.childForceExpandHeight = false;
-                vGroup.childControlWidth = true;
-                vGroup.childControlHeight = true;
-
-                ContentSizeFitter fitter = content.GetComponent<ContentSizeFitter>();
-                fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-                scrollView.GetComponent<ScrollRect>().content = contentRect;
-
-                try
-                {
-                    Logging.Warn("Obtaining online languages from UltrakULL repo...");
-                    string responseJsonRaw = await Client.GetStringAsync(masterLanguageUrl);
-                    MasterLanguages responseJson = JsonConvert.DeserializeObject<MasterLanguages>(responseJsonRaw);
-
-                    foreach (LanguageInfo langInfo in responseJson.availableLanguages)
-                    {
-                        GameObject langButtonObj = ButtonUtils.CreateTMPButton(content.transform, langInfo.languageTag + " " + langInfo.languageFullName, langInfo.languageFullName, () => downloadLanguageFile(langInfo.languageTag, langInfo.languageFullName));
-                    }
-                }
-                catch (Exception e)
-                {
-                    Logging.Error("Error loading languages: " + e);
-                }
-
-                // The "Return" button
-                GameObject backButtonObj = ButtonUtils.CreateTMPButton(content.transform, "Return from LanguageBrowserPage", "Return", () =>
-                {
-                    foreach (Transform page in pagesParent)
-                    {
-                        page.gameObject.SetActive(false);
-                    }
-                    langBrowserPage.SetActive(false);
-                    languagePage.SetActive(true);
-                }, Color.red);
-
-
-                Logging.Message("Setting up navigation buttons to hide language browser page...");
-                foreach (Transform child in navigationRail)
-                {
-                    if (child.name != "Saves")
-                    {
-                        Button navButton = child.GetComponent<Button>();
-                        if (navButton != null)
-                        {
-                            navButton.onClick.AddListener(() =>
-                            {
-                                if (langBrowserPage.activeSelf)
-                                {
-                                    Logging.Message("Hiding Language Browser Page as another button was clicked: " + child.name);
-                                    langBrowserPage.SetActive(false);
-                                }
-                            });
-                        }
-                    }
-                }
-            }
-        }
-
-        public static void downloadLanguageFile(string languageTag, string languageName)
+        public static void downloadLanguageFile(string languageTag, string languageName, string remoteUrl = null)
         {
             Notifications notif = LanguageManager.CurrentLanguage.notifications;
             NotificationRouter.Current.Info("UltrakULL",
                 NotificationText.Localize(notif?.download_downloading, NotificationText.Downloading), 2.5f);
-            
-            string fileName = languageTag + ".json";
 
-            string languageFileUrl = "https://clearwateruk.github.io/mods/ultrakULL/" + fileName;
-            
-            string localLanguageFolder = Path.Combine(BepInEx.Paths.ConfigPath, "ultrakull//");
-            
-            string fullPath = localLanguageFolder + fileName;
-            
+            string remoteFileName = languageTag + ".json";
+
+            // Explicit download URL (from the online catalog metadata) wins over the
+            // legacy per-language-tag URL scheme.
+            string languageFileUrl = !string.IsNullOrEmpty(remoteUrl)
+                ? remoteUrl
+                : "https://clearwateruk.github.io/mods/ultrakULL/" + remoteFileName;
+
+            // Save into the language's own folder (one folder = one language pack).
+            string languageFolder = Path.Combine(BepInEx.Paths.ConfigPath, "ultrakull", languageTag);
+            Directory.CreateDirectory(languageFolder);
+
+            string fullPath = Path.Combine(languageFolder, "translation.json");
+
             Logging.Warn("Downloading to: " + fullPath);
-            
-            Client.DefaultRequestHeaders.Accept.Add( new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+            Client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
             Client.DefaultRequestHeaders.UserAgent.TryParseAdd("request");
             Client.Timeout = TimeSpan.FromSeconds(5);
-            
+
             try
             {
                 using (WebClient webClient = new WebClient())
                 {
                     string messageNotif;
                     bool newLangDownloaded = false;
-              
+
                     //If the file was simply updated, it can be used straightaway.
                     //If a new lang file was downloaded, display a notif to the user to enter a level or reload the menu.
-                    if(langFileLocallyExists(languageTag))
+                    if (langFileLocallyExists(languageTag))
                     {
                         messageNotif = NotificationText.Localize(notif?.download_updated,
                             NotificationText.DownloadUpdated, "lang", languageName);
@@ -390,10 +553,12 @@ namespace UltrakULL.Harmony_Patches
                     webClient.DownloadFile(languageFileUrl, fullPath);
                     string jsonFile = File.ReadAllText(fullPath);
                     JsonFormat file = JsonConvert.DeserializeObject<JsonFormat>(jsonFile);
-                    
+                    if (file != null)
+                        file.RootFolder = languageFolder;
+
                     Logging.Info("Lang file saved.");
-                       
-                    
+
+
                     MonoSingleton<HudMessageReceiver>.Instance.ClearMessage();
                     NotificationRouter.Current.Success("UltrakULL",
                         messageNotif + (newLangDownloaded
@@ -401,150 +566,74 @@ namespace UltrakULL.Harmony_Patches
                             : ""),
                         newLangDownloaded ? 6f : 4f);
 
-                    if(newLangDownloaded)
+                    if (newLangDownloaded)
                     {
-
                         LanguageManager.allLanguages.Add(languageTag, file);
-                        
-                        
+
                         Transform optionsParent = GetInactiveRootObject("Canvas").Child("OptionsMenu").transform;
                         GameObject slotRowPrefab = optionsParent.Find("Save Slots").Find("Grid").Find("Slot Row").gameObject;
-                        addLocalLanguageToLocalList(ref slotRowPrefab, file.metadata.langName,true);
+                        addLocalLanguageToLocalList(ref slotRowPrefab, file.metadata.langName, true);
                     }
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 NotificationRouter.Current.Error("UltrakULL",
                     NotificationText.Localize(notif?.download_error, NotificationText.DownloadError), 5f);
-                Logging.Error("Attempted to download from: " + languageFileUrl);
+                Logging.Error("Attempted download from: " + languageFileUrl);
                 Logging.Error(e.ToString());
             }
 
         }
-        
-        public static void addLocalLanguageToLocalList(ref GameObject slotRowPrefab, string language, bool newlyAdded=false)
-        {
-            Transform contentParent = langLocalPage.transform.Find("Scroll Rect").Find("Contents");
-            GameObject deleteButtonPrefab = slotRowPrefab.transform.Find("Delete Wrapper").gameObject.Child("Delete Button");
-            GameObject languageButtonInstance = ButtonUtils.CreateTMPButton(contentParent, language, LanguageManager.allLanguages[language].metadata.langDisplayName, delegate
-            {
-                contentParent.gameObject.FindPath(LanguageManager.CurrentLanguage.metadata.langName, "Text").TMP().text = LanguageManager.CurrentLanguage.metadata.langDisplayName;
-                contentParent.gameObject.FindPath(language, "Text").TMP().text += "\n<size=22>(<color=green>Selected</color>)</size>";
-                LanguageManager.SetCurrentLanguage(language);
-            });
-            //languageButtonInstance.transform.Find("Select Wrapper").gameObject.SetActive(false);
-            //languageButtonInstance.transform.Find("Delete Wrapper").gameObject.SetActive(false);
-            //languageButtonInstance.transform.Find("State Text").gameObject.SetActive(false);
-            if(newlyAdded)
-            {
-                languageButtonInstance.transform.SetSiblingIndex(2);
-            }
-            GameObject.Destroy(languageButtonInstance.GetComponent<SlotRowPanel>());
 
-            Transform slotTextTf = languageButtonInstance.transform.Find("Text");
-            TextMeshProUGUI slotText = slotTextTf.GetComponent<TextMeshProUGUI>();
-            if(LanguageManager.CurrentLanguage.metadata.langName == language) {slotText.text += "\n(<color=green>Selected</color>)";}
-            languageButtonInstance.SetActive(true);
+        /// <summary>
+        /// Called after a successful download so an open browser picks the new
+        /// language up in its Installed tab.
+        /// </summary>
+        public static void addLocalLanguageToLocalList(ref GameObject slotRowPrefab, string language, bool newlyAdded = false)
+        {
+            BrowserHost.RefreshInstalled();
         }
 
         public static bool Prefix(OptionsMenuToManager __instance)
         {
-            
-            hasAlreadyFetchedLanguages = false;
             languageButtons.Clear();
-
-            if (GetCurrentSceneName() == "Main Menu")
-            {
-                Logging.Message("In main menu");
-            }
 
             Logging.Message("Adding language option to options menu...");
 
             Transform optionsParent = __instance.optionsMenu.transform;
             Transform navigationRail = optionsParent.Find("Navigation Rail");
+            navigationRailTransform = navigationRail;
             Transform pagesParent = optionsParent.Find("Pages");
             Transform generalPage = pagesParent.Find("General");
-            Transform generalScrollRect = generalPage.Find("Scroll Rect");
-            Transform generalContents = generalScrollRect.Find("Contents");
-            RectTransform generalScrollRectTransform = generalScrollRect.GetComponent<RectTransform>();
-            RectTransform generalContentsTransform = generalContents.GetComponent<RectTransform>();
+            RectTransform generalPageRect = generalPage.GetComponent<RectTransform>();
 
+            // Native button/toggle templates from the game for a consistent look.
+            GameUiAssets.EnsureInitialized();
 
-            Logging.Message("Creating language settings page...");
+            // The browser is embedded directly into this page so the game's left
+            // navigation rail stays visible and clickable (no full-screen overlay).
+            // The page rect matches the General page, so the browser sits exactly in
+            // the options content area.
             langLocalPage = new GameObject("Language Page", typeof(RectTransform), typeof(CanvasRenderer));
             langLocalPage.transform.SetParent(pagesParent, false);
             langLocalPage.SetActive(false);
             RectTransform pageRect = langLocalPage.GetComponent<RectTransform>();
-            pageRect.sizeDelta = new Vector2(600, 800);
+            pageRect.anchorMin = generalPageRect.anchorMin;
+            pageRect.anchorMax = generalPageRect.anchorMax;
+            pageRect.pivot = generalPageRect.pivot;
+            pageRect.anchoredPosition = generalPageRect.anchoredPosition;
+            pageRect.sizeDelta = generalPageRect.sizeDelta;
+            LangPage = langLocalPage;
 
-            // ScrollView
-            GameObject scrollView = new GameObject("Scroll Rect", typeof(RectTransform), typeof(ScrollRect), typeof(Image), typeof(Mask));
-            scrollView.transform.SetParent(langLocalPage.transform, false);
-            RectTransform scrollRect = scrollView.GetComponent<RectTransform>();
-            scrollRect.anchorMin = generalScrollRectTransform.anchorMin;
-            scrollRect.anchorMax = generalScrollRectTransform.anchorMax;
-            scrollRect.pivot = generalScrollRectTransform.pivot;
-            scrollRect.anchoredPosition = generalScrollRectTransform.anchoredPosition;
-            scrollRect.sizeDelta = generalScrollRectTransform.sizeDelta;
-            scrollView.GetComponent<Image>().color = new Color(0, 0, 0, 0.5f);
-            scrollView.GetComponent<Mask>().showMaskGraphic = false;
-
-            // ScrollRect settings to limit side-to-side scrolling
-            ScrollRect scrollRectComponent = scrollView.GetComponent<ScrollRect>();
-            scrollRectComponent.horizontal = false; // Disable horizontal scrolling
-            scrollRectComponent.vertical = true; // Enable vertical scrolling
-            scrollRectComponent.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHideAndExpandViewport;
-
-            // Adding a scrollbar
-            Transform referencePage = pagesParent.transform.Find("General");
-            Scrollbar referenceScrollbar = referencePage.GetComponentsInChildren<Scrollbar>().FirstOrDefault();
-            GameObject scrollbar = GameObject.Instantiate(referenceScrollbar.gameObject, langLocalPage.transform);
-            scrollbar.transform.SetParent(langLocalPage.transform, false);
-            RectTransform scrollbarRect = scrollbar.GetComponent<RectTransform>();
-
-            Scrollbar scrollbarComponent = scrollbar.GetComponent<Scrollbar>();
-            scrollbarComponent.direction = Scrollbar.Direction.BottomToTop;
-            scrollRectComponent.verticalScrollbar = scrollbarComponent;
-            scrollRectComponent.scrollSensitivity = 20f;
-
-            // Content Container
-            GameObject content = new GameObject("Contents", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
-            content.transform.SetParent(scrollView.transform, false);
-            RectTransform contentRect = content.GetComponent<RectTransform>();
-            contentRect.anchorMin = generalContentsTransform.anchorMin;
-            contentRect.anchorMax = generalContentsTransform.anchorMax;
-            contentRect.pivot = generalContentsTransform.pivot;
-            contentRect.anchoredPosition = generalContentsTransform.anchoredPosition;
-            contentRect.sizeDelta = generalContentsTransform.sizeDelta;
-
-            VerticalLayoutGroup vGroup = content.GetComponent<VerticalLayoutGroup>();
-            vGroup.spacing = 10;
-            vGroup.childAlignment = TextAnchor.UpperCenter;
-            vGroup.childForceExpandWidth = true;
-            vGroup.childForceExpandHeight = false;
-            vGroup.childControlWidth = true;
-            vGroup.childControlHeight = true;
-
-            ContentSizeFitter fitter = content.GetComponent<ContentSizeFitter>();
-            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-            scrollView.GetComponent<ScrollRect>().content = contentRect;
-
-            GameObject titleObject = GameObject.Instantiate(optionsParent.Find("Text").gameObject, content.transform);
-            titleObject.name = "Title";
-            languagePageTitleText = titleObject.GetComponent<TextMeshProUGUI>();
-            languagePageTitleText.font = Core.GlobalFontTMP;
-            languagePageTitleText.text = "--" + LanguageManager.CurrentLanguage.options.language_languages + "--";
-            languagePageTitleText.alignment = TextAlignmentOptions.Center;
-            languagePageTitleText.fontSize = 24;
-
-            RectTransform titleRect = languagePageTitleText.rectTransform;
-            titleRect.anchorMin = new Vector2(0.5f, 1);
-            titleRect.anchorMax = new Vector2(0.5f, 1);
-            titleRect.pivot = new Vector2(0.5f, 1);
-            titleRect.anchoredPosition = new Vector2(0, -50);
-            titleRect.sizeDelta = new Vector2(400, 50);
+            BrowserHost.Embed(langLocalPage.transform, delegate
+            {
+                HideLanguagePage();
+                if (EventSystem.current != null)
+                {
+                    EventSystem.current.SetSelectedGameObject(null);
+                }
+            });
 
             Logging.Message("Creating language menu button...");
             GameObject languageButton = ButtonUtils.CreateTMPButton(navigationRail, "Language", LanguageManager.CurrentLanguage.options.language_title, () => ShowLanguagePage(), changeSize: false);
@@ -552,77 +641,18 @@ namespace UltrakULL.Harmony_Patches
             RectTransform sourceRect = navigationRail.gameObject.Child("General").GetComponent<RectTransform>();
             RectTransform targetRect = languageButton.GetComponent<RectTransform>();
             targetRect.sizeDelta = sourceRect.sizeDelta;
-            //targetRect.anchorMin = sourceRect.anchorMin;
-            //targetRect.anchorMax = sourceRect.anchorMax;
-            //targetRect.pivot = sourceRect.pivot;
-
-
             languageButton.transform.SetSiblingIndex(7);
-            Logging.Message("Adding language selection buttons...");
-            foreach (string language in LanguageManager.allLanguages.Keys)
+
+            LangNavButtonImage = languageButton.GetComponent<Image>();
+            langNavHighlightParent = languageButton.GetComponentInParent<ButtonHighlightParent>();
+            if (langNavHighlightParent == null && navigationRailTransform != null)
             {
-                GameObject langButton = ButtonUtils.CreateTMPButton(content.transform, language, LanguageManager.allLanguages[language].metadata.langDisplayName, delegate
-                {
-                    SelectLanguage(language);
-                    foreach (Transform child in content.transform)
-                    {
-                        if (child.name != "Title" && child.name != "LangBrowser" && child.name.Contains("-"))
-                        {
-                            TextMeshProUGUI tC = child.GetComponentInChildren<TextMeshProUGUI>();
-                            if (tC != null && LanguageManager.allLanguages.ContainsKey(child.name))
-                            {
-                                tC.text = LanguageManager.allLanguages[child.name].metadata.langDisplayName;
-                                if (LanguageManager.CurrentLanguage.metadata.langName == child.name) { tC.text += "\n<size=22>(<color=green>Selected</color>)</size>"; }
-                                else if (tC.text.Contains("<color=green>Selected</color>"))
-                                {
-                                    tC.text = LanguageManager.allLanguages[child.name].metadata.langDisplayName;
-                                }
-                            }
-                        }
-                    }
-                });
-
-                TextMeshProUGUI textComponent = langButton.GetComponentInChildren<TextMeshProUGUI>();
-                if (LanguageManager.CurrentLanguage.metadata.langName == language) { textComponent.text += "\n<size=22>(<color=green>Selected</color>)</size>"; }
+                langNavHighlightParent = navigationRailTransform.GetComponentInParent<ButtonHighlightParent>();
             }
-
-            Logging.Message("Creating Open Language Folder button...");
-
-            GameObject openLangFolder = ButtonUtils.CreateTMPButton(content.transform, "openLangFolder", "<color=#03fc07>" + LanguageManager.CurrentLanguage.options.language_openLanguageFolder + "</color>", () => Application.OpenURL(Path.Combine(BepInEx.Paths.ConfigPath, "ultrakull")));
-
-            void ShowLanguagePage()
-            {
-                Logging.Message("Opening Language Settings Page...");
-                EventSystem.current.SetSelectedGameObject(null);
-                foreach (Transform page in pagesParent)
-                {
-                    if (page != null)
-                    {
-                        page.gameObject.SetActive(false);
-                    }
-                }
-                if (langLocalPage != null)
-                {
-                    langLocalPage.SetActive(true);
-                    foreach (Transform child in navigationRail)
-                    {
-                        if (child.TryGetComponent(out Button b))
-                        {
-                            ColorBlock cb = b.colors;
-                            b.colors = cb; // Force update colors (sometimes helps)
-                        }
-                    }
-                    Transform navRail = GetInactiveRootObject("Canvas").Child("OptionsMenu").transform.Find("Navigation Rail");
-                    GameObject langBtn = navRail.gameObject.Child("Language");
-                    EventSystem.current.SetSelectedGameObject(langBtn);
-                }
-            }
-
-            void SelectLanguage(string language)
-            {
-                Logging.Message("Selected language: " + language);
-                LanguageManager.SetCurrentLanguage(language);
-            }
+            Logging.Message("[LanguageNav] highlighter=" + (langNavHighlightParent != null));
+            RegisterNavButtonWithHighlighter(langNavHighlightParent, LangNavButtonImage);
+            // The template clone may inherit the highlighted state of the source button.
+            SetLanguageNavHighlight(false);
 
             Logging.Message("Setting up navigation buttons to hide language page...");
             foreach (Transform child in navigationRail)
@@ -632,45 +662,84 @@ namespace UltrakULL.Harmony_Patches
                     Button navButton = child.GetComponent<Button>();
                     if (navButton != null)
                     {
-                        navButton.onClick.AddListener(() =>
-                        {
-                            if (langLocalPage.activeSelf)
-                            {
-                                Logging.Message("Hiding Language Page as another button was clicked: " + child.name);
-                                langLocalPage.SetActive(false);
-                            }
-                        });
+                        navButton.onClick.AddListener(() => HideLanguagePage());
                     }
                 }
             }
 
-            Logging.Message("Creating language browser page...");
-            langBrowserPage = new GameObject("LanguageBrowser", typeof(RectTransform));
-            langBrowserPage.transform.SetParent(pagesParent, false);
-            langBrowserPage.SetActive(false);
-
-            VerticalLayoutGroup browserLayout = langBrowserPage.AddComponent<VerticalLayoutGroup>();
-            browserLayout.spacing = 10f;
-            browserLayout.childAlignment = TextAnchor.UpperCenter;
-
-            Logging.Message("Creating Browse Online Languages button...");
-            GameObject browseLangButtonObj = ButtonUtils.CreateTMPButton(content.transform, "LangBrowser", "<color=#03fc07>→Browse langs online←</color>", () =>
+            void ShowLanguagePage()
             {
-                langLocalPage.SetActive(false);
-                langBrowserPage.SetActive(true);
-                if (langBrowserPage.transform.Find("Title") == null)
+                if (langLocalPage != null && langLocalPage.activeSelf)
                 {
-                    getOnlineLanguages(pagesParent, langLocalPage);
+                    // Already open: only refresh the highlight, never rebuild the page.
+                    ApplyLanguageNavHighlight();
+                    return;
                 }
-            });
 
-            browseLangButtonObj.GetComponent<Button>().interactable = false;
-            var text = browseLangButtonObj.GetComponentInChildren<TextMeshProUGUI>();
-            if (text != null) text.text = "<color=#028702>→Browse langs online←</color>";
+                Logging.Message("Opening translation browser...");
+                if (EventSystem.current != null)
+                {
+                    EventSystem.current.SetSelectedGameObject(null);
+                }
+                foreach (Transform page in pagesParent)
+                {
+                    if (page != null && page.gameObject != langLocalPage)
+                    {
+                        page.gameObject.SetActive(false);
+                    }
+                }
+                if (langLocalPage != null)
+                {
+                    FitLanguagePageToRail();
+                    langLocalPage.SetActive(true);
+                }
+                ApplyLanguageNavHighlight();
+            }
 
-            Logging.Info("Browse Language button added successfully.");
+            void ApplyLanguageNavHighlight()
+            {
+                // Clear every other navigation button and highlight ours. We replicate the
+                // game's ChangeButton loop ourselves so it works even though our button is
+                // created after the game captured its button list.
+                ApplyNavHighlight(LangNavButtonImage);
+            }
+
+            Logging.Info("Language nav button added; the browser is embedded in the Language page.");
             return true;
         }
+    }
 
+    /// <summary>
+    /// A change of the navigation highlight (a game page button, or another mod's button such
+    /// as PluginConfigurator's) means the user left the Language page, so hide it. Our own
+    /// button is exempt, so opening/re-opening the page does not close it.
+    /// </summary>
+    [HarmonyPatch(typeof(global::ButtonHighlightParent), "ChangeButton")]
+    public static class LanguageNavHighlightPatch
+    {
+        private static void Postfix(Image target)
+        {
+            if (!InjectLanguageButton.IsLanguageNavButton(target))
+            {
+                InjectLanguageButton.HideLanguagePage();
+            }
+        }
+    }
+
+    /// <summary>
+    /// The game switches settings pages through SettingsMenu.SetActivePage. When it targets a
+    /// different page, hide ours as well, otherwise the Language page would stay visible on
+    /// top of the page the game just opened.
+    /// </summary>
+    [HarmonyPatch(typeof(global::SettingsMenu.Components.SettingsMenu), "SetActivePage")]
+    public static class LanguagePageDeactivatePatch
+    {
+        private static void Postfix(GameObject targetPage)
+        {
+            if (targetPage != InjectLanguageButton.LangPage)
+            {
+                InjectLanguageButton.HideLanguagePage();
+            }
+        }
     }
 }

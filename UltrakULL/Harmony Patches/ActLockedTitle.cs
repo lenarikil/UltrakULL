@@ -9,6 +9,9 @@ public static class ActLockedTitle
     [HarmonyPostfix]
     public static void Postfix(MenuActSelect __instance)
     {
+        // Built-in English keeps the game's original locked-act titles.
+        if (UltrakULL.CommonFunctions.isUsingEnglish()) return;
+
         string path = GetPath(__instance.transform);
 
         switch (path)

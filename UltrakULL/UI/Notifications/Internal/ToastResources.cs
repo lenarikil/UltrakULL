@@ -71,6 +71,7 @@ namespace UltrakULL.UI.Notifications
             titleGo.transform.SetParent(root.transform, false);
             TextMeshProUGUI titleTmp = titleGo.AddComponent<TextMeshProUGUI>();
             titleTmp.font = GetTmpFont();
+            Harmony_Patches.TextMeshProFontSwap.MarkAsModUI(titleTmp);
             titleTmp.fontSize = 16f;
             titleTmp.color = Color.white;
             titleTmp.richText = true;
@@ -84,6 +85,7 @@ namespace UltrakULL.UI.Notifications
             bodyGo.transform.SetParent(root.transform, false);
             TextMeshProUGUI bodyTmp = bodyGo.AddComponent<TextMeshProUGUI>();
             bodyTmp.font = GetTmpFont();
+            Harmony_Patches.TextMeshProFontSwap.MarkAsModUI(bodyTmp);
             bodyTmp.fontSize = 14f;
             bodyTmp.color = new Color(0.9f, 0.9f, 0.9f, 1f);
             bodyTmp.richText = true;
@@ -109,6 +111,7 @@ namespace UltrakULL.UI.Notifications
             btnTextRt.offsetMax = Vector2.zero;
             TextMeshProUGUI btnTextTmp = btnTextGo.AddComponent<TextMeshProUGUI>();
             btnTextTmp.font = GetTmpFont();
+            Harmony_Patches.TextMeshProFontSwap.MarkAsModUI(btnTextTmp);
             btnTextTmp.fontSize = 13f;
             btnTextTmp.color = Color.white;
             btnTextTmp.alignment = TextAlignmentOptions.Center;

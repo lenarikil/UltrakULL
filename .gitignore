@@ -382,6 +382,8 @@ Directory.Build.props
 .Decompiled/
 # Nuget local binary
 nuget.exe
+
+# Other files
 UltrakULL/UltrakULL.csproj.lscache
 .codeassistant/mcp.json
 UltrakULL/.logs/LogOutput.log
@@ -392,4 +394,5 @@ UltrakULL/.logs/LogOutput.log
 .kilo/agents/code-simplifier.md
 .kilo/agents/code-reviewer.md
 .kilo/kilo.jsonc
+Plans/
 AGENTS.md

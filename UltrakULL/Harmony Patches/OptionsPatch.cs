@@ -15,6 +15,9 @@ namespace UltrakULL.Harmony_Patches
         [HarmonyPatch("OnEnable"), HarmonyPostfix]
         public static void PauseMenuOnEnablePostfix(TMP_Text ___checkpointText)
         {
+            // Built-in English keeps the game's original pause menu text.
+            if (UltrakULL.CommonFunctions.isUsingEnglish()) return;
+
             try
             {
                 if (___checkpointText.text.Contains("SKIP"))
@@ -51,52 +54,7 @@ namespace UltrakULL.Harmony_Patches
                 }
 
                 Logging.Debug("Patching Option menu...");
-                GameObject optionsObject = __instance.gameObject;
-                switch (__instance.name.ToUpper())
-                {
-                    case "GENERAL":
-                        {
-                            Logging.Debug("GENERAL");
-                            Options.PatchGeneralOptions(optionsObject);
-                            break;
-                        }
-                    case "CONTROLS":
-                        {
-                            Logging.Debug("CONTROLS");
-                            Options.PatchControlOptions(optionsObject);
-                            break;
-                        }
-                    case "GRAPHICS":
-                        {
-                            Logging.Debug("GRAPHICS");
-                            Options.PatchGraphicsOptions(optionsObject);
-                            break;
-                        }
-                    case "AUDIO":
-                        {
-                            Logging.Debug("AUDIO");
-                            Options.PatchAudioOptions(optionsObject);
-                            break;
-                        }
-                    case "ASSIST":
-                        {
-                            Logging.Debug("ASSIST");
-                            Options.PatchAssistOptions(optionsObject);
-                            break;
-                        }
-                    case "HUD":
-                        {
-                            Logging.Debug("HUD");
-                            Options.PatchHUDOptions(optionsObject);
-                            break;
-                        }
-                    default:
-                        {
-                            Logging.Warn("Unknown Option page name: " + __instance.name);
-                            break;
-                        }
-
-                }
+                RegisterPage(__instance);
             }
             catch (Exception e)
             {
@@ -104,6 +62,78 @@ namespace UltrakULL.Harmony_Patches
                 Logging.Error(e.ToString());
             }
 
+        }
+
+        /// <summary>
+        /// Translates the options page the game has built.
+        ///
+        /// The game builds a page once, when the options menu starts, and never fills
+        /// it again, so the page kept the language that was active before a switch.
+        /// The page is registered as a live group: a language switch puts the game's
+        /// own text back and writes the new language on top of it, so the page that is
+        /// open does not have to be closed and opened again.
+        /// </summary>
+        private static void RegisterPage(SettingsPageBuilder builder)
+        {
+            if (builder == null)
+            {
+                return;
+            }
+
+            LiveText.ApplyGroup(builder.gameObject, delegate { ApplyPage(builder); });
+        }
+
+        /// <summary>
+        /// Writes the translation of the active language into the options page.
+        /// </summary>
+        private static void ApplyPage(SettingsPageBuilder builder)
+        {
+            GameObject optionsObject = builder.gameObject;
+            switch (builder.name.ToUpper())
+            {
+                case "GENERAL":
+                    {
+                        Logging.Debug("GENERAL");
+                        Options.PatchGeneralOptions(optionsObject);
+                        break;
+                    }
+                case "CONTROLS":
+                    {
+                        Logging.Debug("CONTROLS");
+                        Options.PatchControlOptions(optionsObject);
+                        break;
+                    }
+                case "GRAPHICS":
+                    {
+                        Logging.Debug("GRAPHICS");
+                        Options.PatchGraphicsOptions(optionsObject);
+                        break;
+                    }
+                case "AUDIO":
+                    {
+                        Logging.Debug("AUDIO");
+                        Options.PatchAudioOptions(optionsObject);
+                        break;
+                    }
+                case "ASSIST":
+                    {
+                        Logging.Debug("ASSIST");
+                        Options.PatchAssistOptions(optionsObject);
+                        break;
+                    }
+                case "HUD":
+                    {
+                        Logging.Debug("HUD");
+                        Options.PatchHUDOptions(optionsObject);
+                        break;
+                    }
+                default:
+                    {
+                        Logging.Warn("Unknown Option page name: " + builder.name);
+                        break;
+                    }
+
+            }
         }
     }
 }

@@ -23,9 +23,9 @@ namespace UltrakULL.UI.Notifications
             TMP_FontAsset font = ToastResources.GetTmpFont();
             if (font != null)
             {
-                if (titleText != null) titleText.font = font;
-                if (bodyText != null) bodyText.font = font;
-                if (actionButtonText != null) actionButtonText.font = font;
+                if (titleText != null) { titleText.font = font; Harmony_Patches.TextMeshProFontSwap.MarkAsModUI(titleText); }
+                if (bodyText != null) { bodyText.font = font; Harmony_Patches.TextMeshProFontSwap.MarkAsModUI(bodyText); }
+                if (actionButtonText != null) { actionButtonText.font = font; Harmony_Patches.TextMeshProFontSwap.MarkAsModUI(actionButtonText); }
             }
 
             if (titleText != null) titleText.text = title ?? "";

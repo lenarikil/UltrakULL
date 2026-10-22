@@ -14,15 +14,23 @@ namespace UltrakULL.Harmony_Patches
     [HarmonyPatch(typeof(ScanningStuff), "ScanBook")]
     public static class LocalizeScanningText
     {
+        /// <summary>
+        /// The text the game wrote into the book that is open. It is kept, so the book
+        /// can be translated again after a language switch.
+        /// </summary>
+        private static string openBookText;
+
         [HarmonyPrefix]
         public static bool ScanBook_MyPatch(ref string text, bool noScan, int instanceId, ScanningStuff __instance)
         {
+            string originalText = text;
+            openBookText = originalText;
+
             if(isUsingEnglish())
             {
                 return true;
             }
 
-            string originalText = text;
             string sceneName = GetCurrentSceneName();
             string bookId = IdentifyBookId(originalText, sceneName);
 
@@ -44,6 +52,44 @@ namespace UltrakULL.Harmony_Patches
             scanningText.text = LanguageManager.CurrentLanguage.books.books_scanning;
             text = Books.GetBookText(text);
             return true;
+        }
+
+        /// <summary>
+        /// Applies the active language to the book that is open.
+        ///
+        /// The game fills the book only once, when the player scans it, so a language
+        /// switch did not reach it and it kept the previous language until the book
+        /// was closed and opened again.
+        /// </summary>
+        public static void Reapply()
+        {
+            ScanningStuff scanning = MonoSingleton<ScanningStuff>.Instance;
+            if (scanning == null || openBookText == null)
+            {
+                return;
+            }
+
+            if (!scanning.IsReading)
+            {
+                // No book is open, so there is nothing to translate.
+                return;
+            }
+
+            try
+            {
+                if (isUsingEnglish())
+                {
+                    // The built-in English is the game's own text.
+                    scanning.readingText.text = openBookText;
+                    return;
+                }
+
+                scanning.readingText.text = Books.GetBookText(openBookText);
+            }
+            catch (Exception e)
+            {
+                HandleError(e);
+            }
         }
 
         public static bool IsReadingScannedTextReversed()

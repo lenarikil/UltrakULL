@@ -15,9 +15,9 @@ namespace UltrakULL.audio
 {
     public static class AudioSwapper
     {
-        // Folder where language audio is stored: <BepInEx.ConfigPath>/ultrakull/audio/<lang>/
+        // Folder where the active language's audio lives (inside the language pack folder).
         // Make writable because LanguageManager updates this when switching languages.
-        public static string SpeechFolder { get; set; } = Path.Combine(Paths.ConfigPath, "ultrakull", "audio", LanguageManager.CurrentLanguage.metadata.langName) + Path.DirectorySeparatorChar;
+        public static string SpeechFolder { get; set; } = LanguageManager.GetLanguageAssetFolder("audio") + Path.DirectorySeparatorChar;
 
         private class CoroutineHost : MonoBehaviour { }
         private class PendingClipLoad
@@ -49,6 +49,179 @@ namespace UltrakULL.audio
             { Path.Combine("power", "powerSpecialWave4"), Path.Combine("power", "pow_SpecialIntro4") }
         };
         private static int cacheGeneration;
+
+        /// <summary>
+        /// The game's own clip of every AudioSource the mod translates. A language
+        /// switch hands the clip that is currently in the source (the translation of
+        /// the previous language) to the swap as the fallback, so without remembering
+        /// the original the built-in English and a missing replacement would both
+        /// keep the previous language playing.
+        /// </summary>
+        private static readonly Dictionary<AudioSource, AudioClip> sourceOriginals = new Dictionary<AudioSource, AudioClip>();
+
+        /// <summary>
+        /// The game's own clip every translated clip replaced. The boss voices are
+        /// single AudioSources whose clip the game replaces for every line, so a
+        /// language switch needs this map to replace the clip of a line that is in
+        /// the middle of playing.
+        /// </summary>
+        private static readonly Dictionary<AudioClip, AudioClip> translatedToOriginal = new Dictionary<AudioClip, AudioClip>();
+
+        /// <summary>
+        /// The translation path of the game's own clips, relative to the speech
+        /// folder. The folder belongs to the active language, the rest of the path
+        /// does not, so the path of the new language can be built from it.
+        /// </summary>
+        private static readonly Dictionary<AudioClip, string> originalToRelativePath = new Dictionary<AudioClip, string>();
+
+        /// <summary>
+        /// Replaces the clip of an AudioSource with the translation of the active
+        /// language.
+        ///
+        /// The line that is playing keeps its playback time: the replacement starts
+        /// at the same timer, so a language switch does not restart the cutscene
+        /// voice-over. The game shows the subtitles from the playback time as well,
+        /// so they stay in sync with the new clip on their own.
+        /// </summary>
+        /// <param name="source">The AudioSource whose clip is replaced.</param>
+        /// <param name="audioFilePath">The audio file of the active language.</param>
+        /// <param name="onSwapped">Called with the clip that was applied, for diagnostics.</param>
+        public static void SwapSourceClip(AudioSource source, string audioFilePath, Action<AudioClip> onSwapped = null)
+        {
+            if (source == null)
+                return;
+
+            try
+            {
+                AudioClip original;
+                if (!sourceOriginals.TryGetValue(source, out original))
+                {
+                    // The first swap sees the game's own clip, the later ones (a
+                    // language switch) see the translation of the previous language.
+                    original = source.clip;
+                    sourceOriginals[source] = original;
+                }
+
+                // The game's own clip is the fallback, so the built-in English keeps
+                // it and a missing replacement returns to it instead of staying on
+                // the previous language.
+                SwapClipWithFileAsync(original, audioFilePath, delegate(AudioClip newClip)
+                {
+                    RegisterTranslatedClip(newClip, original, audioFilePath);
+                    ApplySourceClip(source, newClip);
+
+                    if (onSwapped != null && newClip != null && !ReferenceEquals(newClip, original))
+                        onSwapped(newClip);
+                });
+            }
+            catch (Exception e)
+            {
+                Logging.Warn("[AudioSwap] SwapSourceClip failed: " + e.Message);
+            }
+        }
+
+        /// <summary>
+        /// Puts the given clip into the source, keeping the playback time and the
+        /// play state, so the replacement continues where the previous language
+        /// stopped.
+        /// </summary>
+        public static void ApplySourceClip(AudioSource source, AudioClip clip)
+        {
+            if (source == null || clip == null || ReferenceEquals(source.clip, clip))
+                return;
+
+            try
+            {
+                bool wasPlaying = source.isPlaying;
+                float time = source.time;
+
+                source.clip = clip;
+
+                if (wasPlaying)
+                {
+                    // Assigning the clip alone does not reliably switch the sound
+                    // that is playing, so the voice is triggered again with the new
+                    // clip.
+                    source.Play();
+                }
+
+                // The same timer as before. The seek happens in the same frame, so
+                // nothing that is already rendered reaches the player.
+                if (time > 0f)
+                    source.time = time;
+            }
+            catch (Exception e)
+            {
+                Logging.Warn("[AudioSwap] ApplySourceClip failed: " + e.Message);
+            }
+        }
+
+        /// <summary>
+        /// The clip the game itself put into this source, or null when the mod has
+        /// not translated this source yet. Callers that pick sources by clip name
+        /// must use this one, because the name of the current clip changes with the
+        /// language.
+        /// </summary>
+        public static AudioClip GetOriginalClip(AudioSource source)
+        {
+            AudioClip original;
+            return source != null && sourceOriginals.TryGetValue(source, out original) ? original : null;
+        }
+
+        /// <summary>
+        /// Drops the tracked AudioSources and clip mappings that are gone. Called
+        /// when a scene is left, because the sources belong to that scene. The
+        /// mappings survive a language change: they link the clips of the game to
+        /// their translation paths and belong to no language.
+        /// </summary>
+        public static void PruneDeadSourceOriginals()
+        {
+            if (sourceOriginals.Count > 0)
+            {
+                List<AudioSource> deadSources = null;
+                foreach (KeyValuePair<AudioSource, AudioClip> pair in sourceOriginals)
+                {
+                    if (pair.Key == null)
+                    {
+                        if (deadSources == null)
+                            deadSources = new List<AudioSource>();
+                        deadSources.Add(pair.Key);
+                    }
+                }
+
+                if (deadSources != null)
+                {
+                    for (int i = 0; i < deadSources.Count; i++)
+                        sourceOriginals.Remove(deadSources[i]);
+                }
+            }
+
+            if (translatedToOriginal.Count > 0)
+                PruneDeadClipKeys(translatedToOriginal);
+
+            if (originalToRelativePath.Count > 0)
+                PruneDeadClipKeys(originalToRelativePath);
+        }
+
+        private static void PruneDeadClipKeys<TValue>(Dictionary<AudioClip, TValue> map)
+        {
+            List<AudioClip> dead = null;
+            foreach (KeyValuePair<AudioClip, TValue> pair in map)
+            {
+                if (pair.Key == null)
+                {
+                    if (dead == null)
+                        dead = new List<AudioClip>();
+                    dead.Add(pair.Key);
+                }
+            }
+
+            if (dead == null)
+                return;
+
+            for (int i = 0; i < dead.Count; i++)
+                map.Remove(dead[i]);
+        }
 
         private static void EnsureHost()
         {
@@ -220,8 +393,121 @@ namespace UltrakULL.audio
 
             PreloadClipAsync(audioFilePath, clips[index], delegate(AudioClip clip)
             {
+                RegisterTranslatedClip(clip, clips[index], audioFilePath);
                 try { clips[index] = clip; } catch { }
             });
+        }
+
+        /// <summary>
+        /// Remembers which clip of the game a translated clip replaced, and where
+        /// its translation lives. At a re-swap (a language switch) the fallback is
+        /// the translation of the previous language, so the mapping is chased to
+        /// the clip of the game itself.
+        /// </summary>
+        private static void RegisterTranslatedClip(AudioClip translated, AudioClip fallback, string fullPath)
+        {
+            if (translated == null || fallback == null || ReferenceEquals(translated, fallback))
+                return;
+
+            AudioClip root = fallback;
+            AudioClip parent;
+            int guard = 0;
+            while (translatedToOriginal.TryGetValue(root, out parent) && parent != null && !ReferenceEquals(parent, root) && guard++ < 8)
+                root = parent;
+
+            if (ReferenceEquals(root, translated))
+                return;
+
+            string relative = GetPathRelativeToSpeechFolder(fullPath);
+            if (string.IsNullOrEmpty(relative))
+                return;
+
+            translatedToOriginal[translated] = root;
+            originalToRelativePath[root] = relative;
+        }
+
+        private static string GetPathRelativeToSpeechFolder(string fullPath)
+        {
+            if (string.IsNullOrEmpty(fullPath))
+                return null;
+
+            string folder = SpeechFolder;
+            if (string.IsNullOrEmpty(folder))
+                return null;
+
+            return fullPath.StartsWith(folder, StringComparison.OrdinalIgnoreCase)
+                ? fullPath.Substring(folder.Length)
+                : null;
+        }
+
+        /// <summary>
+        /// Applies the active language to the voice lines that are currently held by
+        /// the boss voices.
+        ///
+        /// The boss voices are single AudioSources whose clip the game replaces for
+        /// every line (taunts, hurt sounds, attack calls), so a language switch has
+        /// to replace the clip of a line that is in the middle of playing itself -
+        /// at the same playback time, so the voice does not restart. The line may
+        /// be a translation of the previous language or the game's own clip (the
+        /// switch may come from the built-in English), and it may be paused or
+        /// virtualized by the game's audio manager - a source like that reports
+        /// that it is not playing, so the play state is not used as a condition
+        /// here: swapping the clip of an idle source changes nothing audible, the
+        /// game assigns the next line itself.
+        /// </summary>
+        public static void ReapplyPlayingVoices()
+        {
+            if (translatedToOriginal.Count == 0 && originalToRelativePath.Count == 0)
+                return;
+
+            AudioSource[] sources = UnityEngine.Object.FindObjectsOfType<AudioSource>(true);
+            int applied = 0;
+            for (int i = 0; i < sources.Length; i++)
+            {
+                AudioSource source = sources[i];
+                if (source == null)
+                    continue;
+
+                AudioClip playing = source.clip;
+                if (playing == null)
+                    continue;
+
+                // The game's own clip of the line: the playing clip itself (the
+                // switch may come from the built-in English), or the original a
+                // translation replaced. It is also the fallback: the built-in
+                // English returns to it, and a missing file returns to it instead
+                // of keeping the previous language.
+                AudioClip original = playing;
+                AudioClip parent;
+                int guard = 0;
+                while (translatedToOriginal.TryGetValue(original, out parent) && parent != null &&
+                       !ReferenceEquals(parent, original) && guard++ < 8)
+                {
+                    original = parent;
+                }
+
+                string relative;
+                if (!originalToRelativePath.TryGetValue(original, out relative) || string.IsNullOrEmpty(relative))
+                    continue;
+
+                try
+                {
+                    // The speech folder already belongs to the new language, the
+                    // rest of the path does not.
+                    PreloadClipAsync(SpeechFolder + relative, original, delegate(AudioClip clip)
+                    {
+                        ApplySourceClip(source, clip);
+                    });
+                    applied++;
+                }
+                catch (Exception e)
+                {
+                    Logging.Warn("[AudioSwap] ReapplyPlayingVoices failed: " + e.Message);
+                }
+            }
+
+            if (applied > 0)
+                Logging.Message("[AudioSwap] Applied the active language to " + applied + " playing voice line(s).");
         }
 
         public static void LogAudioSourceDiagnostics(AudioSource audioSource, string context)

@@ -7,7 +7,7 @@
     <AssemblyName>UltrakULL</AssemblyName>
     <Deterministic>true</Deterministic>
     <LangVersion>7.3</LangVersion>
-    <NoWarn>0169,0219,0618,4014,1998,0649,0414,0168</NoWarn>
+    <NoWarn>0169,0219,0618,4014,1998,0649,0168</NoWarn>
 
     <!-- CRITICAL: otherwise duplicates of AssemblyInfo -->
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -48,6 +48,9 @@
       <HintPath>lib\UMM.dll</HintPath>
       <Private>false</Private>
     </Reference>
+
+    <!-- Embedded resource: built-in English template -->
+    <EmbeddedResource Include="json\templates\en-GB.json" />
   </ItemGroup>
 
 <!-- Unity + BepInEx -->
@@ -124,6 +127,11 @@
       <Private>false</Private>
     </Reference>
 
+    <Reference Include="UnityEngine.UnityWebRequestTextureModule">
+      <HintPath>$(ManagedDir)\UnityEngine.UnityWebRequestTextureModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+
     <Reference Include="UnityEngine.UnityWebRequestAudioModule">
       <HintPath>$(ManagedDir)\UnityEngine.UnityWebRequestAudioModule.dll</HintPath>
       <Private>false</Private>
@@ -141,6 +149,19 @@
 
     <Reference Include="Unity.InputSystem">
       <HintPath>$(ManagedDir)\Unity.InputSystem.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+
+    <!-- Addressables: used to load the game's native rounded UI sprites at runtime
+         (Round_Border*/Round_Fill*) so the fallback browser can match the in-game
+         SettingsMenu look instead of drawing flat rectangles. -->
+    <Reference Include="Unity.Addressables">
+      <HintPath>$(ManagedDir)\Unity.Addressables.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+
+    <Reference Include="Unity.ResourceManager">
+      <HintPath>$(ManagedDir)\Unity.ResourceManager.dll</HintPath>
       <Private>false</Private>
     </Reference>
 
@@ -227,14 +248,30 @@
           DestinationFolder="$(TargetDir)config\ultrakull" />
   </Target>
 
+  <!-- Template for translators (folder ignored by mod due to _ prefix) -->
+  <Target Name="CopyTemplate" AfterTargets="CopyJSON">
+    <ItemGroup>
+      <_Template Include="$(ProjectDir)json\templates\en-GB.json" />
+    </ItemGroup>
+
+    <MakeDir Directories="$(TargetDir)config\ultrakull\_template" />
+    <Copy SourceFiles="@(_Template)"
+          DestinationFolder="$(TargetDir)config\ultrakull\_template"
+          SkipUnchangedFiles="true" />
+    <Move SourceFiles="$(TargetDir)config\ultrakull\_template\en-GB.json"
+          DestinationFiles="$(TargetDir)config\ultrakull\_template\translation.json" />
+  </Target>
+
   <!-- Audio templates -->
+  <!-- Language packs keep their audio inside the pack folder (one folder = one
+       language), so the templates belong to the translator template pack as well. -->
   <Target Name="CopyAudio" AfterTargets="Build">
     <ItemGroup>
       <_Audio Include="$(ProjectDir)audio\templates\**\*.*" />
     </ItemGroup>
 
     <Copy SourceFiles="@(_Audio)"
-          DestinationFolder="$(TargetDir)config\ultrakull\audio\%(RecursiveDir)" />
+          DestinationFolder="$(TargetDir)config\ultrakull\_template\audio\%(RecursiveDir)" />
   </Target>
 
   <!--IntroViolenceScreen -->

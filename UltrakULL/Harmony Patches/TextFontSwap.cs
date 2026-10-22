@@ -4,8 +4,6 @@ using HarmonyLib;
 using UltrakULL.json;
 using UnityEngine;
 using UnityEngine.UI;
-using System.IO;
-using BepInEx;
 using UltrakULL;
 
 namespace UltrakULL.Harmony_Patches
@@ -56,9 +54,6 @@ namespace UltrakULL.Harmony_Patches
 					__instance.alignByGeometry = true;
 				}
 
-				// Log the original font before any replacement
-				FontLogger.LogFont(__instance.font);
-
 				if (Core.GlobalFontReady)
 				{
 					if (CommonFunctions.GetCurrentSceneName() == "CreditsMuseum2")
@@ -78,51 +73,6 @@ namespace UltrakULL.Harmony_Patches
 					}
 				}
 				objectsFixed.Add(___m_CachedPtr);
-			}
-		}
-
-		private static class FontLogger
-		{
-			private static HashSet<string> loggedFonts = new HashSet<string>();
-			private static readonly object lockObject = new object();
-			private static string logFilePath = null;
-
-			private static string GetLogFilePath()
-			{
-				if (logFilePath == null)
-				{
-					logFilePath = Path.Combine(Paths.ConfigPath, "ultrakull", "fonts.txt");
-				}
-				return logFilePath;
-			}
-
-			public static void LogFont(Font font)
-			{
-				if (font == null)
-					return;
-
-				string fontName = font.name;
-				if (string.IsNullOrEmpty(fontName))
-					return;
-
-				lock (lockObject)
-				{
-					if (loggedFonts.Contains(fontName))
-						return;
-
-					loggedFonts.Add(fontName);
-					string path = GetLogFilePath();
-					try
-					{
-						Directory.CreateDirectory(Path.GetDirectoryName(path));
-						File.AppendAllText(path, $"{fontName}\n");
-						Logging.Debug($"Logged font: {fontName}");
-					}
-					catch (Exception e)
-					{
-						Logging.Error($"Failed to log font {fontName}: {e.Message}");
-					}
-				}
 			}
 		}
 	}

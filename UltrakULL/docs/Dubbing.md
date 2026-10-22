@@ -121,12 +121,35 @@ Full details to be confirmed.
 
 ## Where to place audio files
 
-UltrakULL expects audio files for characters to be found in: <br>
-**BepInEx/config/ultrakull/audio/[languageName]**.
+UltrakULL uses one folder per language pack. The audio of a pack lives inside that
+pack folder, in its `audio` subfolder: <br>
+**BepInEx/config/ultrakull/[languagePack]/audio**.
+
+The name of the pack folder is the folder name you downloaded, not necessarily the
+name shown in the language menu. For example the French pack may be installed as
+`fr-fr`, while its `langName` in `translation.json` reads `FR-fr`.
 
 **Example for French/Français**  (uses FR-fr):
 
 <img src="https://cdn.discordapp.com/attachments/472691871806652429/1049359697985163335/image.png" alt="drawing" width="650"/>
+
+
+### Extra dubbing in the intermissions
+
+The optional extra voice lines of the intermissions live in the same `audio` folder,
+in a subfolder per scene and a subfolder per object:
+
+```
+BepInEx/config/ultrakull/[languagePack]/audio/Intermission1/[objectName]/line1.ogg
+```
+
+`line1`, `line2`, ... are played in the order the intermission text advances. The
+file extension is not fixed - `.ogg`, `.mp3`, `.wav` and the other formats UltrakULL
+supports all work.
+
+Both the regular dubbing (`activeDubbing`) and the extra dubbing (`extraDubbing`)
+have to be switched on in `BepInEx/config/ultrakull/Settings.cfg` for these lines to
+be played.
 
 
 If UltrakULL is unable to load a specific file for any reason, the spoken language for that line will default back to English.

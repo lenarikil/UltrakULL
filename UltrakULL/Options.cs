@@ -30,9 +30,9 @@ namespace UltrakULL
 
         private static void SetDropdownText(TMP_Dropdown dropdown, int index, string text)
         {
-            if (dropdown == null) return;
-            if (dropdown.options != null && index < dropdown.options.Count)
-                dropdown.options[index].text = text;
+            // The helper remembers the texts of the game and refreshes the caption,
+            // so a dropdown follows a language switch without being reopened.
+            LocalizedDropdowns.SetOptionText(dropdown, index, text);
         }
 
         private static void SetSliderMinText(GameObject obj, string minText)
@@ -72,10 +72,9 @@ namespace UltrakULL
             //Have to patch directly from the Dropdown.OptionData list.
             GameObject weaponPosList = generalContent.FindPath("Weapon Position", "Dropdown(Clone)");
             TMP_Dropdown weaponPosDropdown = weaponPosList.GetComponent<TMP_Dropdown>();
-            List<TMP_Dropdown.OptionData> weaponPosListText = weaponPosDropdown.options;
-            weaponPosListText[0].text = LanguageManager.CurrentLanguage.options.general_weaponPositionRight;
-            weaponPosListText[1].text = LanguageManager.CurrentLanguage.options.general_weaponPositionMiddle;
-            weaponPosListText[2].text = LanguageManager.CurrentLanguage.options.general_weaponPositionLeft;
+            SetDropdownText(weaponPosDropdown, 0, LanguageManager.CurrentLanguage.options.general_weaponPositionRight);
+            SetDropdownText(weaponPosDropdown, 1, LanguageManager.CurrentLanguage.options.general_weaponPositionMiddle);
+            SetDropdownText(weaponPosDropdown, 2, LanguageManager.CurrentLanguage.options.general_weaponPositionLeft);
 
             //-- SCREEN -- goes here
             TextMeshProUGUI screenText = generalContent.FindPath("-- Screen --", "Text").TMP();
@@ -109,10 +108,9 @@ namespace UltrakULL
 
             GameObject restartWarningList = generalContent.ChildAt(10).Child("Dropdown(Clone)");
             TMP_Dropdown restartWarningDropdown = restartWarningList.GetComponent<TMP_Dropdown>();
-            List<TMP_Dropdown.OptionData> restartWarningListText = restartWarningDropdown.options;
-            restartWarningListText[0].text = LanguageManager.CurrentLanguage.options.general_restartWarningAlwaysOn;
-            restartWarningListText[1].text = LanguageManager.CurrentLanguage.options.general_restartWarningOnlyCG;
-            restartWarningListText[2].text = LanguageManager.CurrentLanguage.options.general_restartWarningAlwaysOff;
+            SetDropdownText(restartWarningDropdown, 0, LanguageManager.CurrentLanguage.options.general_restartWarningAlwaysOn);
+            SetDropdownText(restartWarningDropdown, 1, LanguageManager.CurrentLanguage.options.general_restartWarningOnlyCG);
+            SetDropdownText(restartWarningDropdown, 2, LanguageManager.CurrentLanguage.options.general_restartWarningAlwaysOff);
 
             TextMeshProUGUI sandboxOverwriteText = generalContent.FindPath("Sandbox Save Overwrite Warning", "Text").TMP();
             sandboxOverwriteText.text = LanguageManager.CurrentLanguage.options.general_sandboxOverwrite;
@@ -172,10 +170,9 @@ namespace UltrakULL
             GameObject scrollTypeList = (controlContent.FindPath("Weapon Scroll Type", "Dropdown(Clone)"));
 
             TMP_Dropdown scrollTypeDropdown = scrollTypeList.GetComponent<TMP_Dropdown>();
-            List<TMP_Dropdown.OptionData> scrollTypeDropdownText = scrollTypeDropdown.options;
-            scrollTypeDropdownText[0].text = LanguageManager.CurrentLanguage.options.controls_scrollTypeWeapons;
-            scrollTypeDropdownText[1].text = LanguageManager.CurrentLanguage.options.controls_scrollTypeVariations;
-            scrollTypeDropdownText[2].text = LanguageManager.CurrentLanguage.options.controls_scrollTypeAll;
+            SetDropdownText(scrollTypeDropdown, 0, LanguageManager.CurrentLanguage.options.controls_scrollTypeWeapons);
+            SetDropdownText(scrollTypeDropdown, 1, LanguageManager.CurrentLanguage.options.controls_scrollTypeVariations);
+            SetDropdownText(scrollTypeDropdown, 2, LanguageManager.CurrentLanguage.options.controls_scrollTypeAll);
 
             TextMeshProUGUI reverseScrollDirection = controlContent.FindPath("Reverse Scroll Direction", "Text").TMP();
             reverseScrollDirection.text = LanguageManager.CurrentLanguage.options.controls_reverseScroll;
@@ -185,10 +182,9 @@ namespace UltrakULL
             redrawBehaviourTitle.text = LanguageManager.CurrentLanguage.options.controls_redrawBehaviour;
 
             TMP_Dropdown redrawBehaviourDropdown = redrawBehaviour.Child("Dropdown(Clone)").GetComponent<TMP_Dropdown>();
-            List<TMP_Dropdown.OptionData> redrawBehaviourDropdownText = redrawBehaviourDropdown.options;
-            redrawBehaviourDropdownText[0].text = LanguageManager.CurrentLanguage.options.controls_redrawNext;
-            redrawBehaviourDropdownText[1].text = LanguageManager.CurrentLanguage.options.controls_redrawFirst;
-            redrawBehaviourDropdownText[2].text = LanguageManager.CurrentLanguage.options.controls_redrawSame;
+            SetDropdownText(redrawBehaviourDropdown, 0, LanguageManager.CurrentLanguage.options.controls_redrawNext);
+            SetDropdownText(redrawBehaviourDropdown, 1, LanguageManager.CurrentLanguage.options.controls_redrawFirst);
+            SetDropdownText(redrawBehaviourDropdown, 2, LanguageManager.CurrentLanguage.options.controls_redrawSame);
 
             TextMeshProUGUI invertRocketControls = controlContent.FindPath("Invert Rocket Controls", "Text").TMP();
             invertRocketControls.text = LanguageManager.CurrentLanguage.options.controls_invertRocketControls;
@@ -533,12 +529,11 @@ namespace UltrakULL
 
             GameObject hudType = hudContent.FindPath("HUD Type", "Dropdown(Clone)");
             TMP_Dropdown hudTypeDropdown = hudType.GetComponent<TMP_Dropdown>();
-            List<TMP_Dropdown.OptionData> hudTypeDropdownListText = hudTypeDropdown.options;
 
-            hudTypeDropdownListText[0].text = LanguageManager.CurrentLanguage.options.hud_typeNone;
-            hudTypeDropdownListText[1].text = LanguageManager.CurrentLanguage.options.hud_typeStandard;
-            hudTypeDropdownListText[2].text = LanguageManager.CurrentLanguage.options.hud_typeClassicColor;
-            hudTypeDropdownListText[3].text = LanguageManager.CurrentLanguage.options.hud_typeClassicWhite;
+            SetDropdownText(hudTypeDropdown, 0, LanguageManager.CurrentLanguage.options.hud_typeNone);
+            SetDropdownText(hudTypeDropdown, 1, LanguageManager.CurrentLanguage.options.hud_typeStandard);
+            SetDropdownText(hudTypeDropdown, 2, LanguageManager.CurrentLanguage.options.hud_typeClassicColor);
+            SetDropdownText(hudTypeDropdown, 3, LanguageManager.CurrentLanguage.options.hud_typeClassicWhite);
 
             TextMeshProUGUI backgroundOpacityText = hudContent.FindPath("Background Opacity", "Text").TMP();
             backgroundOpacityText.text = LanguageManager.CurrentLanguage.options.hud_backgroundOpacity;
@@ -559,10 +554,9 @@ namespace UltrakULL
             reduceHudMotion.text = LanguageManager.CurrentLanguage.options.hud_reduceHudMotion;
 
             TMP_Dropdown iconsDropdown = iconsObject.GetComponentInChildren<TMP_Dropdown>();
-            List<TMP_Dropdown.OptionData> iconsDropdownListText = iconsDropdown.options;
 
-            iconsDropdownListText[0].text = LanguageManager.CurrentLanguage.sandbox.sandbox_shop_default.ToUpper();
-            iconsDropdownListText[1].text = LanguageManager.CurrentLanguage.sandbox.sandbox_shop_pitr;
+            SetDropdownText(iconsDropdown, 0, LanguageManager.CurrentLanguage.sandbox.sandbox_shop_default.ToUpper());
+            SetDropdownText(iconsDropdown, 1, LanguageManager.CurrentLanguage.sandbox.sandbox_shop_pitr);
 
             TextMeshProUGUI hudElements = hudContent.FindPath("-- Elements --", "Text").TMP();
             hudElements.text = "-- " + LanguageManager.CurrentLanguage.options.hud_hudElements + " --";
@@ -587,11 +581,10 @@ namespace UltrakULL
             speedoMeterText.text = LanguageManager.CurrentLanguage.options.hud_speedoMeterText;
 
             TMP_Dropdown speedoMeterTypeDropdown = speedoMeterDD.GetComponentInChildren<TMP_Dropdown>();
-            List<TMP_Dropdown.OptionData> speedoMeterTypeDropdownListText = speedoMeterTypeDropdown.options;
-            speedoMeterTypeDropdownListText[0].text = LanguageManager.CurrentLanguage.options.hud_speedoMeterTypeOff;
-            speedoMeterTypeDropdownListText[1].text = LanguageManager.CurrentLanguage.options.hud_speedoMeterTypeOn;
-            speedoMeterTypeDropdownListText[2].text = LanguageManager.CurrentLanguage.options.hud_speedoMeterTypeHorizonal;
-            speedoMeterTypeDropdownListText[3].text = LanguageManager.CurrentLanguage.options.hud_speedoMeterTypeVertical;
+            SetDropdownText(speedoMeterTypeDropdown, 0, LanguageManager.CurrentLanguage.options.hud_speedoMeterTypeOff);
+            SetDropdownText(speedoMeterTypeDropdown, 1, LanguageManager.CurrentLanguage.options.hud_speedoMeterTypeOn);
+            SetDropdownText(speedoMeterTypeDropdown, 2, LanguageManager.CurrentLanguage.options.hud_speedoMeterTypeHorizonal);
+            SetDropdownText(speedoMeterTypeDropdown, 3, LanguageManager.CurrentLanguage.options.hud_speedoMeterTypeVertical);
             
             //Crosshair settings
 
@@ -603,42 +596,39 @@ namespace UltrakULL
 
             GameObject crosshairType = hudContent.FindPath("Type", "Dropdown(Clone)");
             TMP_Dropdown crosshairTypeDropdown = crosshairType.GetComponent<TMP_Dropdown>();
-            List<TMP_Dropdown.OptionData> crosshairTypeDropdownListText = crosshairTypeDropdown.options;
 
-            crosshairTypeDropdownListText[0].text = LanguageManager.CurrentLanguage.options.crosshair_typeNone;
-            crosshairTypeDropdownListText[1].text = LanguageManager.CurrentLanguage.options.crosshair_typeSmall;
-            crosshairTypeDropdownListText[2].text = LanguageManager.CurrentLanguage.options.crosshair_typeLarge;
+            SetDropdownText(crosshairTypeDropdown, 0, LanguageManager.CurrentLanguage.options.crosshair_typeNone);
+            SetDropdownText(crosshairTypeDropdown, 1, LanguageManager.CurrentLanguage.options.crosshair_typeSmall);
+            SetDropdownText(crosshairTypeDropdown, 2, LanguageManager.CurrentLanguage.options.crosshair_typeLarge);
 
             TextMeshProUGUI crosshairColorText = hudContent.FindPath("Color", "Text").TMP();
             crosshairColorText.text = LanguageManager.CurrentLanguage.options.crosshair_color;
 
             GameObject crosshairColor = hudContent.FindPath("Color", "Dropdown(Clone)");
             TMP_Dropdown crosshairColorDropdown = crosshairColor.GetComponent<TMP_Dropdown>();
-            List<TMP_Dropdown.OptionData> crosshairColorDropdownListText = crosshairColorDropdown.options;
 
-            crosshairColorDropdownListText[0].text = LanguageManager.CurrentLanguage.options.crosshair_colorInverted;
-            crosshairColorDropdownListText[1].text = LanguageManager.CurrentLanguage.options.crosshair_colorWhite;
-            crosshairColorDropdownListText[2].text = LanguageManager.CurrentLanguage.options.crosshair_colorGrey;
-            crosshairColorDropdownListText[3].text = LanguageManager.CurrentLanguage.options.crosshair_colorBlack;
-            crosshairColorDropdownListText[4].text = LanguageManager.CurrentLanguage.options.crosshair_colorRed;
-            crosshairColorDropdownListText[5].text = LanguageManager.CurrentLanguage.options.crosshair_colorGreen;
-            crosshairColorDropdownListText[6].text = LanguageManager.CurrentLanguage.options.crosshair_colorBlue;
-            crosshairColorDropdownListText[7].text = LanguageManager.CurrentLanguage.options.crosshair_colorCyan;
-            crosshairColorDropdownListText[8].text = LanguageManager.CurrentLanguage.options.crosshair_colorYellow;
-            crosshairColorDropdownListText[9].text = LanguageManager.CurrentLanguage.options.crosshair_colorMagenta;
+            SetDropdownText(crosshairColorDropdown, 0, LanguageManager.CurrentLanguage.options.crosshair_colorInverted);
+            SetDropdownText(crosshairColorDropdown, 1, LanguageManager.CurrentLanguage.options.crosshair_colorWhite);
+            SetDropdownText(crosshairColorDropdown, 2, LanguageManager.CurrentLanguage.options.crosshair_colorGrey);
+            SetDropdownText(crosshairColorDropdown, 3, LanguageManager.CurrentLanguage.options.crosshair_colorBlack);
+            SetDropdownText(crosshairColorDropdown, 4, LanguageManager.CurrentLanguage.options.crosshair_colorRed);
+            SetDropdownText(crosshairColorDropdown, 5, LanguageManager.CurrentLanguage.options.crosshair_colorGreen);
+            SetDropdownText(crosshairColorDropdown, 6, LanguageManager.CurrentLanguage.options.crosshair_colorBlue);
+            SetDropdownText(crosshairColorDropdown, 7, LanguageManager.CurrentLanguage.options.crosshair_colorCyan);
+            SetDropdownText(crosshairColorDropdown, 8, LanguageManager.CurrentLanguage.options.crosshair_colorYellow);
+            SetDropdownText(crosshairColorDropdown, 9, LanguageManager.CurrentLanguage.options.crosshair_colorMagenta);
 
             TextMeshProUGUI crosshairHudSizeText = hudContent.FindPath("Crosshair HUD Size", "Text").TMP();
             crosshairHudSizeText.text = LanguageManager.CurrentLanguage.options.crosshair_size;
 
             GameObject crosshairSize = hudContent.FindPath("Crosshair HUD Size", "Dropdown(Clone)");
             TMP_Dropdown crosshairSizeDropdown = crosshairSize.GetComponent<TMP_Dropdown>();
-            List<TMP_Dropdown.OptionData> crosshairSizeDropdownListText = crosshairSizeDropdown.options;
 
-            crosshairSizeDropdownListText[0].text = LanguageManager.CurrentLanguage.options.crosshair_sizeNone;
-            crosshairSizeDropdownListText[1].text = LanguageManager.CurrentLanguage.options.crosshair_sizeThin;
-            crosshairSizeDropdownListText[2].text = LanguageManager.CurrentLanguage.options.crosshair_sizeMedium;
-            crosshairSizeDropdownListText[3].text = LanguageManager.CurrentLanguage.options.crosshair_sizeThick;
-            crosshairSizeDropdownListText[4].text = LanguageManager.CurrentLanguage.options.crosshair_sizeVeryThick;
+            SetDropdownText(crosshairSizeDropdown, 0, LanguageManager.CurrentLanguage.options.crosshair_sizeNone);
+            SetDropdownText(crosshairSizeDropdown, 1, LanguageManager.CurrentLanguage.options.crosshair_sizeThin);
+            SetDropdownText(crosshairSizeDropdown, 2, LanguageManager.CurrentLanguage.options.crosshair_sizeMedium);
+            SetDropdownText(crosshairSizeDropdown, 3, LanguageManager.CurrentLanguage.options.crosshair_sizeThick);
+            SetDropdownText(crosshairSizeDropdown, 4, LanguageManager.CurrentLanguage.options.crosshair_sizeVeryThick);
 
             TextMeshProUGUI crosshairHudFadeText = hudContent.FindPath("Crosshair HUD Fade", "Text").TMP();
             crosshairHudFadeText.text = LanguageManager.CurrentLanguage.options.crosshair_hudFade;

@@ -40,10 +40,6 @@ namespace UltrakULL
         private const int Os2XHeightOffset = 86;
         private const int HheaAscenderOffset = 4;
 
-        // OS/2 table version 0/1 size (without sxHeight and sCapHeight)
-        private const int Os2TableSizeV0 = 78;
-        private const int Os2TableSizeV1 = 86;
-
         public static bool TryRead(string fontPath, out OpenTypeStrikeoutMetrics metrics, out string reason)
         {
             metrics = default(OpenTypeStrikeoutMetrics);

@@ -38,18 +38,57 @@ namespace UltrakULL.Harmony_Patches
         }
     }
 
-    [HarmonyPatch(typeof(WorldOptions), "ToggleBorder")]
+    [HarmonyPatch(typeof(WorldOptions), "SetBorderOn")]
     public static class SandboxWorldOptions
     {
+        private static WorldOptions openOptions;
+        private static TextMeshProUGUI openBorderStatus;
+        private static TextMeshProUGUI openButtonText;
+        private static bool isBorderOn;
+
         [HarmonyPostfix]
         public static void sandboxWorldOptions_Postfix(ref WorldOptions __instance, TextMeshProUGUI ___borderStatus, TextMeshProUGUI ___buttonText, bool ___isBorderOn)
         {
-            if(isUsingEnglish())
+            openOptions = __instance;
+            openBorderStatus = ___borderStatus;
+            openButtonText = ___buttonText;
+            isBorderOn = ___isBorderOn;
+            Apply();
+        }
+
+        /// <summary>
+        /// Updates the already open world-options row without toggling the border or
+        /// rebuilding the sandbox menu.
+        /// </summary>
+        public static void Reapply()
+        {
+            if (openOptions == null || openBorderStatus == null || openButtonText == null ||
+                !openOptions.gameObject.activeInHierarchy)
             {
                 return;
             }
-            ___borderStatus.text = (___isBorderOn ? LanguageManager.CurrentLanguage.sandbox.sandbox_shop_worldOptionsEnabled : LanguageManager.CurrentLanguage.sandbox.sandbox_shop_worldOptionsDisabled);
-            ___buttonText.text = (___isBorderOn ? LanguageManager.CurrentLanguage.sandbox.sandbox_shop_worldOptionsDisable : LanguageManager.CurrentLanguage.sandbox.sandbox_shop_worldOptionsEnable);
+
+            Apply();
+        }
+
+        private static void Apply()
+        {
+            if (openBorderStatus == null || openButtonText == null)
+                return;
+
+            if (isUsingEnglish())
+            {
+                openBorderStatus.text = isBorderOn ? "Enabled" : "Disabled";
+                openButtonText.text = isBorderOn ? "Disable" : "Enable";
+                return;
+            }
+
+            openBorderStatus.text = isBorderOn
+                ? LanguageManager.CurrentLanguage.sandbox.sandbox_shop_worldOptionsEnabled
+                : LanguageManager.CurrentLanguage.sandbox.sandbox_shop_worldOptionsDisabled;
+            openButtonText.text = isBorderOn
+                ? LanguageManager.CurrentLanguage.sandbox.sandbox_shop_worldOptionsDisable
+                : LanguageManager.CurrentLanguage.sandbox.sandbox_shop_worldOptionsEnable;
         }
     }
     

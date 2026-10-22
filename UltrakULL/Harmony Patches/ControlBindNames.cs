@@ -14,6 +14,9 @@ namespace UltrakULL.Harmony_Patches
         [HarmonyPostfix]
         public static void controlSectionsPatch_Postfix(ControlSections __instance, List<GameObject> ___rebindUIObjects)
         {
+            // Built-in English keeps the game's original control section names.
+            if (UltrakULL.CommonFunctions.isUsingEnglish()) return;
+
             foreach(GameObject section in ___rebindUIObjects)
             {
                 if (section.name == "Control Section Template(Clone)")
@@ -89,6 +92,9 @@ namespace UltrakULL.Harmony_Patches
         [HarmonyPostfix]
         public static void controlBindNamesPatch_Postfix(ControlsOptionsKey __instance)
         {
+            // Built-in English keeps the game's original control names.
+            if (UltrakULL.CommonFunctions.isUsingEnglish()) return;
+
             __instance.actionText.text = getActionName(__instance.actionText.text);
         }
     }
@@ -98,6 +104,9 @@ namespace UltrakULL.Harmony_Patches
         [HarmonyPostfix]
         public static string GenerateTooltip_Postfix(string __result, InputAction action, InputBinding binding, InputBinding[] conflicts)
         {
+            // Built-in English keeps the game's original conflict tooltip.
+            if (UltrakULL.CommonFunctions.isUsingEnglish()) return __result;
+
             string str = action.GetBindingDisplayStringWithoutOverride(binding, InputBinding.DisplayStringOptions.DontIncludeInteractions).ToUpper();
             string str2 = "<color=red>" + str + " " + LanguageManager.CurrentLanguage.options.controls_boundMultiple + ":";
             HashSet<string> hashSet = new HashSet<string>();

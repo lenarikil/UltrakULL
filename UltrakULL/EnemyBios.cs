@@ -4,8 +4,6 @@ namespace UltrakULL
 {
 	public static class EnemyBios
 	{
-		private static bool doubleBoss;
-
 		private static bool IsNullOrEmpty(string str)
 		{
 			return string.IsNullOrEmpty(str);

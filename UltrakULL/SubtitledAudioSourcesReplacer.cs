@@ -16,7 +16,7 @@ namespace UltrakULL
 {
     public static class SubtitledAudioSourcesReplacer
     {
-        public static string SpeechFolder = Combine(Paths.ConfigPath,"ultrakull", "audio", LanguageManager.CurrentLanguage.metadata.langName);
+        public static string SpeechFolder = LanguageManager.GetLanguageAssetFolder("audio") + DirectorySeparatorChar;
         
         public static SubtitledSourcesConfig Config;
         private static readonly HashSet<string> subtitleTimingWarnings = new HashSet<string>();
@@ -56,20 +56,16 @@ namespace UltrakULL
                         if (audioSource != null)
                         {
                             var src = audioSource;
-                            AudioClip originalClip = src.clip;
                             string requestedAudioPath = Combine(SpeechFolder, objectReference.AudioPath);
                             string objectPath = gameObject;
                             LogAudioSourceDiagnostics(src, "SubtitledAudioSource:" + obj.name);
-                            SwapClipWithFileAsync(originalClip, requestedAudioPath, (newClip) =>
-                            {
-                                try
-                                {
-                                    if (newClip != null && !ReferenceEquals(newClip, originalClip))
-                                        LogSubtitleTimingDiagnostics(objectReference, newClip, objectPath, requestedAudioPath);
 
-                                    src.clip = newClip;
-                                }
-                                catch { }
+                            // The swap keeps the playback time of a line that is
+                            // playing, so a language switch does not restart the
+                            // cutscene voice-over, and the subtitles stay in sync.
+                            SwapSourceClip(src, requestedAudioPath, delegate(AudioClip newClip)
+                            {
+                                LogSubtitleTimingDiagnostics(objectReference, newClip, objectPath, requestedAudioPath);
                             });
                         }
                         else

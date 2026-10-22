@@ -424,17 +424,20 @@ namespace UltrakULL.Harmony_Patches.Subtitles
 					List<Label> originalLabels = list[i].labels;
 					list.RemoveAt(i);
 
-					CodeInstruction ldstr = new CodeInstruction(OpCodes.Ldstr, subtitleKey);
+					CodeInstruction ldstrKey = new CodeInstruction(OpCodes.Ldstr, subtitleKey);
 					// Transfer labels to the new Ldstr so any branch targeting this position still works.
-					ldstr.labels.AddRange(originalLabels);
+					ldstrKey.labels.AddRange(originalLabels);
 
+					// Pass the original vanilla subtitle so built-in English (and languages
+					// missing this key) fall back to the game's own text instead of a null subtitle.
 					list.InsertRange(i, new List<CodeInstruction>
 					{
-						ldstr,
+						ldstrKey,
+						new CodeInstruction(OpCodes.Ldstr, text),
 						new CodeInstruction(OpCodes.Call,
-							AccessTools.Method(typeof(SubtitlesHelper), nameof(SubtitlesHelper.GetText), new[] { typeof(string) }))
+							AccessTools.Method(typeof(SubtitlesHelper), nameof(SubtitlesHelper.GetTextOrFallback), new[] { typeof(string), typeof(string) }))
 					});
-					i++; // Skip the newly inserted Call instruction
+					i++; // Skip the newly inserted instructions
 				}
 			}
 
@@ -471,17 +474,20 @@ namespace UltrakULL.Harmony_Patches.Subtitles
 				List<Label> originalLabels = list[i].labels;
 				list.RemoveAt(i);
 
-				CodeInstruction ldstr = new CodeInstruction(OpCodes.Ldstr, subtitleKey);
+				CodeInstruction ldstrKey = new CodeInstruction(OpCodes.Ldstr, subtitleKey);
 				// Transfer labels to the new Ldstr so any branch targeting this position still works.
-				ldstr.labels.AddRange(originalLabels);
+				ldstrKey.labels.AddRange(originalLabels);
 
+				// Pass the original vanilla subtitle so built-in English (and languages
+				// missing this key) fall back to the game's own text instead of a null subtitle.
 				list.InsertRange(i, new List<CodeInstruction>
 				{
-					ldstr,
+					ldstrKey,
+					new CodeInstruction(OpCodes.Ldstr, text),
 					new CodeInstruction(OpCodes.Call,
-						AccessTools.Method(typeof(SubtitlesHelper), nameof(SubtitlesHelper.GetText), new[] { typeof(string) }))
+						AccessTools.Method(typeof(SubtitlesHelper), nameof(SubtitlesHelper.GetTextOrFallback), new[] { typeof(string), typeof(string) }))
 				});
-				i++; // Skip the newly inserted Call instruction
+				i++; // Skip the newly inserted instructions
 			}
 
 			return list;

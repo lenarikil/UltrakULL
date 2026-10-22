@@ -12,6 +12,9 @@ namespace UltrakULL.Harmony_Patches
         [HarmonyPostfix]
         public static void StatsPostfix(StatsDisplay __instance, TMP_Text ___textContent)
         {
+            // Built-in English keeps the game's original sandbox stats text.
+            if (UltrakULL.CommonFunctions.isUsingEnglish()) return;
+
             if (SteamController.Instance == null)
             {
                 return;

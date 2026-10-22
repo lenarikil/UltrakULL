@@ -14,9 +14,27 @@ namespace UltrakULL.Harmony_Patches
     [HarmonyPatch(typeof(FinalRank), "SetInfo")]
     public static class LocalizeFinalRankInfo
     {
+        private sealed class RankInfo
+        {
+            public int Restarts;
+            public bool Damage;
+            public bool MajorUsed;
+            public bool CheatsUsed;
+        }
+
+        private static readonly Dictionary<FinalRank, RankInfo> displayedRanks = new Dictionary<FinalRank, RankInfo>();
+
         [HarmonyPrefix]
         public static bool SetInfo_MyPatch(int restarts, bool damage, bool majorUsed, bool cheatsUsed, FinalRank __instance, bool ___noRestarts, bool ___majorAssists, bool ___noDamage)
         {
+            displayedRanks[__instance] = new RankInfo
+            {
+                Restarts = restarts,
+                Damage = damage,
+                MajorUsed = majorUsed,
+                CheatsUsed = cheatsUsed
+            };
+
             if(isUsingEnglish())
             {
                 return true;
@@ -102,6 +120,43 @@ namespace UltrakULL.Harmony_Patches
             }
             return false;
         }
+
+        /// <summary>
+        /// Rewrites the extra-information line of an already visible final-rank
+        /// panel. SetInfo only mutates its own text and flags, so this does not replay
+        /// the rank animation or reload the results screen.
+        /// </summary>
+        public static void Reapply()
+        {
+            List<FinalRank> dead = new List<FinalRank>();
+            // SetInfo passes through this Harmony prefix and refreshes the cached
+            // entry. Iterate a snapshot so that cache update cannot invalidate the
+            // enumerator.
+            foreach (KeyValuePair<FinalRank, RankInfo> pair in new List<KeyValuePair<FinalRank, RankInfo>>(displayedRanks))
+            {
+                FinalRank rank = pair.Key;
+                if (rank == null)
+                {
+                    dead.Add(rank);
+                    continue;
+                }
+
+                if (!rank.gameObject.activeInHierarchy || pair.Value == null)
+                    continue;
+
+                try
+                {
+                    rank.SetInfo(pair.Value.Restarts, pair.Value.Damage, pair.Value.MajorUsed, pair.Value.CheatsUsed);
+                }
+                catch (System.Exception e)
+                {
+                    Logging.Warn("[FinalRank] Failed to refresh the visible rank information: " + e.Message);
+                }
+            }
+
+            for (int i = 0; i < dead.Count; i++)
+                displayedRanks.Remove(dead[i]);
+        }
     }
 
     [HarmonyPatch(typeof(FinalRank), "PointsShow")]
@@ -113,7 +168,11 @@ namespace UltrakULL.Harmony_Patches
             {
                 if (code.opcode == OpCodes.Ldstr && (string)code.operand == "<color=orange>P</color>")
                 {
-                    code.operand = "<color=orange>" + LanguageManager.CurrentLanguage.shop.shop_moneyCount + "</color>";
+                    // Keep the vanilla "P" when the language has no money label (built-in English).
+                    string money = LanguageManager.CurrentLanguage != null && LanguageManager.CurrentLanguage.shop != null
+                        ? LanguageManager.CurrentLanguage.shop.shop_moneyCount : null;
+                    if (!string.IsNullOrEmpty(money))
+                        code.operand = "<color=orange>" + money + "</color>";
                 }
 
                 yield return code;
@@ -130,7 +189,11 @@ namespace UltrakULL.Harmony_Patches
             {
                 if (code.opcode == OpCodes.Ldstr && (string)code.operand == "<color=orange>P</color>")
                 {
-                    code.operand = "<color=orange>" + LanguageManager.CurrentLanguage.shop.shop_moneyCount + "</color>";
+                    // Keep the vanilla "P" when the language has no money label (built-in English).
+                    string money = LanguageManager.CurrentLanguage != null && LanguageManager.CurrentLanguage.shop != null
+                        ? LanguageManager.CurrentLanguage.shop.shop_moneyCount : null;
+                    if (!string.IsNullOrEmpty(money))
+                        code.operand = "<color=orange>" + money + "</color>";
                 }
 
                 yield return code;
@@ -147,7 +210,11 @@ namespace UltrakULL.Harmony_Patches
             {
                 if (code.opcode == OpCodes.Ldstr && (string)code.operand == "<color=orange>P</color>")
                 {
-                    code.operand = "<color=orange>" + LanguageManager.CurrentLanguage.shop.shop_moneyCount + "</color>";
+                    // Keep the vanilla "P" when the language has no money label (built-in English).
+                    string money = LanguageManager.CurrentLanguage != null && LanguageManager.CurrentLanguage.shop != null
+                        ? LanguageManager.CurrentLanguage.shop.shop_moneyCount : null;
+                    if (!string.IsNullOrEmpty(money))
+                        code.operand = "<color=orange>" + money + "</color>";
                 }
 
                 yield return code;

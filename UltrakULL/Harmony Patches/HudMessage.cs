@@ -23,6 +23,37 @@ namespace UltrakULL.Harmony_Patches
             bhvr.enabled = false;
             ___txt.text = LanguageManager.CurrentLanguage.misc.pressToSkip;
         }
+
+        /// <summary>
+        /// Applies the active language to the skip hint of a cutscene.
+        ///
+        /// The hint is filled once, when the cutscene starts, so a language switch did
+        /// not reach it and it kept the previous language until the cutscene ended.
+        /// </summary>
+        public static void Reapply()
+        {
+            CutsceneSkipText skipText = MonoSingleton<CutsceneSkipText>.Instance;
+            if (skipText == null)
+            {
+                return;
+            }
+
+            TMP_Text text = skipText.GetComponent<TMP_Text>();
+            if (text == null || !text.enabled)
+            {
+                // The hint is not on screen right now, it is filled when it is shown.
+                return;
+            }
+
+            try
+            {
+                text.text = LanguageManager.CurrentLanguage.misc.pressToSkip;
+            }
+            catch (Exception e)
+            {
+                HandleError(e);
+            }
+        }
     }
 
     [HarmonyPatch(typeof(HudMessageReceiver),"SendHudMessage")]

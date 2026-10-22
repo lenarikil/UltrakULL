@@ -31,6 +31,23 @@ namespace UltrakULL
         }
 
         /// <summary>
+        /// Gets a subtitle string for the current language, falling back to the supplied
+        /// original (vanilla) text when the language has no value for the field. This lets
+        /// translated transpilers keep the game's own string in built-in English or when a
+        /// translation is missing a key, instead of producing a null/blank subtitle.
+        /// </summary>
+        public static string GetTextOrFallback(string fieldName, string fallback)
+        {
+            var text = GetText(fieldName);
+
+            // The key is remembered with the text, so a subtitle that is on screen can
+            // be written again in another language.
+            LiveSubtitles.RegisterText(fieldName, text);
+
+            return string.IsNullOrEmpty(text) ? fallback : text;
+        }
+
+        /// <summary>
         /// Gets a subtitle string with color tags wrapped around it.
         /// </summary>
         public static string GetTextWithColor(string fieldName, string colorHex)
@@ -40,9 +57,14 @@ namespace UltrakULL
                 return null;
 
             if (string.IsNullOrEmpty(colorHex))
+            {
+                LiveSubtitles.RegisterText(fieldName, text);
                 return text;
+            }
 
-            return "<color=#" + colorHex + ">" + text + "</color>";
+            var colored = "<color=#" + colorHex + ">" + text + "</color>";
+            LiveSubtitles.RegisterText(fieldName, colored, colorHex);
+            return colored;
         }
     }
 }

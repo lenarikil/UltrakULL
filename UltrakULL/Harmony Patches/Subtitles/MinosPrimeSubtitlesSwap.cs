@@ -83,7 +83,7 @@ namespace UltrakULL.Harmony_Patches.Subtitles
 			{
 				if (DisplaySubtitleCall(instructions[i]))
 				{
-					ReplaceLdstr(i - 3, subtitlesKey, instructions);
+					ReplaceLdstr(i - LdstrInstructionOffset, subtitlesKey, instructions);
 					break;
 				}
 			}
@@ -105,18 +105,22 @@ namespace UltrakULL.Harmony_Patches.Subtitles
 
 		private static void ReplaceLdstr(int offset, string subtitlesKey, List<CodeInstruction> instructions)
 		{
+			// Keep the original vanilla subtitle so we can fall back to it at runtime
+			// (built-in English, or a translation missing this key).
+			string originalText = instructions[offset].operand as string;
 			// Preserve branch labels from the original instruction before removing it.
 			List<Label> originalLabels = instructions[offset].labels;
 			instructions.RemoveAt(offset);
 
-			CodeInstruction ldstr = new CodeInstruction(OpCodes.Ldstr, subtitlesKey);
+			CodeInstruction ldstrKey = new CodeInstruction(OpCodes.Ldstr, subtitlesKey);
 			// Transfer labels to the new Ldstr so any branch targeting this position still works.
-			ldstr.labels.AddRange(originalLabels);
+			ldstrKey.labels.AddRange(originalLabels);
 
 			instructions.InsertRange(offset, new List<CodeInstruction>
 			{
-				ldstr,
-				new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(SubtitlesHelper), nameof(SubtitlesHelper.GetText), new[] { typeof(string) }))
+				ldstrKey,
+				new CodeInstruction(OpCodes.Ldstr, originalText),
+				new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(SubtitlesHelper), nameof(SubtitlesHelper.GetTextOrFallback), new[] { typeof(string), typeof(string) }))
 			});
 		}
 	}

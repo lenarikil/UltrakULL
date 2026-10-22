@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using TMPro;
 using UltrakULL.json;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,18 +10,72 @@ namespace UltrakULL.Harmony_Patches
     [HarmonyPatch(typeof(FishingHUD),"ShowHUD")]
     public class FishingHUDPatch
     {
+        /// <summary>
+        /// The texts of the fishing hud and the text the game itself puts in them.
+        /// They are kept, so the messages can be translated again after a language
+        /// switch.
+        /// </summary>
+        private static Text outOfWaterText;
+        private static Text hookedText;
+        private static string outOfWaterGameText;
+        private static string hookedGameText;
+
         [HarmonyPostfix]
         public static void FishingHUDPatch_Postfix(ref GameObject ___outOfWaterMessage, ref GameObject ___hookedContainer)
         {
-            if(!isUsingEnglish())
+            if (outOfWaterText == null)
             {
-                Text outOfWaterText = ___outOfWaterMessage.Child("Text").Text();
-                outOfWaterText.text = LanguageManager.CurrentLanguage.fishing.fish_outOfWater;
-            
-                Text hookedText = ___hookedContainer.Child("Text").Text();
-                hookedText.text = LanguageManager.CurrentLanguage.fishing.fish_rodHooked;
+                outOfWaterText = ___outOfWaterMessage.Child("Text").Text();
+                hookedText = ___hookedContainer.Child("Text").Text();
+
+                // The messages still show the text of the game at this point.
+                if (outOfWaterText != null)
+                {
+                    outOfWaterGameText = outOfWaterText.text;
+                }
+                if (hookedText != null)
+                {
+                    hookedGameText = hookedText.text;
+                }
             }
-            
+
+            ApplyTranslations();
+        }
+
+        /// <summary>
+        /// Applies the active language to the messages of the fishing hud.
+        ///
+        /// The game only shows the messages, it never fills them, so a language switch
+        /// did not reach them and they kept the previous language.
+        /// </summary>
+        public static void Reapply()
+        {
+            ApplyTranslations();
+        }
+
+        private static void ApplyTranslations()
+        {
+            if (outOfWaterText == null || hookedText == null)
+            {
+                return;
+            }
+
+            if (isUsingEnglish())
+            {
+                // The built-in English is the game's own text.
+                if (!string.IsNullOrEmpty(outOfWaterGameText))
+                {
+                    outOfWaterText.text = outOfWaterGameText;
+                }
+                if (!string.IsNullOrEmpty(hookedGameText))
+                {
+                    hookedText.text = hookedGameText;
+                }
+                return;
+            }
+
+            outOfWaterText.text = LanguageManager.CurrentLanguage.fishing.fish_outOfWater;
+            hookedText.text = LanguageManager.CurrentLanguage.fishing.fish_rodHooked;
         }
     }
 
@@ -36,71 +91,13 @@ namespace UltrakULL.Harmony_Patches
             }
             if(show && fish != null)
             {
-                string fishName = fish.fishName;
-                switch (fish.fishName)
-                { 
-                    case "Funny Stupid Fish (Friend)":
-                    {
-                        fishName = LanguageManager.CurrentLanguage.fishing.fish_terminalfunnyStupidFish;
-                        fishName = LanguageManager.CurrentLanguage.fishing.fish_funnyStupidFish;
-                        break;
-                    }
-                    case "PITR Fish":
-                    {
-                        fishName = LanguageManager.CurrentLanguage.fishing.fish_pitrFish;
-                        break;
-                    }
-                    case "Trout":
-                    {
-                        fishName = LanguageManager.CurrentLanguage.fishing.fish_trout;
-                        break;
-                    }
-                    case "Metal Fish":
-                    {
-                        fishName = LanguageManager.CurrentLanguage.fishing.fish_amidEvilFish;
-                        break;
-                    }
-                    case "Chomper":
-                    {
-                        fishName = LanguageManager.CurrentLanguage.fishing.fish_chomper;
-                        break;
-                    }
-                    case "Bomb Fish":
-                    {
-                        fishName = LanguageManager.CurrentLanguage.fishing.fish_bombFish;
-                        break;
-                    }
-                    case "Eyeball":
-                    {
-                        fishName = LanguageManager.CurrentLanguage.fishing.fish_gibeye;
-                        break;
-                    }
-                    case "Frog (?)":
-                    {
-                        fishName = LanguageManager.CurrentLanguage.fishing.fish_ironLungFish;
-                        break;
-                    }
-                    case "Dope Fish":
-                    {
-                        fishName = LanguageManager.CurrentLanguage.fishing.fish_dopeFish;
-                        break;
-                    }
-                    case "Stickfish":
-                    {
-                        fishName = LanguageManager.CurrentLanguage.fishing.fish_stickFish;
-                        break;
-                    }
-                    case "Cooked Fish":
-                    {
-                        fishName = LanguageManager.CurrentLanguage.fishing.fish_cookedFish;
-                        break;
-                    }
-                    case "Shark":
-                    {
-                        fishName = LanguageManager.CurrentLanguage.fishing.fish_shark;
-                        break;
-                    }
+                string fishName = FishingStrings.GetFishName(fish.fishName);
+                if (fishName == null)
+                {
+                    // A fish without a translation keeps the name of the game.
+                    fishName = fish.fishName;
                 }
+
                 ___fishCaughtText.text = "<size=56>" + LanguageManager.CurrentLanguage.fishing.fish_fishCaught + "</size> <color=#FFA500><size=80>" + fishName + "</size></color>";
                 ___fishCaughtText.resizeTextForBestFit = true;
                 
@@ -171,101 +168,233 @@ namespace UltrakULL.Harmony_Patches
     [HarmonyPatch(typeof(FishEncyclopedia),"SelectFish")]
     public class SelectFish
     {
-        [HarmonyPrefix]
-        public static bool SelectFish_Prefix(ref FishObject fish, FishEncyclopedia __instance)
+        /// <summary>
+        /// The fish that is open in the encyclopedia and the texts it is shown in.
+        /// They are kept, so the fish can be translated again after a language switch.
+        /// </summary>
+        private static FishObject openFish;
+        private static TMP_Text openFishName;
+        private static TMP_Text openFishDescription;
+
+        /// <summary>
+        /// Applies the active language to the fish that is open.
+        ///
+        /// The game fills the encyclopedia only when a fish is picked, so a language
+        /// switch did not reach it and it kept the previous language until the fish
+        /// was picked again.
+        ///
+        /// Only the text on screen is written. The fish of the game keeps its own
+        /// name and description, so the fish that is caught later is still found by
+        /// its name.
+        /// </summary>
+        [HarmonyPostfix]
+        public static void SelectFish_Postfix(FishObject fish, FishEncyclopedia __instance, ref TMP_Text ___fishName, ref TMP_Text ___fishDescription)
         {
-            if(isUsingEnglish())
+            openFish = fish;
+            openFishName = ___fishName;
+            openFishDescription = ___fishDescription;
+
+            ApplyTranslations(fish, ___fishName, ___fishDescription);
+        }
+
+        /// <summary>
+        /// Applies the active language to the fish that is open.
+        /// </summary>
+        public static void Reapply()
+        {
+            if (openFish == null || openFishName == null || openFishDescription == null)
             {
-                return true;
+                return;
             }
-            switch(fish.fishName)
+
+            if (!openFishName.gameObject.activeInHierarchy)
+            {
+                // The fish is not on screen, so there is nothing to translate.
+                return;
+            }
+
+            ApplyTranslations(openFish, openFishName, openFishDescription);
+        }
+
+        private static void ApplyTranslations(FishObject fish, TMP_Text fishName, TMP_Text fishDescription)
+        {
+            if (fish == null || fishName == null || fishDescription == null)
+            {
+                return;
+            }
+
+            bool recognized = MonoSingleton<FishManager>.Instance.recognizedFishes[fish];
+
+            if (isUsingEnglish())
+            {
+                // The built-in English is the game's own text.
+                fishName.text = recognized ? fish.fishName : "???";
+                fishDescription.text = fish.description;
+                return;
+            }
+
+            if (!recognized)
+            {
+                // The game hides the name of a fish that is not recognized yet.
+                fishName.text = "???";
+                return;
+            }
+
+            string name = FishingStrings.GetFishName(fish.fishName);
+            if (name != null)
+            {
+                fishName.text = name;
+            }
+
+            string description = FishingStrings.GetFishDescription(fish.fishName);
+            if (description != null)
+            {
+                fishDescription.text = description;
+            }
+        }
+    }
+
+    /// <summary>
+    /// The name and the description of the fish in the active language.
+    /// </summary>
+    public static class FishingStrings
+    {
+        /// <summary>
+        /// The name of the fish in the active language, or null when the fish has no
+        /// translation.
+        /// </summary>
+        public static string GetFishName(string englishName)
+        {
+            switch (englishName)
             {
                 case "Funny Stupid Fish (Friend)":
-                {
-                    fish.fishName = LanguageManager.CurrentLanguage.fishing.fish_terminalfunnyStupidFish;
-                    fish.description = LanguageManager.CurrentLanguage.fishing.fish_funnyStupidFishDescription1 + "\n\n"
-                                        + LanguageManager.CurrentLanguage.fishing.fish_funnyStupidFishDescription2;
-                    break;
-                }
+                    {
+                        return LanguageManager.CurrentLanguage.fishing.fish_funnyStupidFish;
+                    }
                 case "PITR Fish":
-                {
-                    fish.fishName = LanguageManager.CurrentLanguage.fishing.fish_pitrFish;
-                    fish.description = LanguageManager.CurrentLanguage.fishing.fish_pitrFishDescription1 + "\n\n"
-                        + LanguageManager.CurrentLanguage.fishing.fish_pitrFishDescription2;
-                    break;
-                }
+                    {
+                        return LanguageManager.CurrentLanguage.fishing.fish_pitrFish;
+                    }
                 case "Trout":
-                {
-                    fish.fishName = LanguageManager.CurrentLanguage.fishing.fish_trout;
-                    fish.description = LanguageManager.CurrentLanguage.fishing.fish_troutDescription1 + "\n\n"
-                        + LanguageManager.CurrentLanguage.fishing.fish_troutDescription2;
-                    break;
-                }
+                    {
+                        return LanguageManager.CurrentLanguage.fishing.fish_trout;
+                    }
                 case "Metal Fish":
-                {
-                    fish.fishName = LanguageManager.CurrentLanguage.fishing.fish_amidEvilFish;
-                    fish.description = LanguageManager.CurrentLanguage.fishing.fish_amidEvilFishDescription1 + "\n\n"
-                        + LanguageManager.CurrentLanguage.fishing.fish_amidEvilFishDescription2;
-                    break;
-                }
+                    {
+                        return LanguageManager.CurrentLanguage.fishing.fish_amidEvilFish;
+                    }
                 case "Chomper":
-                {
-                    fish.fishName = LanguageManager.CurrentLanguage.fishing.fish_chomper;
-                    fish.description = LanguageManager.CurrentLanguage.fishing.fish_chomperDescription1 + "\n\n"
-                        + LanguageManager.CurrentLanguage.fishing.fish_chomperDescription2;
-                    break;
-                }
+                    {
+                        return LanguageManager.CurrentLanguage.fishing.fish_chomper;
+                    }
                 case "Bomb Fish":
-                {
-                    fish.fishName = LanguageManager.CurrentLanguage.fishing.fish_bombFish;
-                    fish.description = LanguageManager.CurrentLanguage.fishing.fish_bombFishDescription1 + "\n\n"
-                        + LanguageManager.CurrentLanguage.fishing.fish_bombFishDescription2;
-                    break;
-                }
+                    {
+                        return LanguageManager.CurrentLanguage.fishing.fish_bombFish;
+                    }
                 case "Eyeball":
-                {
-                    fish.fishName = LanguageManager.CurrentLanguage.fishing.fish_gibeye;
-                    fish.description = LanguageManager.CurrentLanguage.fishing.fish_gibeyeDescription1 + "\n\n"
-                        + LanguageManager.CurrentLanguage.fishing.fish_gibeyeDescription2;
-                    break;
-                }
+                    {
+                        return LanguageManager.CurrentLanguage.fishing.fish_gibeye;
+                    }
                 case "Frog (?)":
-                {
-                    fish.fishName = LanguageManager.CurrentLanguage.fishing.fish_ironLungFish;
-                    fish.description = LanguageManager.CurrentLanguage.fishing.fish_ironLungFishDescription1 + "\n\n"
-                        + LanguageManager.CurrentLanguage.fishing.fish_ironLungFishDescription2;
-                    break;
-                }
+                    {
+                        return LanguageManager.CurrentLanguage.fishing.fish_ironLungFish;
+                    }
                 case "Dope Fish":
-                {
-                    fish.fishName = LanguageManager.CurrentLanguage.fishing.fish_dopeFish;
-                    fish.description = LanguageManager.CurrentLanguage.fishing.fish_dopeFishDescription1 + "\n\n"
-                        + LanguageManager.CurrentLanguage.fishing.fish_dopeFishDescription2;
-                    break;
-                }
+                    {
+                        return LanguageManager.CurrentLanguage.fishing.fish_dopeFish;
+                    }
                 case "Stickfish":
-                {
-                    fish.fishName = LanguageManager.CurrentLanguage.fishing.fish_stickFish;
-                    fish.description = LanguageManager.CurrentLanguage.fishing.fish_stickFishDescription1 + "\n\n"
-                        + LanguageManager.CurrentLanguage.fishing.fish_stickFishDescription2;
-                    break;
-                }
+                    {
+                        return LanguageManager.CurrentLanguage.fishing.fish_stickFish;
+                    }
                 case "Cooked Fish":
-                {
-                    fish.fishName = LanguageManager.CurrentLanguage.fishing.fish_cookedFish;
-                    fish.description = LanguageManager.CurrentLanguage.fishing.fish_cookedFishDescription1 + "\n\n"
-                        + LanguageManager.CurrentLanguage.fishing.fish_cookedFishDescription2;
-                    break;
-                }
+                    {
+                        return LanguageManager.CurrentLanguage.fishing.fish_cookedFish;
+                    }
                 case "Shark":
-                {
-                    fish.fishName = LanguageManager.CurrentLanguage.fishing.fish_shark;
-                    fish.description = LanguageManager.CurrentLanguage.fishing.fish_sharkDescription1 + "\n\n"
-                        + LanguageManager.CurrentLanguage.fishing.fish_sharkDescription2;
-                    break;
-                }
+                    {
+                        return LanguageManager.CurrentLanguage.fishing.fish_shark;
+                    }
+                default:
+                    {
+                        return null;
+                    }
             }
-            return true;
+        }
+
+        /// <summary>
+        /// The description of the fish in the active language, or null when the fish
+        /// has no translation.
+        /// </summary>
+        public static string GetFishDescription(string englishName)
+        {
+            switch (englishName)
+            {
+                case "Funny Stupid Fish (Friend)":
+                    {
+                        return LanguageManager.CurrentLanguage.fishing.fish_funnyStupidFishDescription1 + "\n\n"
+                            + LanguageManager.CurrentLanguage.fishing.fish_funnyStupidFishDescription2;
+                    }
+                case "PITR Fish":
+                    {
+                        return LanguageManager.CurrentLanguage.fishing.fish_pitrFishDescription1 + "\n\n"
+                            + LanguageManager.CurrentLanguage.fishing.fish_pitrFishDescription2;
+                    }
+                case "Trout":
+                    {
+                        return LanguageManager.CurrentLanguage.fishing.fish_troutDescription1 + "\n\n"
+                            + LanguageManager.CurrentLanguage.fishing.fish_troutDescription2;
+                    }
+                case "Metal Fish":
+                    {
+                        return LanguageManager.CurrentLanguage.fishing.fish_amidEvilFishDescription1 + "\n\n"
+                            + LanguageManager.CurrentLanguage.fishing.fish_amidEvilFishDescription2;
+                    }
+                case "Chomper":
+                    {
+                        return LanguageManager.CurrentLanguage.fishing.fish_chomperDescription1 + "\n\n"
+                            + LanguageManager.CurrentLanguage.fishing.fish_chomperDescription2;
+                    }
+                case "Bomb Fish":
+                    {
+                        return LanguageManager.CurrentLanguage.fishing.fish_bombFishDescription1 + "\n\n"
+                            + LanguageManager.CurrentLanguage.fishing.fish_bombFishDescription2;
+                    }
+                case "Eyeball":
+                    {
+                        return LanguageManager.CurrentLanguage.fishing.fish_gibeyeDescription1 + "\n\n"
+                            + LanguageManager.CurrentLanguage.fishing.fish_gibeyeDescription2;
+                    }
+                case "Frog (?)":
+                    {
+                        return LanguageManager.CurrentLanguage.fishing.fish_ironLungFishDescription1 + "\n\n"
+                            + LanguageManager.CurrentLanguage.fishing.fish_ironLungFishDescription2;
+                    }
+                case "Dope Fish":
+                    {
+                        return LanguageManager.CurrentLanguage.fishing.fish_dopeFishDescription1 + "\n\n"
+                            + LanguageManager.CurrentLanguage.fishing.fish_dopeFishDescription2;
+                    }
+                case "Stickfish":
+                    {
+                        return LanguageManager.CurrentLanguage.fishing.fish_stickFishDescription1 + "\n\n"
+                            + LanguageManager.CurrentLanguage.fishing.fish_stickFishDescription2;
+                    }
+                case "Cooked Fish":
+                    {
+                        return LanguageManager.CurrentLanguage.fishing.fish_cookedFishDescription1 + "\n\n"
+                            + LanguageManager.CurrentLanguage.fishing.fish_cookedFishDescription2;
+                    }
+                case "Shark":
+                    {
+                        return LanguageManager.CurrentLanguage.fishing.fish_sharkDescription1 + "\n\n"
+                            + LanguageManager.CurrentLanguage.fishing.fish_sharkDescription2;
+                    }
+                default:
+                    {
+                        return null;
+                    }
+            }
         }
     }
 }

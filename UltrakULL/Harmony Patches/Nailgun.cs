@@ -54,6 +54,9 @@ namespace UltrakULL.Harmony_Patches
         [HarmonyPatch("UpdateZapHud"), HarmonyPostfix]
         public static void zapperpostfix(Nailgun __instance, Zapper ___currentZapper, CameraController ___cc, TMP_Text ___statusText, GameObject ___rechargingOverlay)
         {
+            // Built-in English keeps the game's original zapper HUD text.
+            if (UltrakULL.CommonFunctions.isUsingEnglish()) return;
+
             try
             {
                 if (!enablezapperfix) { return; }

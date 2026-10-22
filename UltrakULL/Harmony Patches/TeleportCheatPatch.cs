@@ -21,6 +21,9 @@ namespace UltrakULL.Harmony_Patches
         [HarmonyPrefix]
         private static void UpdatePrefix(TeleportCheat __instance)
         {
+            // Built-in English leaves the original cheat names untouched.
+            if (isUsingEnglish()) return;
+
             if (!_processed.Contains(__instance))
             {
                 _processed.Add(__instance);
@@ -67,7 +70,10 @@ namespace UltrakULL.Harmony_Patches
                 Transform parent = buttonTemplate.transform.parent;
                 if (parent == null) return;
 
-                string langFilePath = Path.Combine(Paths.ConfigPath, "ultrakull", LanguageManager.CurrentLanguage.metadata.langName + ".json");
+                string rootFolder = LanguageManager.CurrentLanguage != null ? LanguageManager.CurrentLanguage.RootFolder : null;
+                if (string.IsNullOrEmpty(rootFolder)) return;
+
+                string langFilePath = Path.Combine(rootFolder, "translation.json");
                 if (!File.Exists(langFilePath)) return;
 
                 string json = File.ReadAllText(langFilePath);

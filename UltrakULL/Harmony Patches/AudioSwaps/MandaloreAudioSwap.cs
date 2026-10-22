@@ -302,6 +302,10 @@ namespace UltrakULL.Harmony_Patches.AudioSwaps
                 return;
 
             _deathSubtitleText = "<color=#9EE6FF>" + LanguageManager.CurrentLanguage.subtitles.subtitles_mandalore_defeated + "</color>";
+
+            // The key is remembered with the text, so the subtitle can be written
+            // again in another language while it is on screen.
+            UltrakULL.LiveSubtitles.RegisterText("subtitles_mandalore_defeated", _deathSubtitleText, "9EE6FF");
         }
 
         [HarmonyPatch(typeof(Mandalore), "Update")]
