@@ -1,5 +1,6 @@
 using System.Collections;
 using TMPro;
+using UltrakULL.UI.TranslationBrowser;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,8 +15,16 @@ namespace UltrakULL.UI.Notifications
         public CanvasGroup canvasGroup;
         public Image backgroundImage;
 
+        // Set by ToastResources when the prefab is built.
+        public Image accentImage;
+        public Image iconImage;
+        public Image progressFill;
+        public GameObject panelRoot;
+
         private Coroutine hideCoroutine;
         private NotificationAction currentAction;
+        private float _duration = 4f;
+        private float _remaining;
 
         public void Setup(ToastType type, string title, string body, string actionLabel = null, NotificationAction action = null, float duration = 4f)
         {
@@ -67,32 +76,64 @@ namespace UltrakULL.UI.Notifications
 
         private void SetColors(ToastType type)
         {
-            if (backgroundImage == null) return;
-            switch (type)
+            Color color = ToastResources.TypeColor(type);
+
+            if (backgroundImage != null)
             {
-                case ToastType.Success:
-                    backgroundImage.color = new Color(0.235f, 0.702f, 0.443f, 0.92f);
-                    break;
-                case ToastType.Warning:
-                    backgroundImage.color = new Color(1f, 0.647f, 0f, 0.92f);
-                    break;
-                case ToastType.Error:
-                    backgroundImage.color = new Color(1f, 0.302f, 0.302f, 0.92f);
-                    break;
-                case ToastType.Info:
-                default:
-                    backgroundImage.color = new Color(0.298f, 0.6f, 0.902f, 0.92f);
-                    break;
+                backgroundImage.color = ToastResources.ToastBackground;
+            }
+            if (panelRoot != null)
+            {
+                UiFactory.SetBorderColor(panelRoot, color);
+            }
+            if (accentImage != null)
+            {
+                accentImage.color = color;
+            }
+            if (iconImage != null)
+            {
+                iconImage.color = color;
+                iconImage.sprite = PrimitiveSprites.Get(ToastResources.TypeIcon(type));
+            }
+            if (progressFill != null)
+            {
+                progressFill.color = color;
             }
         }
 
         private IEnumerator FadeInAndHide(float duration)
         {
+            _duration = Mathf.Max(0.1f, duration);
+            _remaining = _duration;
+            UpdateProgressFill();
+
             yield return Fade(0f, 1f, 0.2f);
-            // Unscaled: the game pauses (timeScale = 0) in menus, toasts must still dismiss.
-            yield return new WaitForSecondsRealtime(Mathf.Max(0f, duration - 0.4f));
+
+            // Unscaled countdown (menus pause the game, toasts must still
+            // dismiss) with the reverse progress strip following the remaining
+            // time.
+            while (_remaining > 0f)
+            {
+                _remaining -= Time.unscaledDeltaTime;
+                if (_remaining < 0f)
+                {
+                    _remaining = 0f;
+                }
+                UpdateProgressFill();
+                yield return null;
+            }
+
             yield return Fade(1f, 0f, 0.2f);
             Destroy(gameObject);
+        }
+
+        private void UpdateProgressFill()
+        {
+            if (progressFill != null)
+            {
+                float fraction = _duration > 0f ? Mathf.Clamp01(_remaining / _duration) : 0f;
+                progressFill.rectTransform.anchorMax = new Vector2(fraction, 1f);
+            }
         }
 
         private IEnumerator Fade(float from, float to, float time)

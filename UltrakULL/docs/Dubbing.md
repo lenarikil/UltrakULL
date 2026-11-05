@@ -129,9 +129,6 @@ The name of the pack folder is the folder name you downloaded, not necessarily t
 name shown in the language menu. For example the French pack may be installed as
 `fr-fr`, while its `langName` in `translation.json` reads `FR-fr`.
 
-**Example for French/Français**  (uses FR-fr):
-
-<img src="https://cdn.discordapp.com/attachments/472691871806652429/1049359697985163335/image.png" alt="drawing" width="650"/>
 
 
 ### Extra dubbing in the intermissions

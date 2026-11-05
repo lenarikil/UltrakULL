@@ -10,6 +10,9 @@ namespace UltrakULL.UI.Notifications
         public const string StartupUpdateAvailable = "Update available: v{latestVersion}.";
         public const string StartupUpdateCheckFailed = "Unable to check for updates. Check console for info.";
         public const string StartupViewUpdate = "VIEW UPDATE";
+        public const string TranslationUpdateTitle = "Translation update available";
+        public const string TranslationUpdateBody = "\"{name}\": installed v{installedVersion}, available v{latestVersion}. Update it from the in-game translation browser.";
+        public const string TranslationUpdateOpenCatalog = "OPEN CATALOG";
 
         public const string LanguageChangedTitle = "Language changed to {lang}";
         public const string LanguageChangedMenuBody = "The new language is now active.";

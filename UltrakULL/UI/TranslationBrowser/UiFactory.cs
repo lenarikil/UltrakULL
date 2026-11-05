@@ -48,6 +48,33 @@ namespace UltrakULL.UI.TranslationBrowser
             }
         }
 
+        /// <summary>Loads a sprite from a local image file (png/jpg) in the pack folder.</summary>
+        public static Sprite LoadLocalSprite(string filePath)
+        {
+            if (string.IsNullOrEmpty(filePath) || !System.IO.File.Exists(filePath))
+            {
+                return null;
+            }
+            try
+            {
+                byte[] data = System.IO.File.ReadAllBytes(filePath);
+                if (data == null || data.Length == 0)
+                {
+                    return null;
+                }
+                Texture2D tex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+                if (!tex.LoadImage(data))
+                {
+                    return null;
+                }
+                return Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100f);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
         // ---------------------------------------------------------------------
         // Panels & borders
         // ---------------------------------------------------------------------
@@ -427,6 +454,155 @@ namespace UltrakULL.UI.TranslationBrowser
             return buttonObj;
         }
 
+        /// <summary>
+        /// Instantiates the game's own consent Yes/No button (exact native
+        /// borders, colors and font) for the browser's confirmation dialogs.
+        /// Falls back to <see cref="CreateButton"/> when the template could not
+        /// be extracted.
+        /// </summary>
+        public static GameObject CreateConsentButton(
+            Transform parent,
+            string name,
+            string labelText,
+            Action onClick,
+            Vector2? size = null)
+        {
+            Vector2 buttonSize = size.HasValue ? size.Value : GameUiAssets.ConsentButtonSize;
+
+            if (GameUiAssets.ConsentButtonTemplate == null)
+            {
+                return CreateButton(parent, name, labelText, onClick, buttonSize,
+                    StylePalette.PanelAlt, StylePalette.BorderBlue, StylePalette.PanelHover);
+            }
+
+            GameObject buttonObj = UnityEngine.Object.Instantiate(GameUiAssets.ConsentButtonTemplate, parent);
+            buttonObj.name = name;
+            buttonObj.SetActive(true);
+
+            // The clone may still carry layout components from the game's own
+            // consent row (a LayoutElement with stale min/preferred sizes or a
+            // size fitter). The dialog's HorizontalLayoutGroup runs with
+            // childControlWidth=false, where such a LayoutElement wins over the
+            // clamped sizeDelta and pushes the buttons across the panel border,
+            // so strip it from the fresh clone before any layout pass runs.
+            LayoutElement staleLayout = buttonObj.GetComponent<LayoutElement>();
+            if (staleLayout != null)
+            {
+                UnityEngine.Object.DestroyImmediate(staleLayout);
+            }
+            ContentSizeFitter staleFitter = buttonObj.GetComponent<ContentSizeFitter>();
+            if (staleFitter != null)
+            {
+                UnityEngine.Object.DestroyImmediate(staleFitter);
+            }
+
+            RectTransform rect = buttonObj.GetComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = Vector2.zero;
+            rect.localPosition = Vector3.zero;
+            rect.localRotation = Quaternion.identity;
+            rect.localScale = Vector3.one;
+            rect.sizeDelta = buttonSize;
+
+            // The clone may also carry the game's own layout group or open
+            // animation on its root; both would fight the explicit size.
+            LayoutGroup rootGroup = buttonObj.GetComponent<LayoutGroup>();
+            if (rootGroup != null)
+            {
+                UnityEngine.Object.DestroyImmediate(rootGroup);
+            }
+            HudOpenEffect rootEffect = buttonObj.GetComponent<HudOpenEffect>();
+            if (rootEffect != null)
+            {
+                UnityEngine.Object.DestroyImmediate(rootEffect);
+            }
+
+            // The clone's children (background image, label) keep the rects
+            // they had inside the game's consent panel - fixed sizes authored
+            // for a much larger button. Left alone they render far past the
+            // resized root, which makes the buttons look huge and cross the
+            // dialog border. Force every descendant to stretch-fill its parent
+            // and strip the template's internal layout components, so the
+            // root's sizeDelta fully controls the visual size.
+            NormalizeTemplateChildren(rect);
+
+            TextMeshProUGUI label = buttonObj.GetComponentInChildren<TextMeshProUGUI>();
+            if (label != null)
+            {
+                label.text = labelText ?? "";
+                if (GameUiAssets.ButtonFont != null)
+                {
+                    label.font = GameUiAssets.ButtonFont;
+                }
+                Harmony_Patches.TextMeshProFontSwap.MarkAsModUI(label);
+            }
+
+            Button button = buttonObj.GetComponent<Button>();
+            if (button == null)
+            {
+                button = buttonObj.AddComponent<Button>();
+            }
+            button.onClick = new Button.ButtonClickedEvent();
+            if (onClick != null)
+            {
+                button.onClick.AddListener(() => onClick());
+            }
+            button.navigation = new Navigation { mode = Navigation.Mode.None };
+
+            return buttonObj;
+        }
+
+        /// <summary>
+        /// Forces every descendant of a cloned template button to stretch-fill
+        /// its parent and strips the template's internal layout components and
+        /// open animation, so the root's sizeDelta fully controls the visual
+        /// size and nothing can render past the root rect.
+        /// </summary>
+        private static void NormalizeTemplateChildren(RectTransform root)
+        {
+            for (int i = 0; i < root.childCount; i++)
+            {
+                RectTransform childRect = root.GetChild(i) as RectTransform;
+                if (childRect == null)
+                {
+                    continue;
+                }
+
+                LayoutElement childLayout = childRect.GetComponent<LayoutElement>();
+                if (childLayout != null)
+                {
+                    UnityEngine.Object.DestroyImmediate(childLayout);
+                }
+                ContentSizeFitter childFitter = childRect.GetComponent<ContentSizeFitter>();
+                if (childFitter != null)
+                {
+                    UnityEngine.Object.DestroyImmediate(childFitter);
+                }
+                LayoutGroup childGroup = childRect.GetComponent<LayoutGroup>();
+                if (childGroup != null)
+                {
+                    UnityEngine.Object.DestroyImmediate(childGroup);
+                }
+                HudOpenEffect childEffect = childRect.GetComponent<HudOpenEffect>();
+                if (childEffect != null)
+                {
+                    UnityEngine.Object.DestroyImmediate(childEffect);
+                }
+
+                childRect.anchorMin = Vector2.zero;
+                childRect.anchorMax = Vector2.one;
+                childRect.pivot = new Vector2(0.5f, 0.5f);
+                childRect.offsetMin = Vector2.zero;
+                childRect.offsetMax = Vector2.zero;
+                childRect.localScale = Vector3.one;
+                childRect.localRotation = Quaternion.identity;
+
+                NormalizeTemplateChildren(childRect);
+            }
+        }
+
         // ---------------------------------------------------------------------
         // Scroll view
         // ---------------------------------------------------------------------
@@ -513,19 +689,57 @@ namespace UltrakULL.UI.TranslationBrowser
             };
         }
 
-        /// <summary>Thin vertical scrollbar in the HUD blue outline style.</summary>
+        /// <summary>
+        /// Vertical scrollbar for a scroll view. Prefers the game's own
+        /// scrollbar template (exact native handle art, colors and behavior,
+        /// item 12); falls back to the flat HUD-blue bar when it could not be
+        /// extracted. The caller positions the returned object.
+        /// </summary>
         public static Scrollbar CreateScrollbar(Transform parent, string name, ScrollRect scrollRect)
         {
-            GameObject scrollbarObj = new GameObject(name, typeof(RectTransform));
-            scrollbarObj.transform.SetParent(parent, false);
+            Scrollbar scrollbar;
+            Image handleImage;
 
-            Scrollbar scrollbar = scrollbarObj.AddComponent<Scrollbar>();
+            if (GameUiAssets.ScrollbarTemplate != null)
+            {
+                // Clone the native scrollbar: it keeps the game's own sliding
+                // area, handle sprite and colors, and Instantiate remaps the
+                // handleRect/targetGraphic references to the clone.
+                GameObject scrollbarObj = UnityEngine.Object.Instantiate(GameUiAssets.ScrollbarTemplate.gameObject, parent);
+                scrollbarObj.name = name;
+                scrollbarObj.SetActive(true);
+
+                scrollbar = scrollbarObj.GetComponent<Scrollbar>();
+                // Defensive: the template's event is already empty, and the
+                // clone must never drive anything but its own scroll rect.
+                scrollbar.onValueChanged = new Scrollbar.ScrollEvent();
+                scrollbar.navigation = new Navigation { mode = Navigation.Mode.None };
+
+                handleImage = scrollbar.targetGraphic as Image;
+                if (handleImage == null && scrollbar.handleRect != null)
+                {
+                    handleImage = scrollbar.handleRect.GetComponent<Image>();
+                }
+
+                if (scrollRect != null)
+                {
+                    scrollRect.verticalScrollbar = scrollbar;
+                    scrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHideAndExpandViewport;
+                }
+
+                return scrollbar;
+            }
+
+            GameObject fallbackObj = new GameObject(name, typeof(RectTransform));
+            fallbackObj.transform.SetParent(parent, false);
+
+            scrollbar = fallbackObj.AddComponent<Scrollbar>();
             scrollbar.direction = Scrollbar.Direction.BottomToTop;
             scrollbar.transition = Selectable.Transition.None;
             scrollbar.navigation = new Navigation { mode = Navigation.Mode.None };
 
             GameObject slidingArea = new GameObject("Sliding Area", typeof(RectTransform));
-            slidingArea.transform.SetParent(scrollbarObj.transform, false);
+            slidingArea.transform.SetParent(fallbackObj.transform, false);
             RectTransform slidingRect = slidingArea.GetComponent<RectTransform>();
             slidingRect.anchorMin = Vector2.zero;
             slidingRect.anchorMax = Vector2.one;
@@ -542,7 +756,7 @@ namespace UltrakULL.UI.TranslationBrowser
             handleRect.anchoredPosition = Vector2.zero;
             handleRect.sizeDelta = new Vector2(0f, 40f);
 
-            Image handleImage = handle.AddComponent<Image>();
+            handleImage = handle.AddComponent<Image>();
             // Prefer the game's rounded fill art for the handle so the scrollbar reads
             // as a native control; fall back to a flat bar otherwise.
             if (NativeUi.IsReady)
@@ -572,17 +786,25 @@ namespace UltrakULL.UI.TranslationBrowser
         // Logo + flag
         // ---------------------------------------------------------------------
 
-        public sealed class LogoSlot
-        {
-            public GameObject Root;
-            public Image Logo;
-            public Image Flag;
-            public TextMeshProUGUI FlagBadge;
-        }
+    public sealed class LogoSlot
+    {
+        public GameObject Root;
+        public Image Logo;
+        public Image Flag;
+        public TextMeshProUGUI FlagBadge;
+    }
 
         /// <summary>
-        /// Square logo slot with an optional flag image (or language-code badge when
-        /// no flag artwork is provided) pinned to its bottom-right corner.
+        /// Square logo slot with an optional flag image (a known flag sprite, or
+        /// a flag URL, or a language-code badge when neither is available)
+        /// pinned to its bottom-right corner.
+        ///
+        /// Structure (render order, bottom to top): fill, LogoMask (RectMask2D,
+        /// inset by the border thickness) holding the cover-cropped logo, the
+        /// fallback glyph, the sweep spinner, the flag overlay and finally the
+        /// border - so the image can never cover the border (items 3, 13, 14).
+        /// While a remote logo is pending only the spinner is shown; the
+        /// fallback diamond appears only after a failed load (item 11).
         /// </summary>
         public static LogoSlot CreateLogoSlot(
             Transform parent,
@@ -591,84 +813,261 @@ namespace UltrakULL.UI.TranslationBrowser
             string logoUrl,
             string flagUrl,
             string languageCode,
-            Action<Texture2D> onRemoteLogoReady = null)
+            Sprite flagSprite = null,
+            Action<bool> onRemoteLoadResult = null)
         {
             GameObject slot = CreatePanel(parent, name, new Vector2(size, size), StylePalette.PanelAlt, StylePalette.BorderDim, 1f);
-            RectTransform slotRect = slot.GetComponent<RectTransform>();
 
-            // Fallback glyph shown until (or instead of) the remote logo.
-            Image fallback = CreateImage(slot.transform, "Fallback", new Vector2(size * 0.5f, size * 0.5f), StylePalette.TextDim, PrimitiveSprites.Kind.Diamond);
+            // Safety net: even when a parent layout group stretches its
+            // children, the slot stays a square (items 8 and 20).
+            AspectRatioFitter aspect = slot.AddComponent<AspectRatioFitter>();
+            aspect.aspectRatio = 1f;
+
+            // The image area is inset by the border thickness so the clipped
+            // logo can never render over the border ring.
+            const float inset = 3f;
+            float innerSize = Mathf.Max(1f, size - inset * 2f);
+
+            GameObject logoCanvas = new GameObject("LogoMask", typeof(RectTransform), typeof(RectMask2D));
+            logoCanvas.transform.SetParent(slot.transform, false);
+            RectTransform logoCanvasRect = logoCanvas.GetComponent<RectTransform>();
+            logoCanvasRect.anchorMin = Vector2.zero;
+            logoCanvasRect.anchorMax = Vector2.one;
+            logoCanvasRect.pivot = new Vector2(0.5f, 0.5f);
+            logoCanvasRect.offsetMin = new Vector2(inset, inset);
+            logoCanvasRect.offsetMax = new Vector2(-inset, -inset);
+
+            // The logo image: sized to COVER the mask square (cropped by the
+            // RectMask2D) instead of fitting inside it (item 4).
+            Image logo = CreateImage(logoCanvas.transform, "Logo", Vector2.zero, Color.white);
+            logo.preserveAspect = false;
+            logo.raycastTarget = false;
+            logo.gameObject.SetActive(false);
+
+            // Fallback glyph, shown only after a failed load (item 11).
+            Image fallback = CreateImage(slot.transform, "Fallback", new Vector2(size * 0.45f, size * 0.45f), StylePalette.TextDim, PrimitiveSprites.Kind.Diamond);
             fallback.rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
             fallback.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
             fallback.rectTransform.pivot = new Vector2(0.5f, 0.5f);
             fallback.rectTransform.anchoredPosition = Vector2.zero;
             fallback.rectTransform.sizeDelta = new Vector2(size * 0.45f, size * 0.45f);
 
-            Image logo = CreateImage(slot.transform, "Logo", new Vector2(size, size), Color.white);
-            logo.rectTransform.anchorMin = Vector2.zero;
-            logo.rectTransform.anchorMax = Vector2.one;
-            logo.rectTransform.pivot = new Vector2(0.5f, 0.5f);
-            logo.rectTransform.offsetMin = Vector2.zero;
-            logo.rectTransform.offsetMax = Vector2.zero;
-            logo.preserveAspect = true;
-            logo.raycastTarget = false;
-            logo.gameObject.SetActive(false);
+            // Sweep spinner, shown alone while a remote logo is pending (item 10).
+            Image spinner = LoadingSpinner.Create(slot.transform, "Spinner", new Vector2(size * 0.5f, size * 0.5f), StylePalette.TextDim);
+            spinner.rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+            spinner.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            spinner.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            spinner.rectTransform.anchoredPosition = Vector2.zero;
+            spinner.rectTransform.sizeDelta = new Vector2(size * 0.5f, size * 0.5f);
+            spinner.raycastTarget = false;
+            spinner.gameObject.SetActive(false);
 
             LogoSlot result = new LogoSlot { Root = slot, Logo = logo, Flag = null, FlagBadge = null };
 
             if (!string.IsNullOrWhiteSpace(logoUrl))
             {
-                string url = logoUrl;
-                ImageCache.GetOrLoad(url, delegate (Sprite sprite)
+                // Local file paths (installed packs) load directly; remote URLs go
+                // through ImageCache.
+                bool isLocal = !logoUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+                    && !logoUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
+                if (isLocal)
                 {
-                    if (logo == null)
+                    Sprite localSprite = LoadLocalSprite(logoUrl);
+                    if (localSprite != null)
                     {
-                        return;
+                        ApplyLogo(logo, fallback, spinner, localSprite, innerSize);
                     }
-                    if (sprite != null)
+                    else
                     {
-                        logo.sprite = sprite;
-                        logo.color = Color.white;
-                        logo.gameObject.SetActive(true);
+                        fallback.gameObject.SetActive(true);
                     }
-                });
+                }
+                else
+                {
+                    string url = logoUrl;
+                    spinner.gameObject.SetActive(true);
+                    ImageCache.GetOrLoad(url, delegate (Sprite sprite)
+                    {
+                        if (logo == null)
+                        {
+                            return;
+                        }
+                        ApplyLogo(logo, fallback, spinner, sprite, innerSize);
+                        if (onRemoteLoadResult != null)
+                        {
+                            onRemoteLoadResult(sprite != null);
+                        }
+                        if (sprite == null)
+                        {
+                            // Remote download failed: show warning icon instead of the plain diamond.
+                            if (fallback != null)
+                            {
+                                fallback.sprite = PrimitiveSprites.Get(PrimitiveSprites.Kind.Warning);
+                                fallback.color = StylePalette.AccentRed;
+                            }
+                        }
+                    });
+                }
+            }
+            else
+            {
+                fallback.gameObject.SetActive(true);
             }
 
-            if (!string.IsNullOrWhiteSpace(flagUrl))
+            if (flagSprite != null)
             {
-                float flagSize = size * 0.34f;
-                Image flag = CreateImage(slot.transform, "Flag", new Vector2(flagSize, flagSize * 0.72f), Color.white);
-                flag.rectTransform.anchorMin = new Vector2(1f, 0f);
-                flag.rectTransform.anchorMax = new Vector2(1f, 0f);
-                flag.rectTransform.pivot = new Vector2(1f, 0f);
-                flag.rectTransform.anchoredPosition = new Vector2(-2f, -2f);
-                flag.rectTransform.sizeDelta = new Vector2(flagSize, flagSize * 0.72f);
-                flag.preserveAspect = true;
-                flag.gameObject.SetActive(false);
+                result.Flag = CreateFlagOverlay(slot.transform, size, null, flagSprite);
+            }
+            else if (!string.IsNullOrWhiteSpace(flagUrl))
+            {
+                Image flag = CreateFlagOverlay(slot.transform, size, flagUrl, null);
+                result.Flag = flag;
 
-                string flagUrlCopy = flagUrl;
-                ImageCache.GetOrLoad(flagUrlCopy, delegate (Sprite sprite)
+                bool flagLocal = !flagUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+                    && !flagUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
+                if (flagLocal)
                 {
-                    if (flag == null)
+                    Sprite localSprite = LoadLocalSprite(flagUrl);
+                    if (localSprite != null)
                     {
-                        return;
-                    }
-                    if (sprite != null)
-                    {
-                        flag.sprite = sprite;
+                        flag.sprite = localSprite;
                         flag.color = Color.white;
                         flag.gameObject.SetActive(true);
                     }
-                });
-
-                result.Flag = flag;
+                }
+                else
+                {
+                    string flagUrlCopy = flagUrl;
+                    ImageCache.GetOrLoad(flagUrlCopy, delegate (Sprite sprite)
+                    {
+                        if (flag == null)
+                        {
+                            return;
+                        }
+                        if (sprite != null)
+                        {
+                            flag.sprite = sprite;
+                            flag.color = Color.white;
+                            flag.gameObject.SetActive(true);
+                        }
+                    });
+                }
             }
             else if (!string.IsNullOrWhiteSpace(languageCode))
             {
                 result.FlagBadge = CreateFlagBadge(slot.transform, languageCode, size);
             }
 
+            // The border renders above everything (including the logo) so the
+            // frame is always fully visible (items 3 and 14).
+            MoveBorderToTop(slot.transform);
+
             return result;
+        }
+
+        /// <summary>
+        /// Applies a loaded logo sprite: sizes it to cover the square mask area
+        /// (wide images match the height, tall images the width, centered) and
+        /// hides the spinner and the fallback glyph.
+        /// </summary>
+        private static void ApplyLogo(Image logo, Image fallback, Image spinner, Sprite sprite, float innerSize)
+        {
+            if (sprite == null)
+            {
+                // Failed load: hide the spinner, show the fallback glyph only now.
+                if (spinner != null)
+                {
+                    spinner.gameObject.SetActive(false);
+                }
+                if (fallback != null)
+                {
+                    fallback.gameObject.SetActive(true);
+                }
+                return;
+            }
+
+            if (spinner != null)
+            {
+                spinner.gameObject.SetActive(false);
+            }
+            if (fallback != null)
+            {
+                fallback.gameObject.SetActive(false);
+            }
+
+            RectTransform rect = logo.rectTransform;
+            float aspect = sprite.rect.height > 0f ? sprite.rect.width / sprite.rect.height : 1f;
+            float width;
+            float height;
+            if (aspect >= 1f)
+            {
+                height = innerSize;
+                width = innerSize * aspect;
+            }
+            else
+            {
+                width = innerSize;
+                height = innerSize / aspect;
+            }
+
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = Vector2.zero;
+            rect.sizeDelta = new Vector2(width, height);
+
+            logo.sprite = sprite;
+            logo.color = Color.white;
+            logo.gameObject.SetActive(true);
+        }
+
+        /// <summary>
+        /// The flag overlay pinned to the slot's bottom-right corner, above the
+        /// logo mask but inside the border ring.
+        /// </summary>
+        private static Image CreateFlagOverlay(Transform parent, float slotSize, string url, Sprite sprite)
+        {
+            float flagSize = slotSize * 0.34f;
+            Image flag = CreateImage(parent, "Flag", new Vector2(flagSize, flagSize * 0.72f), Color.white);
+            flag.rectTransform.anchorMin = new Vector2(1f, 0f);
+            flag.rectTransform.anchorMax = new Vector2(1f, 0f);
+            flag.rectTransform.pivot = new Vector2(1f, 0f);
+            flag.rectTransform.anchoredPosition = new Vector2(-4f, -4f);
+            flag.rectTransform.sizeDelta = new Vector2(flagSize, flagSize * 0.72f);
+            flag.preserveAspect = true;
+            if (sprite != null)
+            {
+                flag.sprite = sprite;
+                flag.gameObject.SetActive(true);
+            }
+            else
+            {
+                flag.gameObject.SetActive(false);
+            }
+            return flag;
+        }
+
+        /// <summary>
+        /// Moves a panel's border (the native rounded outline, or the four flat
+        /// strips) above every other child so panel content can never render
+        /// over the border.
+        /// </summary>
+        public static void MoveBorderToTop(Transform panelRoot)
+        {
+            if (panelRoot == null)
+            {
+                return;
+            }
+
+            string[] borderNames = { "NativeBorder", "BorderTop", "BorderBottom", "BorderLeft", "BorderRight" };
+            foreach (string borderName in borderNames)
+            {
+                Transform border = panelRoot.Find(borderName);
+                if (border != null)
+                {
+                    border.SetAsLastSibling();
+                }
+            }
         }
 
         /// <summary>Small bordered badge with the uppercased language code (pseudo flag).</summary>
@@ -682,7 +1081,7 @@ namespace UltrakULL.UI.TranslationBrowser
             badgeRect.anchorMin = new Vector2(1f, 0f);
             badgeRect.anchorMax = new Vector2(1f, 0f);
             badgeRect.pivot = new Vector2(1f, 0f);
-            badgeRect.anchoredPosition = new Vector2(-2f, -2f);
+            badgeRect.anchoredPosition = new Vector2(-4f, -4f);
 
             TextMeshProUGUI tmp = CreateLabel(badge.transform, "Code", code, 12f, Color.white, TextAlignmentOptions.Center, false);
             StretchToParent(tmp);

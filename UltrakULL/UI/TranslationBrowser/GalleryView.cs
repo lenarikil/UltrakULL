@@ -17,6 +17,7 @@ namespace UltrakULL.UI.TranslationBrowser
         private List<string> _urls = new List<string>();
         private int _index;
         private Image _stage;
+        private Image _spinner;
         private GameObject Placeholder;
         private GameObject _prevButton;
         private GameObject _nextButton;
@@ -35,6 +36,16 @@ namespace UltrakULL.UI.TranslationBrowser
             stage.raycastTarget = false;
             gallery._stage = stage;
 
+            // Sweep loader shown while a preview image is pending (item 10).
+            Image spinner = LoadingSpinner.Create(root.transform, "Spinner", new Vector2(28f, 28f), StylePalette.TextDim);
+            spinner.rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+            spinner.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            spinner.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            spinner.rectTransform.anchoredPosition = Vector2.zero;
+            spinner.rectTransform.sizeDelta = new Vector2(28f, 28f);
+            spinner.gameObject.SetActive(false);
+            gallery._spinner = spinner;
+
             // Neutral placeholder for "no images"
             GameObject placeholder = new GameObject("Placeholder", typeof(RectTransform));
             placeholder.transform.SetParent(root.transform, false);
@@ -44,7 +55,8 @@ namespace UltrakULL.UI.TranslationBrowser
             placeholderIcon.rectTransform.anchorMax = new Vector2(0.5f, 0.6f);
             placeholderIcon.rectTransform.pivot = new Vector2(0.5f, 0.5f);
             placeholderIcon.rectTransform.anchoredPosition = Vector2.zero;
-            TextMeshProUGUI label = UiFactory.CreateLabel(placeholder.transform, "Label", "No preview images provided", 13f, StylePalette.TextDim, TextAlignmentOptions.Center, true);
+            TextMeshProUGUI label = UiFactory.CreateLabel(placeholder.transform, "Label", BrowserText.GalleryEmpty, 13f, StylePalette.TextDim, TextAlignmentOptions.Center, true);
+            label.richText = false;
             UiFactory.AddLayoutElement(label.gameObject, 0f, 0f, 200f, 20f, 0f, 0f);
             label.rectTransform.anchorMin = new Vector2(0.5f, 0.25f);
             label.rectTransform.anchorMax = new Vector2(0.5f, 0.25f);
@@ -53,26 +65,26 @@ namespace UltrakULL.UI.TranslationBrowser
             gallery.Placeholder = placeholder;
 
             // Previous/next buttons (created hidden; enabled as needed)
-            gallery._prevButton = UiFactory.CreateButton(root.transform, "PrevButton", "", gallery.Prev, new Vector2(26f, 40f), new Color(0f, 0f, 0f, 0.55f), StylePalette.BorderBlue, new Color(0.1f, 0.15f, 0.25f, 0.75f));
+            gallery._prevButton = UiFactory.CreateButton(root.transform, "PrevButton", "", gallery.Prev, new Vector2(40f, 40f), StylePalette.GalleryNavBg, StylePalette.BorderBlue, StylePalette.GalleryNavHover);
             RectTransform prevRect = gallery._prevButton.GetComponent<RectTransform>();
             prevRect.anchorMin = new Vector2(0f, 0.5f);
             prevRect.anchorMax = new Vector2(0f, 0.5f);
             prevRect.pivot = new Vector2(0f, 0.5f);
             prevRect.anchoredPosition = new Vector2(6f, 0f);
-            Image prevIcon = UiFactory.CreateImage(gallery._prevButton.transform, "Icon", new Vector2(14f, 14f), Color.white, PrimitiveSprites.Kind.ArrowRight);
+            Image prevIcon = UiFactory.CreateImage(gallery._prevButton.transform, "Icon", new Vector2(16f, 16f), Color.white, PrimitiveSprites.Kind.ArrowRight);
             prevIcon.rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
             prevIcon.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
             prevIcon.rectTransform.pivot = new Vector2(0.5f, 0.5f);
             prevIcon.rectTransform.anchoredPosition = Vector2.zero;
             prevIcon.rectTransform.localScale = new Vector3(-1f, 1f, 1f);
 
-            gallery._nextButton = UiFactory.CreateButton(root.transform, "NextButton", "", gallery.Next, new Vector2(26f, 40f), new Color(0f, 0f, 0f, 0.55f), StylePalette.BorderBlue, new Color(0.1f, 0.15f, 0.25f, 0.75f));
+            gallery._nextButton = UiFactory.CreateButton(root.transform, "NextButton", "", gallery.Next, new Vector2(40f, 40f), StylePalette.GalleryNavBg, StylePalette.BorderBlue, StylePalette.GalleryNavHover);
             RectTransform nextRect = gallery._nextButton.GetComponent<RectTransform>();
             nextRect.anchorMin = new Vector2(1f, 0.5f);
             nextRect.anchorMax = new Vector2(1f, 0.5f);
             nextRect.pivot = new Vector2(1f, 0.5f);
             nextRect.anchoredPosition = new Vector2(-6f, 0f);
-            Image nextIcon = UiFactory.CreateImage(gallery._nextButton.transform, "Icon", new Vector2(14f, 14f), Color.white, PrimitiveSprites.Kind.ArrowRight);
+            Image nextIcon = UiFactory.CreateImage(gallery._nextButton.transform, "Icon", new Vector2(16f, 16f), Color.white, PrimitiveSprites.Kind.ArrowRight);
             nextIcon.rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
             nextIcon.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
             nextIcon.rectTransform.pivot = new Vector2(0.5f, 0.5f);
@@ -128,32 +140,66 @@ namespace UltrakULL.UI.TranslationBrowser
                 Placeholder.SetActive(!hasImages);
             }
 
+            if (_spinner != null)
+            {
+                _spinner.gameObject.SetActive(hasImages);
+            }
+
             if (_stage != null)
             {
                 _stage.gameObject.SetActive(hasImages);
-                _stage.sprite = null;
-                _stage.color = Color.white;
                 if (hasImages)
                 {
+                    // Item 11: do not show any placeholder while loading - only the spinner.
+                    _stage.sprite = null;
+                    _stage.color = new Color(1f, 1f, 1f, 0f);
+                    _spinner.gameObject.SetActive(true);
                     string url = _urls[Mathf.Clamp(_index, 0, _urls.Count - 1)];
-                    ImageCache.GetOrLoad(url, delegate (Sprite sprite)
+
+                    // Local file paths (installed packs, from the pack manifest)
+                    // load straight from disk; remote URLs go through ImageCache
+                    // (which rejects anything that is not http(s), item 15).
+                    bool isLocal = !url.StartsWith("http://", System.StringComparison.OrdinalIgnoreCase)
+                        && !url.StartsWith("https://", System.StringComparison.OrdinalIgnoreCase);
+                    if (isLocal)
                     {
-                        if (_stage == null)
+                        _spinner.gameObject.SetActive(false);
+                        Sprite localSprite = UiFactory.LoadLocalSprite(url);
+                        if (localSprite != null)
                         {
-                            return;
-                        }
-                        if (sprite != null)
-                        {
-                            _stage.sprite = sprite;
+                            _stage.sprite = localSprite;
                             _stage.color = Color.white;
                         }
                         else
                         {
-                            // Failed to load the current image: show a dim neutral box.
-                            _stage.sprite = UiFactory.WhiteSprite;
-                            _stage.color = new Color(0.2f, 0.2f, 0.25f, 0.9f);
+                            ShowFailureBox();
                         }
-                    });
+                    }
+                    else
+                    {
+                        ImageCache.GetOrLoad(url, delegate (Sprite sprite)
+                        {
+                            if (_stage == null || _spinner == null)
+                            {
+                                return;
+                            }
+                            _spinner.gameObject.SetActive(false);
+                            if (sprite != null)
+                            {
+                                _stage.sprite = sprite;
+                                _stage.color = Color.white;
+                            }
+                            else
+                            {
+                                ShowFailureBox();
+                            }
+                        });
+                    }
+                }
+                else
+                {
+                    _stage.sprite = null;
+                    _spinner.gameObject.SetActive(false);
                 }
             }
 
@@ -178,6 +224,17 @@ namespace UltrakULL.UI.TranslationBrowser
                     _counter.text = "";
                 }
             }
+        }
+
+        /// <summary>Failed to load the current image: show a dim neutral box.</summary>
+        private void ShowFailureBox()
+        {
+            if (_stage == null)
+            {
+                return;
+            }
+            _stage.sprite = UiFactory.WhiteSprite;
+            _stage.color = StylePalette.GalleryFailure;
         }
     }
 }

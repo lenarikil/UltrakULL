@@ -82,6 +82,29 @@ namespace UltrakULL
         }
 
         /// <summary>
+        /// Tracks the game's current text without replacing it. This lets a later
+        /// language switch translate text that first appeared while built-in English
+        /// was active.
+        /// </summary>
+        public static void Track(TMP_Text target, Func<string> producer)
+        {
+            if (target == null)
+                return;
+
+            string gameText = target.text;
+            Entry entry = Find(target);
+            if (entry == null)
+            {
+                entry = new Entry { Tmp = target };
+                entries.Add(entry);
+            }
+
+            entry.GameText = gameText;
+            entry.Producer = producer;
+            entry.TranslatedText = gameText;
+        }
+
+        /// <summary>
         /// Writes the translation into the legacy text component and remembers how to
         /// write it again after a language switch.
         /// </summary>
@@ -134,7 +157,10 @@ namespace UltrakULL
 
                 // The game has written its own value on top of the translation, so
                 // the value belongs to the game now and must not be replaced.
-                if (current != entry.TranslatedText)
+                // Also re-translate when the text was restored to the game's own
+                // original (GameText) by OriginalTextSnapshot.Restore() on a
+                // language switch, so live components follow the new language.
+                if (current != entry.TranslatedText && current != entry.GameText)
                     continue;
 
                 string text;

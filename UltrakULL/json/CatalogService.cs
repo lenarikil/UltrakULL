@@ -1,8 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
+using BepInEx;
+using BepInEx.Configuration;
 using Newtonsoft.Json;
 
 namespace UltrakULL.json
@@ -13,24 +17,30 @@ namespace UltrakULL.json
     public enum CatalogSortMode
     {
         Popularity,
-        Language,
-        Team
+        Updated,
+        Language
     }
 
     /// <summary>
     /// Loads, caches and queries the online translation catalog
-    /// (languagesMaster.json, schema v2). The legacy v1 format is still parsed so
-    /// old deployments keep working until the data source is migrated.
+    /// (catalog.json served from Cloudflare Pages).
+    ///
+    /// Download strategy: bounded body (8 MB), up to three attempts with backoff
+    /// on transient failures (DNS/timeout/5xx/429), then fallback to the on-disk
+    /// cache so the browser still works offline. A snapshot is only accepted when
+    /// <see cref="CatalogParser"/> fully validates it; a rejected snapshot never
+    /// overwrites the in-memory list or the disk cache.
     ///
     /// This class is UI-agnostic: BrowserState (UI layer) consumes the resulting
     /// <see cref="TranslationEntry"/> list.
     /// </summary>
     public static class CatalogService
     {
-        public const string MasterCatalogUrl = "https://clearwateruk.github.io/mods/ultrakULL/languagesMaster.json";
+        public const string CatalogUrl = "https://ultrakull-catalog.pages.dev/catalog.json";
 
-        // Legacy download URL scheme, used when an entry has no explicit downloadUrl.
-        private const string LegacyLanguageFileUrl = "https://clearwateruk.github.io/mods/ultrakULL/{0}.json";
+        private const int MaxCatalogBytes = 8 * 1024 * 1024;
+        private const int MaxAttempts = 3;
+        private static readonly int[] RetryDelaysMs = { 1000, 3000 };
 
         private static readonly HttpClient Client = new HttpClient();
 
@@ -38,6 +48,9 @@ namespace UltrakULL.json
         private static volatile bool _loading;
         private static bool _loaded;
         private static string _lastError;
+        private static bool _loadedFromCache;
+        private static DateTime? _documentUpdatedAt;
+        private static DateTime? _cacheFileTimeUtc;
 
         public static IReadOnlyList<TranslationEntry> Entries
         {
@@ -66,8 +79,41 @@ namespace UltrakULL.json
         }
 
         /// <summary>
-        /// Fetches the catalog (unless already cached) and returns whether the list is ready.
-        /// Never throws; failures are recorded in <see cref="LastError"/>.
+        /// True when the current list came from the disk cache (offline fallback);
+        /// the UI shows an "offline, cached snapshot" notice.
+        /// </summary>
+        public static bool LoadedFromCache
+        {
+            get { return _loadedFromCache; }
+        }
+
+        /// <summary>"updated_at" timestamp of the loaded catalog document, when present.</summary>
+        public static DateTime? DocumentUpdatedAt
+        {
+            get { return _documentUpdatedAt; }
+        }
+
+        /// <summary>Write time of the disk cache file, when one exists.</summary>
+        public static DateTime? CacheFileTimeUtc
+        {
+            get { return _cacheFileTimeUtc; }
+        }
+
+        /// <summary>Folder that stores the offline catalog cache (outside the pack scan).</summary>
+        public static string CacheDirectory
+        {
+            get { return Path.Combine(Paths.ConfigPath, "ultrakull", "cache"); }
+        }
+
+        public static string CacheFilePath
+        {
+            get { return Path.Combine(CacheDirectory, "catalog.json"); }
+        }
+
+        /// <summary>
+        /// Fetches the catalog (unless already cached) and returns whether the list
+        /// is ready. Never throws; network failures fall back to the disk cache and
+        /// failures are recorded in <see cref="LastError"/>.
         /// </summary>
         public static async Task<bool> LoadAsync(bool force = false)
         {
@@ -84,11 +130,27 @@ namespace UltrakULL.json
             _lastError = null;
             try
             {
-                Client.Timeout = TimeSpan.FromSeconds(10);
-                Logging.Warn("Obtaining online translations from UltrakULL repo...");
-                string responseJsonRaw = await Client.GetStringAsync(MasterCatalogUrl);
-                _entries = Parse(responseJsonRaw);
+                string url = ResolveCatalogUrl();
+                Logging.Info("[CatalogService] Loading online translation catalog from " + url);
+
+                string json = await DownloadWithRetryAsync(url);
+
+                CatalogParseResult result = CatalogParser.Parse(json);
+                if (result.IsError)
+                {
+                    // Broken snapshot: do not touch the in-memory list or the cache.
+                    _lastError = result.Error;
+                    Logging.Error("[CatalogService] Rejected catalog snapshot: " + result.Error);
+                    return false;
+                }
+
+                LogWarnings(result);
+
+                _entries = result.Entries;
+                _documentUpdatedAt = result.DocumentUpdatedAt;
                 _loaded = true;
+                _loadedFromCache = false;
+                WriteCacheAtomic(json);
                 Logging.Info("[CatalogService] Loaded " + _entries.Count + " translation entries.");
                 return true;
             }
@@ -96,7 +158,7 @@ namespace UltrakULL.json
             {
                 _lastError = e.Message;
                 Logging.Error("[CatalogService] Failed to load online translation catalog: " + e);
-                return false;
+                return TryLoadFromCache();
             }
             finally
             {
@@ -105,8 +167,8 @@ namespace UltrakULL.json
         }
 
         /// <summary>
-        /// Returns entries whose language name/tag, team, author or contributor list
-        /// matches the query (case-insensitive). An empty/whitespace query returns all.
+        /// Returns entries whose name, language tag or author list matches the
+        /// query (case-insensitive). An empty/whitespace query returns all.
         /// </summary>
         public static List<TranslationEntry> Search(string query)
         {
@@ -124,10 +186,11 @@ namespace UltrakULL.json
                     continue;
                 }
 
-                if (ContainsIgnoreCase(entry.languageName, q) ||
+                if (ContainsIgnoreCase(entry.name, q) ||
+                    ContainsIgnoreCase(entry.languageName, q) ||
                     ContainsIgnoreCase(entry.languageTag, q) ||
-                    ContainsIgnoreCase(entry.teamName, q) ||
                     ContainsIgnoreCase(entry.author, q) ||
+                    ContainsIgnoreCase(entry.teamName, q) ||
                     AnyAuthorContains(entry.authors, q))
                 {
                     result.Add(entry);
@@ -137,8 +200,8 @@ namespace UltrakULL.json
         }
 
         /// <summary>
-        /// Stable sort of a translation list. Entries without sortable data (null likes,
-        /// missing names) sink to the end instead of being dropped.
+        /// Stable sort of a translation list. Entries without sortable data (null
+        /// likes/timestamps) sink to the end instead of being dropped.
         /// </summary>
         public static List<TranslationEntry> Sort(List<TranslationEntry> source, CatalogSortMode mode)
         {
@@ -152,95 +215,21 @@ namespace UltrakULL.json
                 case CatalogSortMode.Popularity:
                     return source
                         .OrderByDescending(e => e.likes ?? int.MinValue)
+                        .ThenBy(e => e.name ?? "", StringComparer.OrdinalIgnoreCase)
+                        .ToList();
+                case CatalogSortMode.Updated:
+                    return source
+                        .OrderByDescending(e => e.updatedAt ?? DateTime.MinValue)
+                        .ThenBy(e => e.name ?? "", StringComparer.OrdinalIgnoreCase)
                         .ToList();
                 case CatalogSortMode.Language:
                     return source
-                        .OrderBy(e => e.languageName ?? "", StringComparer.OrdinalIgnoreCase)
-                        .ThenBy(e => e.languageTag ?? "", StringComparer.OrdinalIgnoreCase)
-                        .ToList();
-                case CatalogSortMode.Team:
-                    return source
-                        .OrderBy(e => e.teamName ?? "", StringComparer.OrdinalIgnoreCase)
-                        .ThenBy(e => e.author ?? "", StringComparer.OrdinalIgnoreCase)
+                        .OrderBy(e => LanguageDisplay.Name(e.languageTag ?? ""), StringComparer.CurrentCulture)
+                        .ThenBy(e => e.name ?? "", StringComparer.OrdinalIgnoreCase)
                         .ToList();
                 default:
                     return new List<TranslationEntry>(source);
             }
-        }
-
-        /// <summary>
-        /// True when the specific translation (not merely the language) from the online
-        /// catalog is installed locally. Matching is by the stable catalog id only —
-        /// the local pack is stored under that same id as its <c>langName</c> — so two
-        /// different translations of the same language are never confused. The built-in
-        /// synthetic English pack (no <c>RootFolder</c>) is never treated as an installed
-        /// download, so an online <c>en-GB</c> entry correctly reads as available.
-        /// </summary>
-        public static bool IsInstalled(TranslationEntry entry)
-        {
-            return FindInstalledPack(entry) != null;
-        }
-
-        /// <summary>
-        /// True when the translation is installed but the catalog lists a newer version
-        /// than the one stored locally. Never true for packs with no comparable version.
-        /// </summary>
-        public static bool IsOutdated(TranslationEntry entry)
-        {
-            JsonFormat local = FindInstalledPack(entry);
-            if (local == null || local.metadata == null)
-            {
-                return false;
-            }
-
-            string catalogVersion = NormalizeVersion(entry != null ? entry.version : null);
-            string localVersion = NormalizeVersion(local.metadata.langVersion);
-            if (catalogVersion.Length == 0 || localVersion.Length == 0)
-            {
-                return false;
-            }
-            return !string.Equals(catalogVersion, localVersion, StringComparison.OrdinalIgnoreCase);
-        }
-
-        /// <summary>
-        /// Finds the locally installed pack that corresponds to a catalog entry, or null.
-        /// Only packs actually present on disk (a real <c>RootFolder</c>) are considered;
-        /// the in-memory synthetic English placeholder is skipped.
-        /// </summary>
-        private static JsonFormat FindInstalledPack(TranslationEntry entry)
-        {
-            if (entry == null || LanguageManager.allLanguages == null)
-            {
-                return null;
-            }
-
-            // Primary key: the stable catalog id, which the local pack stores as langName.
-            if (!string.IsNullOrEmpty(entry.id))
-            {
-                JsonFormat pack;
-                if (LanguageManager.allLanguages.TryGetValue(entry.id, out pack) && IsRealPack(pack))
-                {
-                    return pack;
-                }
-            }
-            return null;
-        }
-
-        /// <summary>A pack is a real download only if it lives on disk (has a RootFolder).</summary>
-        private static bool IsRealPack(JsonFormat pack)
-        {
-            return pack != null && !string.IsNullOrEmpty(pack.RootFolder);
-        }
-
-        /// <summary>Normalizes a version string for comparison ("v1.3.1" -> "1.3.1").</summary>
-        private static string NormalizeVersion(string version)
-        {
-            string v = (version ?? "").Trim();
-            if (v.Length > 1 && (v[0] == 'v' || v[0] == 'V'))
-            {
-                v = v.Substring(1).Trim();
-            }
-            return v;
         }
 
         public static TranslationEntry FindById(string id)
@@ -252,7 +241,7 @@ namespace UltrakULL.json
 
             foreach (TranslationEntry entry in _entries)
             {
-                if (entry != null && string.Equals(entry.id, id, StringComparison.OrdinalIgnoreCase))
+                if (entry != null && string.Equals(entry.id, id, StringComparison.Ordinal))
                 {
                     return entry;
                 }
@@ -260,142 +249,198 @@ namespace UltrakULL.json
             return null;
         }
 
+        // -------------------------------------------------------------------
+        // Download
+        // -------------------------------------------------------------------
+
+        private sealed class CatalogHttpException : Exception
+        {
+            public readonly int? StatusCode;
+
+            public CatalogHttpException(string message, int? statusCode)
+                : base(message)
+            {
+                StatusCode = statusCode;
+            }
+        }
+
+        private static async Task<string> DownloadWithRetryAsync(string url)
+        {
+            Exception lastError = null;
+            for (int attempt = 0; attempt < MaxAttempts; attempt++)
+            {
+                if (attempt > 0)
+                {
+                    int delay = RetryDelaysMs[Math.Min(attempt - 1, RetryDelaysMs.Length - 1)];
+                    await Task.Delay(delay);
+                }
+
+                try
+                {
+                    return await DownloadOnceAsync(url);
+                }
+                catch (Exception e)
+                {
+                    lastError = e;
+                    if (!IsRetryable(e))
+                    {
+                        throw;
+                    }
+                    Logging.Warn("[CatalogService] Catalog download attempt " + (attempt + 1) + " failed: " + e.Message);
+                }
+            }
+            throw lastError;
+        }
+
+        private static bool IsRetryable(Exception e)
+        {
+            // HTTP status failures: only server errors and rate limiting retry.
+            CatalogHttpException http = e as CatalogHttpException;
+            if (http != null)
+            {
+                if (!http.StatusCode.HasValue)
+                {
+                    return false;
+                }
+                int code = http.StatusCode.Value;
+                return code == 429 || code >= 500;
+            }
+
+            // Timeouts surface as TaskCanceledException, DNS/socket failures as
+            // HttpRequestException; both are transient.
+            return e is TaskCanceledException || e is HttpRequestException;
+        }
+
+        private static async Task<string> DownloadOnceAsync(string url)
+        {
+            Client.Timeout = TimeSpan.FromSeconds(10);
+            using (HttpResponseMessage response = await Client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead))
+            {
+                if (!response.IsSuccessStatusCode)
+                {
+                    int code = (int)response.StatusCode;
+                    throw new CatalogHttpException("HTTP " + code + " (" + response.StatusCode + ")", code);
+                }
+
+                using (Stream stream = await response.Content.ReadAsStreamAsync())
+                using (MemoryStream memory = new MemoryStream())
+                {
+                    byte[] buffer = new byte[81920];
+                    while (true)
+                    {
+                        int read = await stream.ReadAsync(buffer, 0, buffer.Length);
+                        if (read <= 0)
+                        {
+                            break;
+                        }
+                        if (memory.Length + read > MaxCatalogBytes)
+                        {
+                            throw new CatalogHttpException("Catalog exceeds the " + (MaxCatalogBytes / (1024 * 1024)) + " MB size limit.", null);
+                        }
+                        memory.Write(buffer, 0, read);
+                    }
+                    return Encoding.UTF8.GetString(memory.ToArray());
+                }
+            }
+        }
+
+        // -------------------------------------------------------------------
+        // Disk cache
+        // -------------------------------------------------------------------
+
+        private static bool TryLoadFromCache()
+        {
+            try
+            {
+                if (!File.Exists(CacheFilePath))
+                {
+                    return false;
+                }
+
+                CatalogParseResult result = CatalogParser.Parse(File.ReadAllText(CacheFilePath));
+                if (result.IsError)
+                {
+                    Logging.Error("[CatalogService] Cached catalog snapshot is unusable: " + result.Error);
+                    return false;
+                }
+
+                LogWarnings(result);
+                _entries = result.Entries;
+                _documentUpdatedAt = result.DocumentUpdatedAt;
+                _cacheFileTimeUtc = File.GetLastWriteTimeUtc(CacheFilePath);
+                _loaded = true;
+                _loadedFromCache = true;
+                Logging.Info("[CatalogService] Loaded " + _entries.Count + " translation entries from the offline cache.");
+                return true;
+            }
+            catch (Exception e)
+            {
+                Logging.Error("[CatalogService] Failed to read the catalog cache: " + e.Message);
+                return false;
+            }
+        }
+
+        private static void WriteCacheAtomic(string json)
+        {
+            try
+            {
+                Directory.CreateDirectory(CacheDirectory);
+                string tempPath = CacheFilePath + ".tmp";
+                File.WriteAllText(tempPath, json);
+                if (File.Exists(CacheFilePath))
+                {
+                    File.Replace(tempPath, CacheFilePath, null);
+                }
+                else
+                {
+                    File.Move(tempPath, CacheFilePath);
+                }
+                _cacheFileTimeUtc = File.GetLastWriteTimeUtc(CacheFilePath);
+            }
+            catch (Exception e)
+            {
+                // The cache is an optimization, not a requirement: a failed write
+                // must not fail the load.
+                Logging.Warn("[CatalogService] Failed to write the catalog cache: " + e.Message);
+            }
+        }
+
+        private static void LogWarnings(CatalogParseResult result)
+        {
+            if (result.Warnings == null)
+            {
+                return;
+            }
+            foreach (string warning in result.Warnings)
+            {
+                Logging.Warn("[CatalogService] " + warning);
+            }
+        }
+
         /// <summary>
-        /// Resolves the download URL of an entry: explicit downloadUrl when provided,
-        /// otherwise the legacy per-language-tag URL scheme.
+        /// The catalog URL: the "catalogUrl" config entry when set (mirrors/local
+        /// testing), otherwise the default constant. An empty value also means the
+        /// default.
         /// </summary>
-        public static string GetDownloadUrl(TranslationEntry entry)
+        private static string ResolveCatalogUrl()
         {
-            if (entry == null)
+            try
             {
-                return null;
-            }
-
-            if (!string.IsNullOrWhiteSpace(entry.downloadUrl))
-            {
-                return entry.downloadUrl;
-            }
-
-            if (string.IsNullOrWhiteSpace(entry.languageTag))
-            {
-                return null;
-            }
-
-            return string.Format(LegacyLanguageFileUrl, entry.languageTag);
-        }
-
-        private static List<TranslationEntry> Parse(string responseJsonRaw)
-        {
-            if (string.IsNullOrWhiteSpace(responseJsonRaw))
-            {
-                return new List<TranslationEntry>();
-            }
-
-            // Schema v2: { "schemaVersion": 2, "translations": [ ... ] }
-            OnlineCatalogDocument doc = JsonConvert.DeserializeObject<OnlineCatalogDocument>(responseJsonRaw);
-            if (doc != null && doc.translations != null && doc.translations.Count > 0)
-            {
-                var v2 = new List<TranslationEntry>(doc.translations.Count);
-                foreach (TranslationEntry entry in doc.translations)
+                ConfigFile config = LanguageManager.configFile;
+                if (config != null)
                 {
-                    TranslationEntry normalized = Normalize(entry);
-                    if (normalized != null && !string.IsNullOrWhiteSpace(normalized.id))
+                    string value = config.Bind("General", "catalogUrl", CatalogUrl).Value;
+                    if (!string.IsNullOrWhiteSpace(value))
                     {
-                        v2.Add(normalized);
+                        return value.Trim();
                     }
                 }
-                return v2;
             }
-
-            // Legacy schema v1: { "availableLanguages": [ { "languageTag": ... } ] }
-            MasterLanguages legacy = JsonConvert.DeserializeObject<MasterLanguages>(responseJsonRaw);
-            if (legacy != null && legacy.availableLanguages != null && legacy.availableLanguages.Length > 0)
+            catch (Exception e)
             {
-                var v1 = new List<TranslationEntry>(legacy.availableLanguages.Length);
-                foreach (LanguageInfo info in legacy.availableLanguages)
-                {
-                    if (info == null)
-                    {
-                        continue;
-                    }
-
-                    // Schema v1 keys entries by the language tag and has no rich metadata;
-                    // everything except tag/name/author/version is left Unknown/missing.
-                    TranslationEntry entry = Normalize(new TranslationEntry
-                    {
-                        id = info.languageTag,
-                        languageTag = info.languageTag,
-                        languageName = info.languageFullName,
-                        author = info.author,
-                        version = info.versionNumber
-                    });
-                    if (entry != null && !string.IsNullOrWhiteSpace(entry.id))
-                    {
-                        v1.Add(entry);
-                    }
-                }
-                return v1;
+                Logging.Warn("[CatalogService] Could not read the catalogUrl config: " + e.Message);
             }
-
-            Logging.Warn("[CatalogService] Unrecognized catalog format; got no usable entries.");
-            return new List<TranslationEntry>();
-        }
-
-        /// <summary>
-        /// Fills in default values and trims user-provided strings so the UI can rely
-        /// on consistent data (null instead of empty/whitespace, features never null).
-        /// </summary>
-        private static TranslationEntry Normalize(TranslationEntry entry)
-        {
-            if (entry == null)
-            {
-                return null;
-            }
-
-            entry.id = TrimToNull(entry.id) ?? TrimToNull(entry.languageTag);
-            entry.languageTag = TrimToNull(entry.languageTag);
-            entry.languageName = TrimToNull(entry.languageName) ?? entry.languageTag;
-            entry.teamName = TrimToNull(entry.teamName);
-            entry.author = TrimToNull(entry.author);
-            entry.version = TrimToNull(entry.version);
-            entry.logoUrl = TrimToNull(entry.logoUrl);
-            entry.flagUrl = TrimToNull(entry.flagUrl);
-            entry.readme = TrimToNull(entry.readme);
-            entry.downloadUrl = TrimToNull(entry.downloadUrl);
-
-            if (entry.features == null)
-            {
-                entry.features = new TranslationFeatures();
-            }
-
-            if (entry.gallery == null || entry.gallery.Count == 0)
-            {
-                entry.gallery = null;
-            }
-
-            if (entry.authors != null && entry.authors.Count > 0)
-            {
-                int removed = entry.authors.RemoveAll(a => a == null || string.IsNullOrWhiteSpace(a.name));
-                if (removed > 0)
-                {
-                    Logging.Debug("[CatalogService] Dropped " + removed + " unnamed authors for '" + entry.id + "'.");
-                }
-                if (entry.authors.Count == 0)
-                {
-                    entry.authors = null;
-                }
-            }
-
-            return entry;
-        }
-
-        private static string TrimToNull(string value)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                return null;
-            }
-            return value.Trim();
+            return CatalogUrl;
         }
 
         private static bool ContainsIgnoreCase(string haystack, string needle)

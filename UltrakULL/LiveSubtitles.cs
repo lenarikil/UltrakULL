@@ -99,6 +99,8 @@ namespace UltrakULL
                     text = "<color=#" + entry.Color + ">" + text + "</color>";
                 }
 
+                RegisterText(entry.Key, text, entry.Color);
+
                 TMP_Text subtitleText = subtitle.GetComponentInChildren<TMP_Text>(true);
                 if (subtitleText == null || subtitleText.text == text)
                     continue;
@@ -112,6 +114,73 @@ namespace UltrakULL
             }
 
             RemoveDead(dead);
+        }
+
+        /// <summary>
+        /// Writes the active language into the subtitle lines that a SubtitledAudioSource
+        /// still has ahead of itself.
+        ///
+        /// A language switch rewrites the configured sources through their config entries,
+        /// but a line that is in the middle of playing can live on a copy of such a source:
+        /// the waves of 8-3 spawn their Power intro objects, and the spawned copy carries
+        /// the lines that were localized when it was created. Every localized line
+        /// registers its key here, so the copy's pending lines are found by their text
+        /// and rewritten the same way as the subtitle that is on screen.
+        /// </summary>
+        public static void ReapplyPendingLines()
+        {
+            SubtitledAudioSource[] sources = UnityEngine.Object.FindObjectsOfType<SubtitledAudioSource>(true);
+            for (int i = 0; i < sources.Length; i++)
+            {
+                SubtitledAudioSource source = sources[i];
+                if (source == null)
+                    continue;
+
+                try
+                {
+                    SubtitledAudioSource.SubtitleData data = ReflectionUtils.GetPrivate<SubtitledAudioSource, SubtitledAudioSource.SubtitleData>(
+                        source, typeof(SubtitledAudioSource), "subtitles");
+                    if (data == null || data.lines == null)
+                        continue;
+
+                    bool changed = false;
+                    for (int j = 0; j < data.lines.Length; j++)
+                    {
+                        SubtitledAudioSource.SubtitleDataLine line = data.lines[j];
+                        if (line == null || string.IsNullOrEmpty(line.subtitle))
+                            continue;
+
+                        Entry entry;
+                        if (!textToKey.TryGetValue(line.subtitle, out entry))
+                            continue;
+
+                        string text = SubtitlesHelper.GetText(entry.Key);
+                        if (string.IsNullOrEmpty(text))
+                        {
+                            // The language has no value for the line, the text stays.
+                            continue;
+                        }
+
+                        if (!string.IsNullOrEmpty(entry.Color))
+                            text = "<color=#" + entry.Color + ">" + text + "</color>";
+
+                        RegisterText(entry.Key, text, entry.Color);
+
+                        if (text != line.subtitle)
+                        {
+                            line.subtitle = text;
+                            changed = true;
+                        }
+                    }
+
+                    if (changed && Logging.Verbose)
+                        Logging.Info("[LiveSubtitles] Rewrote the pending subtitle lines of " + source.name);
+                }
+                catch (System.Exception e)
+                {
+                    Logging.Warn("[LiveSubtitles] Failed to rewrite pending subtitle lines: " + e.Message);
+                }
+            }
         }
 
         /// <summary>

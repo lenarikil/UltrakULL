@@ -360,17 +360,9 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-/UltrakULL/UltrakULL.dt
 /UltrakULL/lib/Newtonsoft.Json.xml
-/UltrakULL/lib/UMM.dll
-/UltrakULL.dt
 /UltrakULL/README.md
-/Sprites/Sprite.png
-/Sprites/Dropdown.png
-/Sprites/Checkmark.png
-/Build Directory.lnk
 /.gitattributes
-/audio/templates/*
 
 .idea/
 .github/copilot-instructions.md
@@ -395,4 +387,4 @@ UltrakULL/.logs/LogOutput.log
 .kilo/agents/code-reviewer.md
 .kilo/kilo.jsonc
 Plans/
-AGENTS.md
+.serena/

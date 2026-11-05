@@ -158,6 +158,31 @@ namespace UltrakULL.Harmony_Patches.AudioSwaps
         }
 
         /// <summary>
+        /// The game's own clip that a field slot held before the first replacement,
+        /// or null when none was saved. Re-swaps must build their lookup path from
+        /// this clip: the clip that is currently in the field may be a translation
+        /// of the previous language, and downloaded clips only carry a usable name
+        /// because LoadClipCoroutine names them after their file.
+        /// </summary>
+        private static AudioClip GetSavedOriginalClip(int instanceId, string fieldName, int index)
+        {
+            lock (_originalClipsLock)
+            {
+                AudioClip clip;
+                return _originalClips.TryGetValue($"{instanceId}:{fieldName}:{index}", out clip) ? clip : null;
+            }
+        }
+
+        private static AudioClip GetSavedOriginalClip(int instanceId, string fieldName)
+        {
+            lock (_originalClipsLock)
+            {
+                AudioClip clip;
+                return _originalClips.TryGetValue($"{instanceId}:{fieldName}", out clip) ? clip : null;
+            }
+        }
+
+        /// <summary>
         /// Restores all saved original clips to their respective PowerVoiceController instances.
         /// Called when dubbing is disabled or English is selected.
         /// </summary>
@@ -328,34 +353,59 @@ namespace UltrakULL.Harmony_Patches.AudioSwaps
                 // when dubbing is disabled or English is selected.
                 SaveOriginalClip(instanceId, fieldName, index, original);
 
-                string path = Path.Combine(folder, original.name);
-                if (Logging.Verbose)
-                    Logging.Info($"[PowerAudioSwap] Attempting to preload clip '{original.name}' from '{path}'.");
-                AudioSwapper.PreloadClipAsync(path, original, delegate (AudioClip newClip)
+                // The lookup path and the fallback always come from the game's own clip
+                // of this slot. The clip in the array may already be a translation of the
+                // previous language, whose name does not identify the line reliably.
+                AudioClip gameClip = GetSavedOriginalClip(instanceId, fieldName, index);
+                if (gameClip == null)
+                    gameClip = original;
+
+                if (string.IsNullOrEmpty(gameClip.name))
                 {
-                    if (newClip != null)
+                    Logging.Warn($"[PowerAudioSwap] Original clip in field '{fieldName}'[{index}] has no name, skipping.");
+                    continue;
+                }
+
+                string path = Path.Combine(folder, gameClip.name);
+                if (Logging.Verbose)
+                    Logging.Info($"[PowerAudioSwap] Attempting to preload clip '{gameClip.name}' from '{path}'.");
+                AudioSwapper.PreloadClipAsync(path, gameClip, delegate (AudioClip newClip)
+                {
+                    if (newClip == null)
                     {
-                        // Only register as handled if the clip was actually replaced with a different (localized) clip.
-                        // When using English or a language without dubbing, PreloadClipAsync returns the original clip
-                        // as fallback. Registering the original clip as handled would suppress its playback.
-                        if (newClip != original)
+                        Logging.Warn($"[PowerAudioSwap] Preload returned null for clip '{gameClip.name}' in field '{fieldName}'. Keeping original.");
+                        return;
+                    }
+
+                    if (ReferenceEquals(newClip, gameClip))
+                    {
+                        // No replacement exists for this line: the game's own clip is the
+                        // documented fallback, not the translation of the previous language.
+                        if (!ReferenceEquals(clips[index], gameClip))
                         {
-                            if (Logging.Verbose)
-                                Logging.Info($"[PowerAudioSwap] Successfully preloaded localized clip '{newClip.name}' for field '{fieldName}'.");
-                            clips[index] = newClip;
+                            clips[index] = gameClip;
                             field.SetValue(instance, clips);
-                            UltrakULL.Harmony_Patches.Subtitles.PowerSubtitlesSwap.RegisterPowerClipAsHandled(newClip.name);
                         }
-                        else
-                        {
-                            if (Logging.Verbose)
-                                Logging.Info($"[PowerAudioSwap] No localized clip found for '{original.name}' in field '{fieldName}'. Keeping original.");
-                        }
+
+                        if (Logging.Verbose)
+                            Logging.Info($"[PowerAudioSwap] No localized clip found for '{gameClip.name}' in field '{fieldName}'. Restored the original.");
+                        return;
                     }
-                    else
-                    {
-                        Logging.Warn($"[PowerAudioSwap] Preload returned null for clip '{original.name}' in field '{fieldName}'. Keeping original.");
-                    }
+
+                    if (Logging.Verbose)
+                        Logging.Info($"[PowerAudioSwap] Successfully preloaded localized clip '{newClip.name}' for field '{fieldName}'.");
+                    clips[index] = newClip;
+                    field.SetValue(instance, clips);
+                    // The registry lets ReapplyPlayingVoices resolve this line while
+                    // it is playing, so a language switch swaps it at the same
+                    // playback time.
+                    AudioSwapper.RegisterTranslatedClip(newClip, gameClip, path);
+                    // Note: the clip is NOT registered as handled. The suppression
+                    // prefixes in PowerSubtitlesSwap skip the whole game method (the
+                    // caller would not get a clip to play), and they check the index of
+                    // the PREVIOUS line, so a populated set would silence every voice
+                    // line after the first one. The set has always been empty in
+                    // practice because downloaded clips used to have empty names.
                 });
             }
         }
@@ -377,33 +427,44 @@ namespace UltrakULL.Harmony_Patches.AudioSwaps
             }
 
             // Save the original clip before attempting replacement.
-            SaveOriginalClip(instance.GetInstanceID(), fieldName, original);
+            int instanceId = instance.GetInstanceID();
+            SaveOriginalClip(instanceId, fieldName, original);
+
+            // The fallback is the game's own clip, not the translation of the previous
+            // language that may currently sit in the field.
+            AudioClip gameClip = GetSavedOriginalClip(instanceId, fieldName);
+            if (gameClip == null)
+                gameClip = original;
 
             string fullPath = Path.Combine(folder, replacementName);
             if (Logging.Verbose)
-                Logging.Info($"[PowerAudioSwap] Attempting to preload single clip '{original.name}' from '{fullPath}'.");
-            AudioSwapper.PreloadClipAsync(fullPath, original, delegate (AudioClip newClip)
+                Logging.Info($"[PowerAudioSwap] Attempting to preload single clip '{gameClip.name}' from '{fullPath}'.");
+            AudioSwapper.PreloadClipAsync(fullPath, gameClip, delegate (AudioClip newClip)
             {
-                if (newClip != null)
-                {
-                    // Only register as handled if the clip was actually replaced with a different (localized) clip.
-                    if (newClip != original)
-                    {
-                        if (Logging.Verbose)
-                            Logging.Info($"[PowerAudioSwap] Successfully replaced '{fieldName}' with localized clip '{newClip.name}'.");
-                        try { field.SetValue(instance, newClip); } catch { }
-                        UltrakULL.Harmony_Patches.Subtitles.PowerSubtitlesSwap.RegisterPowerClipAsHandled(newClip.name);
-                    }
-                    else
-                    {
-                        if (Logging.Verbose)
-                            Logging.Info($"[PowerAudioSwap] No localized clip found for '{fieldName}'. Keeping original.");
-                    }
-                }
-                else
+                if (newClip == null)
                 {
                     Logging.Warn($"[PowerAudioSwap] Preload failed for '{fieldName}'. Keeping original clip.");
+                    return;
                 }
+
+                if (ReferenceEquals(newClip, gameClip))
+                {
+                    // No replacement exists: the game's own clip is the documented fallback.
+                    if (!ReferenceEquals(field.GetValue(instance), gameClip))
+                    {
+                        try { field.SetValue(instance, gameClip); } catch { }
+                    }
+
+                    if (Logging.Verbose)
+                        Logging.Info($"[PowerAudioSwap] No localized clip found for '{fieldName}'. Restored the original.");
+                    return;
+                }
+
+                if (Logging.Verbose)
+                    Logging.Info($"[PowerAudioSwap] Successfully replaced '{fieldName}' with localized clip '{newClip.name}'.");
+                try { field.SetValue(instance, newClip); } catch { }
+                AudioSwapper.RegisterTranslatedClip(newClip, gameClip, fullPath);
+                // Not registered as handled - see the note in SwapArrayField.
             });
         }
     }
@@ -415,7 +476,10 @@ namespace UltrakULL.Harmony_Patches.AudioSwaps
         private static bool wasPerformedIntro = false;
 
         private static readonly Dictionary<int, AudioClip> _savedIntroOverrides = new Dictionary<int, AudioClip>();
-        private static readonly Dictionary<int, AudioClip[]> _savedRepeatedIntroClips = new Dictionary<int, AudioClip[]>();
+        // Keyed by the persistent data object instead of the PowerIntro instance:
+        // Activate() destroys its own component, but the persistent data survives it
+        // and the game reuses it, so the originals have to be restorable afterwards.
+        private static readonly Dictionary<PowerPersistentData, AudioClip[]> _savedRepeatedIntroClips = new Dictionary<PowerPersistentData, AudioClip[]>();
         private static readonly object _introLock = new object();
 
         private static void SaveIntroOriginals(PowerIntro instance)
@@ -436,9 +500,9 @@ namespace UltrakULL.Harmony_Patches.AudioSwaps
 
             FieldInfo persistentDataField = typeof(PowerIntro).GetField("persistentData", fieldFlags);
             PowerPersistentData persistentData = (PowerPersistentData)persistentDataField.GetValue(instance);
-            if (persistentData?.RepeatedIntroClips != null && persistentData.RepeatedIntroClips.Length > 0 && !_savedRepeatedIntroClips.ContainsKey(id))
+            if (persistentData?.RepeatedIntroClips != null && persistentData.RepeatedIntroClips.Length > 0 && !_savedRepeatedIntroClips.ContainsKey(persistentData))
             {
-                _savedRepeatedIntroClips[id] = (AudioClip[])persistentData.RepeatedIntroClips.Clone();
+                _savedRepeatedIntroClips[persistentData] = (AudioClip[])persistentData.RepeatedIntroClips.Clone();
                 Logging.Info($"[PowerIntroSwap] Saved {persistentData.RepeatedIntroClips.Length} original RepeatedIntroClips for instance {id}");
             }
         }
@@ -468,16 +532,19 @@ namespace UltrakULL.Harmony_Patches.AudioSwaps
                             Logging.Info($"[PowerIntroSwap] Restored introOverride '{savedOverride.name}' for instance {id}");
                         }
                     }
+                }
 
-                    if (_savedRepeatedIntroClips.TryGetValue(id, out AudioClip[] savedClips))
+                // The repeated intro clips live on the persistent data object, which
+                // outlives the PowerIntro component, so they are restored even for
+                // intros that already played.
+                foreach (var pair in _savedRepeatedIntroClips)
+                {
+                    PowerPersistentData persistentData = pair.Key;
+                    AudioClip[] savedClips = pair.Value;
+                    if (persistentData?.RepeatedIntroClips != null && persistentData.RepeatedIntroClips.Length == savedClips.Length)
                     {
-                        FieldInfo persistentDataField = typeof(PowerIntro).GetField("persistentData", fieldFlags);
-                        PowerPersistentData persistentData = (PowerPersistentData)persistentDataField.GetValue(instance);
-                        if (persistentData?.RepeatedIntroClips != null && persistentData.RepeatedIntroClips.Length == savedClips.Length)
-                        {
-                            Array.Copy(savedClips, persistentData.RepeatedIntroClips, savedClips.Length);
-                            Logging.Info($"[PowerIntroSwap] Restored {savedClips.Length} RepeatedIntroClips for instance {id}");
-                        }
+                        Array.Copy(savedClips, persistentData.RepeatedIntroClips, savedClips.Length);
+                        Logging.Info($"[PowerIntroSwap] Restored {savedClips.Length} RepeatedIntroClips");
                     }
                 }
 
@@ -519,47 +586,106 @@ namespace UltrakULL.Harmony_Patches.AudioSwaps
                 return;
             }
 
-            string folder = Path.Combine(AudioSwapper.SpeechFolder, "power");
-            string path = Path.Combine(folder, introOverride.name);
-
-            AudioSwapper.PreloadClipAsync(path, introOverride, (AudioClip newClip) =>
-            {
-                if (newClip != null && newClip != introOverride)
-                {
-                    introOverrideField.SetValue(__instance, newClip);
-                    Logging.Warn("PowerIntroSwap: Successfully replaced introOverride with localized version: " + newClip.name);
-                    UltrakULL.Harmony_Patches.Subtitles.PowerSubtitlesSwap.RegisterPowerClipAsHandled(newClip.name);
-                }
-                else
-                {
-                    Logging.Warn("PowerIntroSwap: No localized clip found for introOverride. Keeping original.");
-                }
-            });
+            SwapIntroOverrideClip(__instance, introOverrideField, introOverride);
 
             FieldInfo persistentDataField = typeof(PowerIntro).GetField("persistentData", fieldFlags);
             PowerPersistentData persistentData = (PowerPersistentData)persistentDataField.GetValue(__instance);
-            if (persistentData?.RepeatedIntroClips != null && persistentData.RepeatedIntroClips.Length > 0)
-            {
-                for (int i = 0; i < persistentData.RepeatedIntroClips.Length; i++)
-                {
-                    AudioClip originalClip = persistentData.RepeatedIntroClips[i];
-                    if (originalClip == null) continue;
+            SwapRepeatedIntroClips(persistentData);
+        }
 
-                    string clipPath = Path.Combine(folder, originalClip.name);
-                    AudioSwapper.PreloadClipAsync(clipPath, originalClip, (AudioClip newClip) =>
-                    {
-                        if (newClip != null && newClip != originalClip)
-                        {
-                            persistentData.RepeatedIntroClips[i] = newClip;
-                            Logging.Warn($"PowerIntroSwap: Successfully replaced RepeatedIntroClips[{i}] with localized version: " + newClip.name);
-                            UltrakULL.Harmony_Patches.Subtitles.PowerSubtitlesSwap.RegisterPowerClipAsHandled(newClip.name);
-                        }
-                        else
-                        {
-                            Logging.Warn($"PowerIntroSwap: No localized clip found for RepeatedIntroClips[{i}]. Keeping original.");
-                        }
-                    });
+        /// <summary>
+        /// Swaps the intro override clip of an instance to the active language. The
+        /// lookup path and the fallback come from the saved original clip: the field
+        /// may already hold a translation of the previous language, whose name does
+        /// not identify the line reliably.
+        /// </summary>
+        private static void SwapIntroOverrideClip(PowerIntro instance, FieldInfo introOverrideField, AudioClip introOverride)
+        {
+            AudioClip gameClip;
+            lock (_introLock)
+            {
+                if (!_savedIntroOverrides.TryGetValue(instance.GetInstanceID(), out gameClip))
+                    gameClip = null;
+            }
+            if (gameClip == null)
+                gameClip = introOverride;
+
+            if (string.IsNullOrEmpty(gameClip.name))
+            {
+                Logging.Warn("[PowerIntroSwap] Original introOverride clip has no name, skipping.");
+                return;
+            }
+
+            string folder = Path.Combine(AudioSwapper.SpeechFolder, "power");
+            string path = Path.Combine(folder, gameClip.name);
+
+            AudioSwapper.PreloadClipAsync(path, gameClip, (AudioClip newClip) =>
+            {
+                if (newClip != null && newClip != gameClip)
+                {
+                    introOverrideField.SetValue(instance, newClip);
+                    Logging.Warn("PowerIntroSwap: Successfully replaced introOverride with localized version: " + newClip.name);
+                    AudioSwapper.RegisterTranslatedClip(newClip, gameClip, path);
                 }
+                else
+                {
+                    // No replacement exists: the game's own clip is the documented fallback.
+                    if (!ReferenceEquals(introOverrideField.GetValue(instance), gameClip))
+                        introOverrideField.SetValue(instance, gameClip);
+                    Logging.Warn("PowerIntroSwap: No localized clip found for introOverride. Keeping original.");
+                }
+            });
+        }
+
+        /// <summary>
+        /// Swaps the repeated intro clips of a persistent data object to the active
+        /// language. The array on the persistent data may already hold translations
+        /// of the previous language, so the lookups go through the saved originals.
+        /// </summary>
+        private static void SwapRepeatedIntroClips(PowerPersistentData persistentData)
+        {
+            if (persistentData == null || persistentData.RepeatedIntroClips == null || persistentData.RepeatedIntroClips.Length == 0)
+                return;
+
+            AudioClip[] savedClips;
+            lock (_introLock)
+            {
+                if (!_savedRepeatedIntroClips.TryGetValue(persistentData, out savedClips))
+                    savedClips = null;
+            }
+
+            string folder = Path.Combine(AudioSwapper.SpeechFolder, "power");
+            for (int i = 0; i < persistentData.RepeatedIntroClips.Length; i++)
+            {
+                AudioClip gameClip = (savedClips != null && i < savedClips.Length && savedClips[i] != null)
+                    ? savedClips[i]
+                    : persistentData.RepeatedIntroClips[i];
+                if (gameClip == null) continue;
+
+                if (string.IsNullOrEmpty(gameClip.name))
+                {
+                    Logging.Warn($"[PowerIntroSwap] Original RepeatedIntroClips[{i}] has no name, skipping.");
+                    continue;
+                }
+
+                int index = i;
+                string clipPath = Path.Combine(folder, gameClip.name);
+                AudioSwapper.PreloadClipAsync(clipPath, gameClip, (AudioClip newClip) =>
+                {
+                    if (newClip != null && newClip != gameClip)
+                    {
+                        persistentData.RepeatedIntroClips[index] = newClip;
+                        Logging.Warn($"PowerIntroSwap: Successfully replaced RepeatedIntroClips[{index}] with localized version: " + newClip.name);
+                        AudioSwapper.RegisterTranslatedClip(newClip, gameClip, clipPath);
+                    }
+                    else
+                    {
+                        // No replacement exists: the game's own clip is the documented fallback.
+                        if (!ReferenceEquals(persistentData.RepeatedIntroClips[index], gameClip))
+                            persistentData.RepeatedIntroClips[index] = gameClip;
+                        Logging.Warn($"PowerIntroSwap: No localized clip found for RepeatedIntroClips[{index}]. Keeping original.");
+                    }
+                });
             }
         }
 
@@ -586,9 +712,6 @@ namespace UltrakULL.Harmony_Patches.AudioSwaps
             }
             else
             {
-                string folder = Path.Combine(AudioSwapper.SpeechFolder, "power");
-                string path = Path.Combine(folder, introOverride.name);
-
                 AudioSwapper.LogAudioSourceDiagnostics(__instance.GetComponent<AudioSource>(), "PowerIntro (introOverride)");
 
                 bool shouldUseScenePreload = false;
@@ -602,19 +725,7 @@ namespace UltrakULL.Harmony_Patches.AudioSwaps
                 {
                     if (AudioPreloadManager.IsScenePreloaded(GetCurrentSceneName()))
                     {
-                        AudioSwapper.PreloadClipAsync(path, introOverride, (AudioClip newClip) =>
-                        {
-                            if (newClip != null && newClip != introOverride)
-                            {
-                                introOverrideField.SetValue(__instance, newClip);
-                                Logging.Warn("PowerIntro: Successfully replaced introOverride with localized version: " + newClip.name);
-                                UltrakULL.Harmony_Patches.Subtitles.PowerSubtitlesSwap.RegisterPowerClipAsHandled(newClip.name);
-                            }
-                            else
-                            {
-                                Logging.Warn("PowerIntro: No localized clip found for introOverride. Keeping original.");
-                            }
-                        });
+                        SwapIntroOverrideClip(__instance, introOverrideField, introOverride);
                     }
                     else
                     {
@@ -623,49 +734,14 @@ namespace UltrakULL.Harmony_Patches.AudioSwaps
                 }
                 else
                 {
-                    AudioSwapper.PreloadClipAsync(path, introOverride, (AudioClip newClip) =>
-                    {
-                        if (newClip != null && newClip != introOverride)
-                        {
-                            introOverrideField.SetValue(__instance, newClip);
-                            Logging.Warn("PowerIntro: Successfully replaced introOverride with localized version: " + newClip.name);
-                            UltrakULL.Harmony_Patches.Subtitles.PowerSubtitlesSwap.RegisterPowerClipAsHandled(newClip.name);
-                        }
-                        else
-                        {
-                            Logging.Warn("PowerIntro: No localized clip found for introOverride. Keeping original.");
-                        }
-                    });
+                    SwapIntroOverrideClip(__instance, introOverrideField, introOverride);
                 }
             }
 
             Logging.Warn($"PowerIntro: persistentData.PerformedIntro = {persistentData?.PerformedIntro}");
             Logging.Warn($"PowerIntro: persistentData.RepeatedIntroOverrideClip = {persistentData?.RepeatedIntroOverrideClip}");
 
-            if (persistentData != null && persistentData.RepeatedIntroClips != null && persistentData.RepeatedIntroClips.Length > 0)
-            {
-                string folder = Path.Combine(AudioSwapper.SpeechFolder, "power");
-                for (int i = 0; i < persistentData.RepeatedIntroClips.Length; i++)
-                {
-                    AudioClip originalClip = persistentData.RepeatedIntroClips[i];
-                    if (originalClip == null) continue;
-
-                    string path = Path.Combine(folder, originalClip.name);
-                    AudioSwapper.PreloadClipAsync(path, originalClip, (AudioClip newClip) =>
-                    {
-                        if (newClip != null && newClip != originalClip)
-                        {
-                            persistentData.RepeatedIntroClips[i] = newClip;
-                            Logging.Warn($"PowerIntro: Successfully replaced RepeatedIntroClips[{i}] with localized version: " + newClip.name);
-                            UltrakULL.Harmony_Patches.Subtitles.PowerSubtitlesSwap.RegisterPowerClipAsHandled(newClip.name);
-                        }
-                        else
-                        {
-                            Logging.Warn($"PowerIntro: No localized clip found for RepeatedIntroClips[{i}]. Keeping original.");
-                        }
-                    });
-                }
-            }
+            SwapRepeatedIntroClips(persistentData);
         }
 
         [HarmonyPostfix]

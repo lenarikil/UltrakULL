@@ -2,169 +2,116 @@
 ![Version](https://img.shields.io/github/v/release/ClearwaterTM/UltrakULL)
 ![Licence](https://img.shields.io/github/license/ClearwaterTM/UltrakULL)
 
-[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&weight=800&size=29&letterSpacing=&pause=1000&color=F7F7F7&background=DB20FF27&center=true&vCenter=true&repeat=false&width=1000&lines=This+project%2Fmod+was+created+with+the+partial+help+of+AI.+%F0%9F%A4%96)](https://git.io/typing-svg)
+[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&weight=800&size=29&pause=1000&color=F7F7F7&background=DB20FF27&center=true&vCenter=true&repeat=false&width=1000&lines=This+project%2Fmod+was+created+with+the+partial+help+of+AI.+%F0%9F%A4%96)](https://git.io/typing-svg)
+
 <img src="https://github.com/user-attachments/assets/98fd5921-0662-4e09-9ab4-b844e2bbf45e">
 
-# **UltrakULL ReFORKED**
+# UltrakULL ReFORKED
 
-**UltrakULL** (ULTRAKILL Language Library) is a modification (mod) for ULTRAKILL that allows for modification of the game's text strings, voiceovers and textures effectively allowing for translation and localization into various languages.\
-This mod's primary purpose is to bridge the gap for localization and translation until ULTRAKILL receives official translations.
+**UltrakULL** (ULTRAKILL Language Library) is a mod for ULTRAKILL that allows translating game text, voice lines, and replacing textures/fonts. Its main purpose is to bridge the localization gap until official translations are added.
 
-# Features
+## Features
 
-- Translates the entire game from English to any language
-- Support for multiple languages
-- Easy font changing
-- Replacing certain textures by simply changing the .png files, without having to modify the game files
-- JSON formatting of language files allows for easy-to-understand, simple-to-do modification of strings
-- Change languages directly in-game without having to restart game
-- Dubbing support allows for translated spoken dialogue
-- ~~Supports right-to-left languages such as Arabic and Persian~~ **(At the moment, the feature has a large number of critical bugs. It will be reworked in the future)**
-- Cyrillic character support for languages such as Russian, Ukrainian and Belarusian
+- **Full game translation** - Nearly all in-game text is translated via JSON files
+- **Multiple language packs** - Support for multiple translations side by side
+- **In-game translation browser** - Built-in UI in the Options menu to browse, download and switch language packs
+- **Instant language switching** - Change language on-the-fly without restarting the game
+- **Dubbing support** - Replace voice lines with translated audio, including special effects for certain characters
+- **Custom fonts** - Use custom fonts per language pack
+- **Texture replacement** - Replace textures via the `textures/` folder in your language pack
+- **Cyrillic support** - Works great with Russian, Ukrainian, Belarusian and other Cyrillic languages
+- **Auto-fill missing keys** - When updating the mod, outdated language packs are automatically filled with values from the built-in English template
 
+> Right-to-left language support is currently unstable and under rework.
 
-# Download & Installation
+## Download & Installation
 
-UltrakULL can be obtained either through the [Releases page](https://github.com/lenarikil/UltrakULL/releases) (*recommended*),
-or via the [UltrakULL Discord.](https://discord.gg/ZB7jk6Djv5)
+**Recommended:** Install via [Thunderstore](https://thunderstore.io/c/ultrakill/p/UltrakULL/UltrakULL/) using [r2modmanPlus](https://github.com/ebkr/r2modmanPlus). Dependencies (including BepInEx) will be installed automatically.
 
-The only requirement is to have the latest version of ULTRAKILL on Steam. <br>**Support for Demo, GOG.com, and Hacked versions is NOT guaranteed**
+**Manual:** Download the latest release from [GitHub Releases](https://github.com/lenarikil/UltrakULL/releases) and [BepInEx 5.4.21 x64](https://github.com/BepInEx/BepInEx/releases/download/v5.4.21/BepInEx_x64_5.4.21.0.zip). See the [installation guide](https://github.com/lenarikil/UltrakULL/wiki/Installation-and-Usage) or the guides in `Documents/UltrakULL-Wiki-Guides/`.
 
-## Installation via Thunderstore
+**Requirements:** Latest version of ULTRAKILL on Steam. Demo, GOG, or cracked versions are not guaranteed to be supported.
 
-UltrakULL is available as a [ThunderStore mod.](https://thunderstore.io/c/ultrakill/p/UltrakULL/UltrakULL/)
+## Usage
 
-Download and installation can be done automatically via the [R2ModManager](https://github.com/ebkr/r2modmanPlus/releases/download/v3.1.42/r2modman-3.1.42.exe).
+1. Install the mod and launch the game
+2. Go to **Options → Languages** - a new Languages tab with the translation browser will appear
+3. Select any installed language pack from the list
+4. The language applies instantly with no restart required
 
-(Downloading the mod via R2ModManager will also automatically download and install the required BepInEx dependencies.)
+<img src="https://github.com/user-attachments/assets/d461c5a3-2de2-4d7c-b390-60235f70b21d" alt="UltrakULL Languages menu">
 
-## Installation via GitHub
+## Languages
 
-Installing UltrakULL via GitHub is divided into 2 parts:
-- Installing BepInEx, the modding framework
-- Installing UltrakULL, the mod itself
+See the release notes or [Discord community](https://discord.gg/ZB7jk6Djv5) for a list of available translations and their contributors. You can also create and use your own language packs.
 
-#### Installing BepInEx:
-- Download [BepInEx 5.4.21 64-bit here.](https://github.com/BepInEx/BepInEx/releases/download/v5.4.21/BepInEx_x64_5.4.21.0.zip)
-- Extract the contents of BepInEx to where your ULTRAKILL install folder is located.
-- Launch ULTRAKILL once so BepInEx can generate the required files and folders in the install folder. Quit the game once it has loaded to the main menu.
+## Creating Your Own Language Pack
 
-#### Installing UltrakULL:
-- Extract the contents of UltrakULL to your BepInEx folder. Overwrite any files if prompted.
+Detailed guides have been moved out of the README to keep it clean:
 
+- **[Creating a Language Pack](./Documents/UltrakULL-Wiki-Guides/01-Creating-a-Language-Pack.md)** - Structure, metadata, validation
+- **[Dubbing](./Documents/UltrakULL-Wiki-Guides/02-Dubbing.md)** - Audio setup, subtitle timings, Audacity workflow
+- **[Installation & Usage](./Documents/UltrakULL-Wiki-Guides/03-Installation-and-Usage.md)** - Setup, config, troubleshooting
 
-### Usage
+*These files can be copied directly to the GitHub Wiki.*
 
-- If the mod has loaded correctly, you will see a new "Languages" tab in the Options menu.
-  
-<img src="https://github.com/user-attachments/assets/d461c5a3-2de2-4d7c-b390-60235f70b21d" alt="drawing">
+## Troubleshooting
 
-  
-- In the "Languages" tab, you can view the translations installed locally in the mod folder, and you can select any available language based on the language files found by UltrakULL and load them into the game.
+- **Mod doesn't load or breaks after ULTRAKILL update** - Major game updates may break the mod. Check the [Discord](https://discord.gg/ZB7jk6Djv5) for fixes.
+- **Language doesn't appear in the menu** - Validate your `translation.json` with [jsonlint.com](https://jsonlint.com/). Make sure the pack is in `BepInEx/config/ultrakull/[pack-folder]/` with a valid `translation.json`. Check `BepInEx/LogOutput.log` or the BepInEx console for errors.
+- **Dubbing issues** - Ensure `activeDubbing` and/or `extraDubbing` are enabled in `BepInEx/config/ultrakull/Settings.cfg`. Use `.ogg` format and correct file paths.
+- **Other issues** - Ask for help in the [UltrakULL Discord](https://discord.gg/ZB7jk6Djv5).
 
-### Troubleshooting
+## FAQ
 
-If the mod does not appear to load or work correctly, or errors occur in-game, please open the BepInEx console.
+- **Can I translate ULTRAKILL into my language?** Yes. Follow the guides above or reach out on Discord.
+- **Will this affect my saves?** No, the mod only changes text, audio and textures.
+- **Will this affect Cybergrind highscores?** No.
+- **Is it compatible with other mods?** Not guaranteed. Mods that don't modify HUD messages usually work fine.
 
-#### Opening via R2ModManager
-Open your mod profile in R2ModManager, and go to Config Editor -> BepInEx.cfg -> Edit Config -> Scroll to "Logging". Set both options to True.
+## For Developers
 
-#### Opening via GitHub
-Navigate to BepInEx/config/BepInEx.cfg, and open it in any text editor of your choosing. Scroll down to Logging and set
-"UnityLogListening" and "LogConsoleToUnityLog" to True.
+<details>
+<summary>Build instructions</summary>
 
-Restart the game after applying either steps for your use case.
+### Prerequisites
+- [Visual Studio 2022](https://visualstudio.microsoft.com/) with .NET Framework 4.7.2 targeting pack, or [JetBrains Rider](https://www.jetbrains.com/rider/)
+- [.NET SDK](https://dotnet.microsoft.com/download) compatible with .NET Framework 4.7.2
+- A legal copy of ULTRAKILL (Steam recommended)
 
+### Setup & Build
+1. Clone: `git clone https://github.com/lenarikil/UltrakULL`
+2. Set environment variable `ULTRAKILLPath` to your ULTRAKILL installation folder
+3. Open `UltrakULL.sln`
+4. Build in Release: `dotnet build UltrakULL.sln -c Release`
+5. Output goes to `UltrakULL/bin/Release/plugins/UltrakULL/`
 
-# Languages
+### Notes
+- Flags are embedded from `UltrakULL/flags/flags.zip`
+- Templates and assets are copied during build
+- Target framework: `net472`, C# `7.3`
+</details>
 
-## Available languages and their creators, before the mod's transition to the SDK platform
-| Language                                 | Contributors                                                                                                                       |
-|------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------|
-| English (U.S)                            | Hakita & New Blood                                                                                                                 |
-| Brazilian Portugese (Portugês do Brasil) | Veni, Jackie, MKaid, hebert, FNChannel, Spooky, Soulvender, RAYLANDER                                                              |
-| Czech (Čeština)                          | Mina                                                                                                                               |
-| Filipino (Pilipino)                      | mxkyle, MecanicWithAPistol, FinnianNiko                                                                                            |
-| French (Français)                        | Clearwater, ZedDev, Frizou, osokour, Tamary, Uranus, Lays                                                                          |
-| German (Deutsch)                         | Distrilul, JESTERB0T, Liquid Lest, Psychologemelone44, Termi2, Fabidelune, Madeleine                                               |
-| Korean (한국어)                           | ARSE™, Susu                                                                                                                        |
-| Russian (русский)                        | Nessie_A_WA97, D4N5T3P, Edith Bagel, lrddd, Brainy-Stormie, TwinT, towelie84, mctaylors, Solidus Cumcer, Filin, Ega1232387, Khowst |
-| Spanish (Español)                        | LambCS, Philia, Lukah, Amarok_Lc, Santy, Radripizza, j(LRC), LEVIBOT                                                               |
-| Simplified Chinese (简体中文)             | Hydracerynitis, ciinore, duke325, ponyweeb, Skugra, GoGoblin                                                                       |
-| Turkish (Türkçe)                         | Legitname1337, Ömer Talha, RTE, Ray_, legio, Scape, Neige,$ERTU$TAUPTOWN                                                           |
+## Credits & Links
 
-# Troubleshooting
+- **Credits:** [CREDITS.md](./UltrakULL/CREDITS.md)
+- **ULTRAKILL on Steam:** https://store.steampowered.com/app/1229490/ULTRAKILL/
+- **New Blood Discord:** https://discord.gg/newblood
+- **UltrakULL Discord:** https://discord.gg/ZB7jk6Djv5
+- **Original Dubbing Docs:** [UltrakULL/docs/Dubbing.md](./UltrakULL/docs/Dubbing.md)
 
-### ULTRAKILL received an update, and UltrakULL is now broken/not working correctly.
-As is the case with most updates for other games,
-any and all updates and hotfixes to ULTRAKILL will almost certainly break mod functionality
-to some degree. Work to future-proof the mod as much as possible is done to minimise such occurrences,
-but if an update breaks the mod, it will be fixed as quickly as possible.
+## Third-Party Dependencies
 
-### My language does not appear as selectable in-game in the language tab.
+| Component | License | Source |
+|-----------|---------|--------|
+| **7-Zip (`7z.exe`)** | **GNU LGPL v2.1 (unRAR restricted)** | https://www.7-zip.org/, Igor Pavlov |
+| **Discord logo (white symbol mark)** | Discord Brand Assets / Branding Guidelines | https://discord.com/branding; `assets/discord_logo_white.png` |
+| **Warning icon (white caution mark)** | CityPNG Personal Use License (non-commercial only) | https://www.citypng.com/photo/19198/white-caution-mark-warning-sign-icon-hd-png; https://www.citypng.com/page/personal-use-license; `assets/warning_icon.png` |
 
-Language files are formatted in JSON. If it does not appear as available, it is either not formatted correctly
-or does not match the minimum version required by the mod.\
-To check if a file is formatted correctly, open [JSONLint](https://jsonlint.com/) in your browser, copy and paste the contents
-of your file into the window and click on "Validate JSON". \
-If the file is not formatted correctly, JSONLint will report any errors.
-Errors can be forwarded to the UltrakULL Discord's troubleshooting channel for assistance.
+**7-Zip usage note:** `7z.exe` is launched as a separate process via `System.Diagnostics.Process`. It is **not** compiled into or linked with UltrakULL. UltrakULL itself remains under the **MIT** license; this section only attributes the separately-distributed 7-Zip binary used for 7z/zip archive extraction.
 
-### My problem is not listed here.
+**Discord logo note:** `assets/discord_logo_white.png` is the official white Discord symbol mark (“Clyde”). It is embedded into the mod DLL at build time and used by the translation browser’s “open original post” buttons, tinted through `Image.color`. See `tools/discord-logo.md` for provenance and refresh instructions.
 
-A dedicated troubleshooting and support channel can be found at the [UltrakULL Discord](https://discord.gg/ZB7jk6Djv5).
+**Warning icon note:** `assets/warning_icon.png` is the white caution/warning mark shown when a remote pack logo or gallery image fails to load. Source: CityPNG — https://www.citypng.com/photo/19198/white-caution-mark-warning-sign-icon-hd-png. See `UltrakULL/UI/TranslationBrowser/PrimitiveSprites.cs` for attribution.
 
-# FAQ
-
-### Can I translate ULTRAKILL into my native language with this mod?
-
-Indeed you can! Thanks to this mod, ULTRAKILL has already been translated into various foreign languages,
-including French, Brazilian Portugese, Traditional Chinese, with many other languages also in development at the time of release.\
-If you wish to contribute to, or begin work on a new or existing translation or language, feel free to stop by and inquire
-at the [UltrakULL Discord.](https://discord.gg/ZB7jk6Djv5)
-
-### Will this mod affect my saves?
-
-No, this mod merely changes text in the game. It does not alter your saves in any way.
-
-### Will this mod prevent Cybergrind highscores?
-
-No, for the same reason as above. It does not alter any gameplay aspects that would give an unfair advantage in any way, and as such,
-will be safe to set Cybergrind highscores with.
-If for some reason your Cybergrind highscores are not being submitted, and you are sure they should be doing so, feel free to shoot a message
-on our Discord and I will take a look at it.
-
-### Can voice lines from characters be translated?
-
-As of UltrakULL v1.1.0, dubbing support is available for speaking characters! To learn more about how to add your own lines, check the [dubbing documentation](https://github.com/lenarikil/UltrakULL/blob/master/UltrakULL/docs/Dubbing.md).
-
-### Where can I follow UltrakULL's development?
-I usually like to post updates and news about development in the **[UltrakULL Discord](https://discord.gg/ZB7jk6Djv5)**
-
-### Is UltrakULL compatible with other mods?
-I cannot guarantee mod compatability with other mods. Mods that do not use the HUD message display functionality
-should work just fine though.
-
-
-# Documentation
-
-GitHub documentation coming in future. Until then, documentation on how to create your own language
-can be found in the [UltrakULL Discord.](https://discord.gg/ZB7jk6Djv5)
-
-# Building
-###  (This info is for developers. If you only want to play/use the mod, you do not need to read this.)
-1) Clone the repository.<br>`git clone https://github.com/lenarikil/UltrakULL`
-2) Set ULTRAKILLPath as an environment variable, which points to your game installation. <br> This is used to automatically acquire any necessary .dll files from the game location to build the mod.
-3) Open the project solution in the IDE of your choice (Visual Studio, Rider, etc.)
-4) Build the solution. The solution will automatically set up the folder structure, and will drop compiled mod as a DLL.dll file into BepInEx/plugins/UltrakULL.<br>
-If you have any language templates or dubbing audio files, the project will automatically copy those to config/ultrakull.
-5) Drop all the generated files and folders into: `[Your Steam folder]/steamapps/common/ULTRAKILL/`<br> Overwrite any files if prompted.
-
-# Credits & Contributors
-View [CREDITS.md](./UltrakULL/CREDITS.md) for full crediting information.
-
-# Links
-
-ULTRAKILL Steam page: https://store.steampowered.com/app/1229490/ULTRAKILL/ \
-ULTRAKILL/New Blood Discord:  https://discord.gg/newblood \
-UltrakULL Discord: https://discord.gg/ZB7jk6Djv5
+Place `7z.exe` (and `LICENSE-7z.md`) in `BepInEx/plugins/UltrakULL/tools/7z.exe` (or make it available via PATH) so the translation pack installer can extract 7z and zip archives. Both files are included in this repository under `UltrakULL/tools/` and are copied to the plugin output on every Release build.

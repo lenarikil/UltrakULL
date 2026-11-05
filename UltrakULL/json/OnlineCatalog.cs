@@ -50,18 +50,33 @@ namespace UltrakULL.json
     }
 
     /// <summary>
-    /// One translation entry from the online catalog.
+    /// One translation entry. Shared by the online catalog (mapped by
+    /// CatalogParser from the Cloudflare catalog.json) and by the browser's
+    /// Installed tab (synthesized from local pack data).
     ///
-    /// The <see cref="id"/> is the unique identifier of a translation and is NOT the
-    /// target language: multiple teams may provide separate translations for the same
-    /// language, and each one is its own entry with its own logo, version and likes.
+    /// The <see cref="id"/> is the unique identifier of a translation and is NOT
+    /// the target language: multiple teams may provide separate translations for
+    /// the same language, and each one is its own entry with its own logo,
+    /// version and likes.
     /// </summary>
     public class TranslationEntry
     {
         public string id;
+
+        /// <summary>Display name of the translation itself (catalog "name").</summary>
+        public string name;
+
         public string languageTag;
+
+        /// <summary>
+        /// Display name of the language. Only set for locally synthesized entries;
+        /// the online catalog has no such field and leaves it null.
+        /// </summary>
         public string languageName;
 
+        // --- Legacy v1-era fields. The online catalog never fills them; only the
+        // locally synthesized Installed-tab entries (and any future legacy data
+        // source) may use them. Kept for compatibility, not removed. ---
         public string teamName;
         public string author;
         public string version;
@@ -73,6 +88,7 @@ namespace UltrakULL.json
 
         // Small flag image of the target language, drawn over the bottom-right corner
         // of the logo. Null means "no flag artwork" (the UI then shows a code badge).
+        // Legacy field: the online catalog has no flagUrl, flags come from FlagProvider.
         public string flagUrl;
 
         // Gallery/preview images. Null/empty means "no gallery".
@@ -81,23 +97,33 @@ namespace UltrakULL.json
         public TranslationFeatures features;
 
         // Ordered list of contributors, first entries are considered the main authors.
+        // Legacy field: the online catalog ships authors as one plain string (author).
         public List<TranslationAuthor> authors;
 
-        // Free-form text provided by the authors (may contain markdown-ish formatting).
+        // Free-form text provided by the authors (catalog "description").
         public string readme;
 
-        // Direct download URL of the language pack file. When missing, the legacy
-        // per-language-tag URL scheme is used as a fallback (see CatalogService).
+        // Direct download URL of the language pack (a file or an indirect page on a
+        // known host; resolved by PackInstaller). Null hides the download button.
         public string downloadUrl;
-    }
 
-    /// <summary>
-    /// Document root of the expanded online catalog (languagesMaster.json, schema v2).
-    /// </summary>
-    public class OnlineCatalogDocument
-    {
-        public int? schemaVersion;
-        public List<TranslationEntry> translations;
+        // Link to the original Discord publication thread, when the catalog provided
+        // valid coordinates.
+        public string discordUrl;
+
+        // Last update time of this entry as reported by the catalog.
+        public DateTime? updatedAt;
+
+        /// <summary>
+        /// True for the built-in English pseudo-entry (the original game text,
+        /// not a user translation). The UI shows a dedicated preview without
+        /// translation metadata: no version, authors, features or likes.
+        /// </summary>
+        public bool isBuiltinEnglish;
+
+        // Social links from the catalog entry: list of (display text, URL).
+        // Null/empty means "no social links".
+        public List<KeyValuePair<string, string>> socialLinks;
     }
 
     /// <summary>

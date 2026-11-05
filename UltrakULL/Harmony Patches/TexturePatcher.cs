@@ -64,14 +64,19 @@ namespace UltrakULL.Harmony_Patches
 		// Time (ms) the scene/UI replacement passes may spend on the main thread
 		// before yielding a frame. Keeps scene loads and late activations smooth.
 		// Defaults are placeholders overwritten by LoadPerformanceConfig (Auto tuning).
-		private static float texturePatchFrameBudgetMs = 8f;
-		private static float initialPassFrameBudgetMs = 24f;
+		private static float texturePatchFrameBudgetMs = 4f;
+		private static float initialPassFrameBudgetMs = 8f;
 
 		// Late-activation handling: game events enqueue the objects they activate,
 		// a budgeted drain coroutine patches their subtrees immediately.
 		private static readonly Queue<GameObject> pendingActivationRoots = new Queue<GameObject>();
 		private static bool activationDrainRunning = false;
 		private static bool activationHooksEnabled = true;
+
+		// Live view of the "replaceTextures" setting: the entry is held (instead
+		// of caching its value at startup) so the Settings tab toggle takes
+		// effect without a restart (item 12).
+		private static BepInEx.Configuration.ConfigEntry<string> replaceTexturesEntry;
 
 		// Background rescan fallback (catches activations the hooks cannot see).
 		private static bool rescanEnabled = true;
@@ -437,9 +442,11 @@ namespace UltrakULL.Harmony_Patches
 				string initialValue = cfg.Bind("Performance", "initialPassBudgetMs", "Auto").Value;
 				initialPassFrameBudgetMs = TryParsePositive(initialValue, out var initial)
 					? initial
-					: Math.Min(texturePatchFrameBudgetMs * 3f, 24f);
+					: Math.Min(texturePatchFrameBudgetMs * 2f, 8f);
 
 				activationHooksEnabled = Convert.ToBoolean(cfg.Bind("Performance", "activationHooks", "True").Value);
+
+				replaceTexturesEntry = cfg.Bind("General", "replaceTextures", "True");
 
 				rescanEnabled = Convert.ToBoolean(cfg.Bind("Performance", "rescanEnabled", "True").Value);
 
@@ -482,23 +489,23 @@ namespace UltrakULL.Harmony_Patches
 
 			if (score <= 1)
 			{
-				budgetMs = 5f;
-				rescanSeconds = 1.0f;
+				budgetMs = 2f;
+				rescanSeconds = 1.5f;
 			}
 			else if (score <= 3)
 			{
-				budgetMs = 8f;
-				rescanSeconds = 0.5f;
+				budgetMs = 3f;
+				rescanSeconds = 1.25f;
 			}
 			else if (score <= 5)
 			{
-				budgetMs = 12f;
-				rescanSeconds = 0.35f;
+				budgetMs = 4f;
+				rescanSeconds = 1f;
 			}
 			else
 			{
-				budgetMs = 16f;
-				rescanSeconds = 0.25f;
+				budgetMs = 5f;
+				rescanSeconds = 0.75f;
 			}
 
 			note = $"cores={cores}, ram={ramMb}MB, vram={vramMb}MB, score={score}";
@@ -552,30 +559,60 @@ namespace UltrakULL.Harmony_Patches
 			Logging.Message($"[TexturePatcher] Loaded {globalTextureReplacements.Count} global and {levelTextureMappings.Count} level-specific mappings");
 		}
 
-		[HarmonyPatch(typeof(SceneHelper), "OnSceneLoaded")]
-		[HarmonyPostfix]
-		private static void OnSceneLoaded()
+		internal static void OnSceneLoaded()
 		{
-			// The tracked originals belong to the previous scene, its objects are
-			// gone by now, so the tracking starts over.
-			ClearOriginalTracking();
+			try
+			{
+				string sceneName = GetCurrentSceneName();
 
-			// Built-in English has no translated textures; skip the whole replacement pipeline.
-			if (UltrakULL.CommonFunctions.isUsingEnglish()) return;
+				// User disabled texture replacement in settings (live read, item 12).
+				if (!IsReplaceTexturesEnabled()) return;
 
-			cancellationTokenSource?.Cancel();
-			cancellationTokenSource?.Dispose();
-			cancellationTokenSource = new CancellationTokenSource();
+				// Built-in English has no translated textures; skip the whole replacement pipeline.
+				if (UltrakULL.CommonFunctions.isUsingEnglish()) return;
 
-			pendingActivationRoots.Clear();
-			activationDrainRunning = false;
+				if (string.IsNullOrEmpty(sceneName)) return;
+				if (ignoredScenes.Contains(sceneName)) return;
 
-			EnsureCoroutineStarter();
+				if (!initialized) return;
 
-			// A running pass belongs to the previous scene, so it is stopped before the
-			// new one starts.
-			StopSceneChangePass();
-			sceneChangeCoroutine = coroutineStarter.StartCoroutine(ProcessSceneChange());
+				EnsureCoroutineStarter();
+
+				if (cancellationTokenSource != null)
+				{
+					cancellationTokenSource.Cancel();
+					cancellationTokenSource.Dispose();
+				}
+				cancellationTokenSource = new CancellationTokenSource();
+
+				pendingActivationRoots.Clear();
+				activationDrainRunning = false;
+
+				// A running pass belongs to the previous scene, so it is stopped before the
+				// new one starts.
+				StopSceneChangePass();
+
+				// The tracked originals belong to the previous scene, its objects are
+				// gone by now, so the tracking starts over.
+				ClearOriginalTracking();
+
+				// Force reprocess for current scene (important for menu and same-scene reloads)
+				if (currentLevel == sceneName || sceneName == "Main Menu" || sceneName.Contains("Menu"))
+				{
+					ResetInternalState();
+					if (sceneName == "Main Menu" || sceneName.Contains("Menu"))
+					{
+						sceneChangeCoroutine = coroutineStarter.StartCoroutine(ReapplyForCurrentMenu());
+						return;
+					}
+				}
+
+				sceneChangeCoroutine = coroutineStarter.StartCoroutine(ProcessSceneChange());
+			}
+			catch (Exception e)
+			{
+				Logging.Warn("[TexturePatcher] OnSceneLoaded error: " + e.Message);
+			}
 		}
 
 		private static void EnsureCoroutineStarter()
@@ -584,6 +621,7 @@ namespace UltrakULL.Harmony_Patches
 				return;
 
 			var go = new GameObject("TexturePatcher_CoroutineStarter");
+			try { UnityEngine.Object.DontDestroyOnLoad(go); } catch { }
 			coroutineStarter = go.AddComponent<DummyMonoBehaviour>();
 		}
 
@@ -617,6 +655,7 @@ namespace UltrakULL.Harmony_Patches
 			LoadPerformanceConfig();
 
 			string sceneName = GetCurrentSceneName();
+			Logging.Message($"[TexturePatcher] ProcessSceneChange called for scene '{sceneName}'");
 
 			if (string.IsNullOrEmpty(sceneName) || cancellationTokenSource.IsCancellationRequested)
 			{
@@ -639,29 +678,40 @@ namespace UltrakULL.Harmony_Patches
 				yield break;
 			}
 
+			// If textures are disabled or language is English, don't process replacements
+			if (!IsReplaceTexturesEnabled() || UltrakULL.CommonFunctions.isUsingEnglish())
+			{
+				Logging.Message("[TexturePatcher] Texture replacement disabled or English language, skipping");
+				ResetInternalState();
+				isProcessing = false;
+				yield break;
+			}
+
 			Logging.Message($"[TexturePatcher] Processing scene: {sceneName}");
 			yield return null;
 
 			// Skip full cache reset when entering Main Menu — preserves textures for faster re-entry
 			// Main Menu doesn't need texture patching, so keeping cache warm avoids GC spikes on level exit
-			bool isMainMenu = sceneName == "Main Menu";
-			if (currentLevel != sceneName && !isMainMenu)
+			bool isMainMenu = sceneName == "Main Menu" || sceneName.Contains("Menu");
+			if (currentLevel != sceneName)
 			{
 				ResetInternalState();
 				currentLevel = sceneName;
 			}
-			else if (isMainMenu && currentLevel != sceneName)
+			else
+			{
+				// Same scene reloaded (e.g. loading a save) - need to reset state
+				ResetInternalState();
+				currentLevel = sceneName;
+			}
+
+			if (isMainMenu)
 			{
 				// Main Menu: load the global textures + icons and the menu specific ones
 				// (TextmodeCircuit, TextmodeLogo), then replace them in the scene.
-				// Level specific and batch textures are not used in the menu.
-				currentLevel = sceneName;
-				Logging.Message("[TexturePatcher] Main Menu detected — loading global/icon textures only, preserving cache");
-
 				currentReplacements = new Dictionary<string, Texture2D>();
 				yield return LoadTextures(globalTextureReplacements);
 
-				// Load Main Menu specific textures (TextmodeCircuit, TextmodeLogo)
 				var menuSpecific = GetLevelSpecificTextures(sceneName);
 				if (menuSpecific?.Count > 0)
 					yield return LoadTextures(menuSpecific);
@@ -675,8 +725,6 @@ namespace UltrakULL.Harmony_Patches
 					yield break;
 				}
 
-				// The menu logo and the circuit board are plain textures on renderers,
-				// so the renderer pass is needed here as well.
 				yield return ReplaceTexturesInScene(initialPassFrameBudgetMs);
 				yield return ReplaceUISprites(initialPassFrameBudgetMs);
 
@@ -858,7 +906,7 @@ namespace UltrakULL.Harmony_Patches
 				if (anyRegionFound)
 				{
 					currentReplacements[batchTextureName] = modifiedTexture;
-					Logging.Message($"[TexturePatcher] Batch texture '{batchTextureName}' processed with {regionResults.Count} regions");
+					Logging.Message($"[TexturePatcher] Batch texture '{batchTextureName}' processed with {regionResults.Count} regions, added to replacements");
 				}
 				else
 				{
@@ -1673,6 +1721,69 @@ namespace UltrakULL.Harmony_Patches
 		}
 
 		/// <summary>
+		/// Live value of the "replaceTextures" setting. The entry can be null
+		/// before the config file was loaded; replacement stays enabled then,
+		/// matching the pre-config startup behavior.
+		/// </summary>
+		private static bool IsReplaceTexturesEnabled()
+		{
+			try
+			{
+				return replaceTexturesEntry == null || Convert.ToBoolean(replaceTexturesEntry.Value);
+			}
+			catch (Exception)
+			{
+				return true;
+			}
+		}
+
+		/// <summary>
+		/// Called by the browser's Settings tab after the "replaceTextures" toggle
+		/// changed: stops the running pass, puts the game's own textures back, and
+		/// starts a fresh pass when the setting was turned back on - so the toggle
+		/// takes effect in the current scene without a restart (item 12). Must run
+		/// on the main thread (it does: the toggle is a UI click handler).
+		/// </summary>
+		internal static void OnReplaceTexturesSettingChanged()
+		{
+			if (!initialized)
+			{
+				return;
+			}
+
+			// Same reset sequence as a scene load.
+			cancellationTokenSource?.Cancel();
+			cancellationTokenSource?.Dispose();
+			cancellationTokenSource = new CancellationTokenSource();
+
+			pendingActivationRoots.Clear();
+			activationDrainRunning = false;
+
+			EnsureCoroutineStarter();
+			StopSceneChangePass();
+
+			// Put the game's own textures back and forget the processed objects,
+			// so neither the background rescan nor a stale replacement set can
+			// re-apply the previous textures while the toggle is off. The texture
+			// caches stay: the language did not change, so the decoded files are
+			// still valid when the setting is turned back on.
+			RestoreOriginalTextures();
+			processedObjectIds.Clear();
+			processedRawImages.Clear();
+			replacementResolutionCache.Clear();
+			currentReplacements = null;
+			currentLevel = null;
+
+			if (!IsReplaceTexturesEnabled() || UltrakULL.CommonFunctions.isUsingEnglish())
+			{
+				Logging.Message("[TexturePatcher] Texture replacement is disabled; the original textures are back.");
+				return;
+			}
+
+			sceneChangeCoroutine = coroutineStarter.StartCoroutine(ProcessSceneChange());
+		}
+
+		/// <summary>
 		/// Rebuilds the texture replacements of the newly selected language and applies
 		/// them to the scene that is currently loaded, so a language switch does not
 		/// need a scene reload to show the new language's textures. Switching to a
@@ -1685,6 +1796,8 @@ namespace UltrakULL.Harmony_Patches
 				Logging.Warn("[TexturePatcher] Not initialized, cannot reapply the textures.");
 				return;
 			}
+
+			string currentScene = GetCurrentSceneName();
 
 			// Stop the running pass: the replacement set belongs to the previous language.
 			cancellationTokenSource?.Cancel();
@@ -1719,6 +1832,7 @@ namespace UltrakULL.Harmony_Patches
 			batchTextureCache.Clear();
 			materialCacheValid = false;
 			cachedAllMaterials = null;
+			ClearOriginalTracking();
 			currentLevel = null;
 			isProcessing = false;
 
@@ -1729,9 +1843,102 @@ namespace UltrakULL.Harmony_Patches
 				return;
 			}
 
+			if (!IsReplaceTexturesEnabled())
+			{
+				return;
+			}
+
 			EnsureTexturesFolderExists();
 
+			// Force immediate reprocessing for current scene (especially Main Menu)
+			if (currentScene == "Main Menu" || currentScene.Contains("Menu"))
+			{
+				sceneChangeCoroutine = coroutineStarter.StartCoroutine(ReapplyForCurrentMenu());
+				return;
+			}
+
 			sceneChangeCoroutine = coroutineStarter.StartCoroutine(ProcessSceneChange());
+		}
+
+		private static IEnumerator ReapplyForCurrentMenu()
+		{
+			isProcessing = true;
+			LoadPerformanceConfig();
+
+			string sceneName = GetCurrentSceneName();
+			Logging.Message($"[TexturePatcher] ReapplyForCurrentMenu called for scene '{sceneName}'");
+
+			if (string.IsNullOrEmpty(sceneName) || !IsReplaceTexturesEnabled() || UltrakULL.CommonFunctions.isUsingEnglish())
+			{
+				isProcessing = false;
+				yield break;
+			}
+
+			// Stop any running pass
+			StopSceneChangePass();
+			if (backgroundChecker != null)
+			{
+				if (coroutineStarter != null)
+					coroutineStarter.StopCoroutine(backgroundChecker);
+				backgroundChecker = null;
+			}
+
+			RestoreOriginalTextures();
+			ClearRankSprites();
+			ClearTextureCache();
+			customIconSprites.Clear();
+			currentReplacements = null;
+			replacementResolutionCache.Clear();
+			processedObjectIds.Clear();
+			processedRawImages.Clear();
+			batchTextureCache.Clear();
+			materialCacheValid = false;
+			cachedAllMaterials = null;
+			ClearOriginalTracking();
+
+			ResetInternalState();
+			currentLevel = sceneName;
+
+			currentReplacements = new Dictionary<string, Texture2D>();
+			yield return LoadTextures(globalTextureReplacements);
+
+			var menuSpecific = GetLevelSpecificTextures(sceneName);
+			if (menuSpecific?.Count > 0)
+				yield return LoadTextures(menuSpecific);
+
+			yield return LoadIconSprites();
+
+			// Processing batch textures for current menu scene (if any are defined)
+			if (batchTextureMappings.TryGetValue(sceneName, out var batchMappings))
+			{
+				yield return ProcessBatchTextures(sceneName, batchMappings);
+			}
+
+			if (currentReplacements.Count == 0 && rankSprites.Count == 0 && customIconSprites.Count == 0)
+			{
+				isProcessing = false;
+				yield break;
+			}
+
+			// Clear processed sets again to force reprocessing
+			processedObjectIds.Clear();
+			processedRawImages.Clear();
+			ClearOriginalTracking();
+
+			yield return ReplaceTexturesInScene(initialPassFrameBudgetMs);
+			yield return ReplaceUISprites(initialPassFrameBudgetMs);
+
+			if (backgroundChecker != null)
+			{
+				if (coroutineStarter != null)
+					coroutineStarter.StopCoroutine(backgroundChecker);
+				backgroundChecker = null;
+			}
+
+			if (rescanEnabled)
+				backgroundChecker = coroutineStarter.StartCoroutine(BackgroundTextureCheck());
+
+			isProcessing = false;
 		}
 
 		private static Dictionary<string, (string filename, string type)> GetLevelSpecificTextures(string sceneName)
@@ -1832,8 +2039,10 @@ namespace UltrakULL.Harmony_Patches
 
 		private static IEnumerator ReplaceTexturesInScene(float frameBudgetMs)
 		{
-			if (currentReplacements == null || cancellationTokenSource.IsCancellationRequested)
+			if (currentReplacements == null || currentReplacements.Count == 0 || cancellationTokenSource.IsCancellationRequested)
 				yield break;
+
+			Logging.Message($"[TexturePatcher] ReplaceTexturesInScene: {currentReplacements.Count} replacements, keys: [{string.Join(", ", currentReplacements.Keys)}]");
 
 			Camera mainCam = Camera.main;
 			var propertyBlock = new MaterialPropertyBlock();
@@ -1911,8 +2120,14 @@ namespace UltrakULL.Harmony_Patches
 
 					if (TryGetReplacement(curTex.name, out var replacement))
 					{
+						if (Logging.Verbose)
+							Logging.Debug($"[TexturePatcher] Replacing texture '{curTex.name}' on renderer {rend.gameObject.name} with '{replacement.name}'");
 						propertyBlock.SetTexture(propId, replacement);
 						modified = true;
+					}
+					else if (Logging.Verbose)
+					{
+						Logging.Debug($"[TexturePatcher] No replacement for texture '{curTex.name}' on renderer {rend.gameObject.name}");
 					}
 				}
 
@@ -2088,24 +2303,33 @@ namespace UltrakULL.Harmony_Patches
 
 		private static bool TryGetReplacement(string textureName, out Texture2D replacement)
 		{
-			if (replacementResolutionCache.TryGetValue(textureName, out replacement))
-				return replacement != null;
-
-			// The replacement map is transient: it is null between ResetInternalState and the
-			// scene load, and activation hooks can fire in that window. Bail out without caching
-			// so a later lookup (after the map is populated) still resolves correctly.
 			var replacements = currentReplacements;
-			if (replacements == null)
+			if (replacements == null || string.IsNullOrEmpty(textureName))
 			{
 				replacement = null;
 				return false;
 			}
 
-			bool found = replacements.TryGetValue(textureName, out replacement)
-				|| replacements.TryGetValue(textureName.ToLower(), out replacement);
+			if (replacementResolutionCache.TryGetValue(textureName, out replacement))
+				return replacement != null;
 
-			replacementResolutionCache[textureName] = found ? replacement : null;
-			return found;
+			bool found = replacements.TryGetValue(textureName, out replacement);
+			if (!found)
+				found = replacements.TryGetValue(textureName.ToLowerInvariant(), out replacement);
+
+			if (!found || replacement == null)
+			{
+				replacement = null;
+				replacementResolutionCache[textureName] = null;
+				if (Logging.Verbose)
+					Logging.Debug($"[TexturePatcher] TryGetReplacement('{textureName}') -> NOT FOUND (keys: {string.Join(", ", replacements.Keys)})");
+				return false;
+			}
+
+			replacementResolutionCache[textureName] = replacement;
+			if (Logging.Verbose)
+				Logging.Debug($"[TexturePatcher] TryGetReplacement('{textureName}') -> FOUND ({replacement.width}x{replacement.height})");
+			return true;
 		}
 
 		// ===== Late activation hooks =====
@@ -2166,7 +2390,7 @@ namespace UltrakULL.Harmony_Patches
 			string currentRank = GetRankNameByIndex(hud.rankIndex);
 			if (rankSprites.TryGetValue(currentRank, out var currentSprite))
 			{
-				SetReplacedSprite(hud.rankImage, currentSprite);
+				SetReplacedRankSprite(hud, hud.rankIndex, currentSprite);
 			}
 			else
 			{
@@ -2211,6 +2435,39 @@ namespace UltrakULL.Harmony_Patches
 		}
 
 		/// <summary>
+		/// Replaces the sprite of the style HUD's current rank image and remembers the
+		/// original one, so the game's own sprite can be put back on a language change.
+		/// </summary>
+		/// <remarks>
+		/// The game copies the sprite of the current rank into rankImage on every rank
+		/// change, so by now it may hold a translation of a previous pass. Registering
+		/// that sprite as the "original" would later restore a translated sprite that
+		/// ClearRankSprites destroys, leaving the HUD without a rank image until the
+		/// next rank change. The game's own sprite of the current rank is the real
+		/// original, and it is what SetReplacedRankSprites remembered.
+		/// </remarks>
+		private static void SetReplacedRankSprite(StyleHUD hud, int rankIndex, Sprite replacement)
+		{
+			if (hud == null || hud.rankImage == null || replacement == null)
+				return;
+
+			if (!originalUISprites.ContainsKey(hud.rankImage))
+			{
+				Sprite gameSprite = hud.rankImage.sprite;
+				Sprite[] rankOriginals;
+				if (originalRankSprites.TryGetValue(hud, out rankOriginals) &&
+				    rankIndex >= 0 && rankIndex < rankOriginals.Length && rankOriginals[rankIndex] != null)
+				{
+					gameSprite = rankOriginals[rankIndex];
+				}
+
+				originalUISprites[hud.rankImage] = gameSprite;
+			}
+
+			hud.rankImage.sprite = replacement;
+		}
+
+		/// <summary>
 		/// Replaces the sprite of a UI image and remembers the original one, so the
 		/// game's own sprite can be put back on a language change.
 		/// </summary>
@@ -2247,7 +2504,7 @@ namespace UltrakULL.Harmony_Patches
 				string rankName = GetRankNameByIndex(__instance.rankIndex);
 				if (rankSprites.TryGetValue(rankName, out var sprite))
 				{
-					SetReplacedSprite(__instance.rankImage, sprite);
+					SetReplacedRankSprite(__instance, __instance.rankIndex, sprite);
 				}
 				else
 				{

@@ -468,7 +468,7 @@ namespace UltrakULL.Harmony_Patches
         private static string GetLanguageCode()
         {
             string langName = LanguageManager.CurrentLanguage != null && LanguageManager.CurrentLanguage.metadata != null
-                ? LanguageManager.CurrentLanguage.metadata.langName
+                ? LanguageManager.CurrentLanguage.metadata.languageCode
                 : null;
             if (string.IsNullOrEmpty(langName))
                 return string.Empty;
@@ -1071,7 +1071,7 @@ namespace UltrakULL.Harmony_Patches
                 typeof(bool)
             })]
             [HarmonyPrefix]
-            public static bool SubtitlePostfix(SubtitleController __instance, string caption, AudioSource audioSource, bool ignoreSetting, Subtitle ___subtitleLine, Transform ___container, Subtitle ___previousSubtitle)
+            public static bool SubtitlePostfix(SubtitleController __instance, string caption, AudioSource audioSource, bool ignoreSetting, Subtitle ___subtitleLine, Transform ___container, ref Subtitle ___previousSubtitle)
             {
                 if (!__instance.SubtitlesEnabled && !ignoreSetting)
                 {

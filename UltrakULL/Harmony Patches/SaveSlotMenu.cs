@@ -117,6 +117,14 @@ namespace UltrakULL.Harmony_Patches
         private static readonly Dictionary<int, string> deleteGameTexts = new Dictionary<int, string>();
         private static readonly Dictionary<int, string> slotNumberGameTexts = new Dictionary<int, string>();
 
+        /// <summary>
+        /// The text the game itself puts into the wipe consent panel. It is
+        /// captured before the mod takes the panel over, so the built-in
+        /// English can be put back on a language switch that happens while the
+        /// consent panel is open.
+        /// </summary>
+        private static string wipeConsentGameText;
+
         [HarmonyPatch("UpdateSlotState"), HarmonyPostfix]
         public static void UpdateSlotState_Postfix(SlotRowPanel targetPanel, SaveSlotMenu.SlotData data)
         {
@@ -130,6 +138,11 @@ namespace UltrakULL.Harmony_Patches
         /// The game fills the slots only once, when the save menu opens, so a
         /// language switch did not reach them and they kept the previous language
         /// until the menu was closed and opened again.
+        ///
+        /// Inactive menus are processed as well: the save window is usually
+        /// closed while the language is switched (the browser lives in the
+        /// options menu), so it has to follow the new language the next time
+        /// it opens without waiting for the game to fill the slots again.
         /// </summary>
         public static void Reapply()
         {
@@ -137,7 +150,7 @@ namespace UltrakULL.Harmony_Patches
             for (int i = 0; i < menus.Length; i++)
             {
                 SaveSlotMenu menu = menus[i];
-                if (menu == null || !menu.gameObject.activeInHierarchy)
+                if (menu == null)
                 {
                     continue;
                 }
@@ -161,6 +174,47 @@ namespace UltrakULL.Harmony_Patches
                     {
                         HandleError(e);
                     }
+                }
+
+                // The wipe consent panel is written by the game only when the
+                // delete button is pressed, so a language switch that happens
+                // while it is open leaves the old language in place. Follow the
+                // new language: the built-in English gets the captured game
+                // text back, a translation gets the warning of the new language
+                // with the pending slot number.
+                try
+                {
+                    GameObject wrapper = AccessTools.Field(typeof(SaveSlotMenu), "wipeConsentWrapper")?.GetValue(menu) as GameObject;
+                    if (wrapper != null && wrapper.activeInHierarchy)
+                    {
+                        TextMeshProUGUI wipeConsent = AccessTools.Field(typeof(SaveSlotMenu), "wipeConsentContent")?.GetValue(menu) as TextMeshProUGUI;
+                        if (wipeConsent != null)
+                        {
+                            if (isUsingEnglish())
+                            {
+                                if (wipeConsentGameText != null)
+                                {
+                                    wipeConsent.text = wipeConsentGameText;
+                                }
+                            }
+                            else
+                            {
+                                object queued = AccessTools.Field(typeof(SaveSlotMenu), "queuedSlot")?.GetValue(menu);
+                                if (queued is int)
+                                {
+                                    wipeConsent.text = string.Format(
+                                        LanguageManager.CurrentLanguage.options.save_deleteWarning1
+                                        + "<color=red>" + LanguageManager.CurrentLanguage.options.save_deleteWarning2 + " {0}</color>"
+                                        + LanguageManager.CurrentLanguage.options.save_deleteWarning3,
+                                        (int)queued + 1);
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    HandleError(e);
                 }
             }
         }
@@ -270,6 +324,13 @@ namespace UltrakULL.Harmony_Patches
         [HarmonyPatch("ClearSlot"), HarmonyPostfix]
         public static void ClearSlotPostfix_MyPatch(int slot, TextMeshProUGUI ___wipeConsentContent)
         {
+            // The game has just written its own warning; keep it so the
+            // built-in English can be restored while the panel is open.
+            if (___wipeConsentContent != null && !string.IsNullOrEmpty(___wipeConsentContent.text))
+            {
+                wipeConsentGameText = ___wipeConsentContent.text;
+            }
+
             if(isUsingEnglish())
             {
                 return;

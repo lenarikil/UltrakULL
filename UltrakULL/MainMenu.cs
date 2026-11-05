@@ -154,7 +154,7 @@ namespace UltrakULL
 				GameObject trueMainMenu = GetGameObjectChild(GetGameObjectChild(mainMenu, "Main Menu (1)"), "LeftSide");
 				GameObject titleObject = GetGameObjectChild(trueMainMenu, "Title");
 				GameObject titleObjectArabic = null;
-				string currentLangName = LanguageManager.CurrentLanguage.metadata.langName;
+				string currentLangName = LanguageManager.CurrentLanguage.metadata.languageCode;
 				bool usingArabicLogo = false;
 
 				if (currentLangName.Substring(currentLangName.Length - 2).ToUpper() == "AR" && Core.ArabicUltrakillLogo != null)

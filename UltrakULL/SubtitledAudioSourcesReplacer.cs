@@ -32,7 +32,13 @@ namespace UltrakULL
             AudioPreloadManager.EnsureCurrentScenePreloaded(ApplySubsAndAudio);
         }
 
-        private static void ApplySubsAndAudio()
+        /// <summary>
+        /// Applies the subtitles and the audio of the configured sources right away,
+        /// without waiting for the scene preload: a language switch must reach a line
+        /// that is in the middle of playing before its next subtitle is due. The clip
+        /// loads stream in on their own while the preload fills the cache.
+        /// </summary>
+        public static void ApplySubsAndAudio()
         {
             if (!TryLoadMetadata(out var objectReferences)) 
                 return;
@@ -62,7 +68,9 @@ namespace UltrakULL
 
                             // The swap keeps the playback time of a line that is
                             // playing, so a language switch does not restart the
-                            // cutscene voice-over, and the subtitles stay in sync.
+                            // cutscene voice-over, and the subtitles stay in sync
+                            // (ApplySourceClip matches the subtitle line index of the
+                            // source to the position it ends up at).
                             SwapSourceClip(src, requestedAudioPath, delegate(AudioClip newClip)
                             {
                                 LogSubtitleTimingDiagnostics(objectReference, newClip, objectPath, requestedAudioPath);
@@ -91,6 +99,44 @@ namespace UltrakULL
             return LanguageManager.configFile.Bind("General", "activeDubbing", "False").Value != "False";
         }
 
+        /// <summary>
+        /// Matches the subtitle line index of the SubtitledAudioSource that belongs to
+        /// an AudioSource to the position the source is really at, and remembers that
+        /// position as the last seen one. Called after a clip swap: without it, a source
+        /// that restarted from the beginning makes the game reset its line index and
+        /// display every line again, which stacks duplicate subtitles with every
+        /// language change.
+        /// </summary>
+        internal static void SyncSubtitleProgress(AudioSource source)
+        {
+            if (source == null)
+                return;
+
+            SubtitledAudioSource subtitledSource = source.GetComponent<SubtitledAudioSource>();
+            if (subtitledSource == null)
+                return;
+
+            try
+            {
+                var data = GetPrivate<SubtitledAudioSource, SubtitledAudioSource.SubtitleData>(
+                    subtitledSource, typeof(SubtitledAudioSource), "subtitles");
+                if (data == null || data.lines == null || data.lines.Length == 0)
+                    return;
+
+                float time = source.time;
+                int passed = 0;
+                while (passed < data.lines.Length && data.lines[passed].time <= time)
+                    passed++;
+
+                SetPrivate(subtitledSource, typeof(SubtitledAudioSource), "currentVoiceLine", passed);
+                SetPrivate(subtitledSource, typeof(SubtitledAudioSource), "lastAudioTime", time);
+            }
+            catch (Exception e)
+            {
+                Logging.Warn("[UAK] Failed to sync subtitle progress: " + e.Message);
+            }
+        }
+
         private static bool TryLoadMetadata(out List<SubtitledObjectReference> references)
         {
             if (Config != null && Config.Scenes.TryGetValue(GetCurrentSceneName(), out references))
@@ -109,7 +155,7 @@ namespace UltrakULL
             if (latestLine == null || latestLine.Delay <= clip.length)
                 return;
 
-            string language = LanguageManager.CurrentLanguage != null ? LanguageManager.CurrentLanguage.metadata.langName : "";
+            string language = LanguageManager.CurrentLanguage != null ? LanguageManager.CurrentLanguage.metadata.languageCode : "";
             string key = language + "|" + GetCurrentSceneName() + "|" + objectPath + "|" + audioPath + "|" + latestLine.Reference;
             if (!subtitleTimingWarnings.Add(key))
                 return;

@@ -24,12 +24,22 @@ namespace UltrakULL.Harmony_Patches
             RevolverBeam revolverBeam;
             if (___altBeam != null && ___altBeam.TryGetComponent<RevolverBeam>(out revolverBeam) && revolverBeam.ultraRicocheter)
             {
-                text = "<color=orange>" + LanguageManager.CurrentLanguage.style.style_ricoshotUltra + "</color>";
+                string ultraText = LanguageManager.CurrentLanguage != null && LanguageManager.CurrentLanguage.style != null
+                    ? LanguageManager.CurrentLanguage.style.style_ricoshotUltra
+                    : null;
+                text = "<color=orange>" + LocalizeStyleHud.TagStyleName(
+                    LocalizeStyleHud.RicoshotUltraModifierId,
+                    string.IsNullOrEmpty(ultraText) ? "ULTRA" : ultraText) + "</color>";
                 num += 50;
             }
             if (___wasShotByEnemy)
             {
-                text += "<color=red>" + LanguageManager.CurrentLanguage.style.style_ricoshotCounter + "</color>";
+                string counterText = LanguageManager.CurrentLanguage != null && LanguageManager.CurrentLanguage.style != null
+                    ? LanguageManager.CurrentLanguage.style.style_ricoshotCounter
+                    : null;
+                text += "<color=red>" + LocalizeStyleHud.TagStyleName(
+                    LocalizeStyleHud.RicoshotCounterModifierId,
+                    string.IsNullOrEmpty(counterText) ? "COUNTER" : counterText) + "</color>";
                 num += 50;
             }
             if (__instance.ricochets > 1)

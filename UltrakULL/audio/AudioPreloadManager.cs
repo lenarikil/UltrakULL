@@ -252,7 +252,7 @@ namespace UltrakULL.audio
 
         private static string GetPreloadKey(string sceneName)
         {
-            string language = LanguageManager.CurrentLanguage != null ? LanguageManager.CurrentLanguage.metadata.langName : "";
+            string language = LanguageManager.CurrentLanguage != null ? LanguageManager.CurrentLanguage.metadata.languageCode : "";
             return language + "|" + sceneName;
         }
 

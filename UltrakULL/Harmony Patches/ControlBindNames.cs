@@ -55,6 +55,12 @@ namespace UltrakULL.Harmony_Patches
     [HarmonyPatch(typeof(ControlsOptionsKey),"OnEnable")]
     public class ControlBindNames
     {
+        /// <summary>
+        /// The text the game itself wrote into each bind row. It is kept, so the
+        /// built-in English can be put back on a language switch.
+        /// </summary>
+        private static readonly Dictionary<ControlsOptionsKey, string> originalBindTexts = new Dictionary<ControlsOptionsKey, string>();
+
         public static string getActionName(string originalText)
         {
             switch (originalText)
@@ -95,7 +101,60 @@ namespace UltrakULL.Harmony_Patches
             // Built-in English keeps the game's original control names.
             if (UltrakULL.CommonFunctions.isUsingEnglish()) return;
 
+            // Remember the game's original text so we can re-apply after a language
+            // switch. The component text is already translated after the first pass,
+            // so we must capture it before overwriting.
+            if (__instance.actionText != null && !originalBindTexts.ContainsKey(__instance))
+            {
+                originalBindTexts[__instance] = __instance.actionText.text;
+            }
+
             __instance.actionText.text = getActionName(__instance.actionText.text);
+        }
+
+        /// <summary>
+        /// Applies the active language to every control bind row that is on screen.
+        ///
+        /// The game fills each bind row only once, when the controls options open, so a
+        /// language switch did not reach them and they kept the previous language until
+        /// the menu was closed and opened again.
+        /// </summary>
+        public static void Reapply()
+        {
+            ControlsOptionsKey[] keys = UnityEngine.Object.FindObjectsOfType<ControlsOptionsKey>(true);
+            for (int i = 0; i < keys.Length; i++)
+            {
+                ControlsOptionsKey key = keys[i];
+                if (key == null || key.actionText == null)
+                {
+                    continue;
+                }
+
+                string original;
+                if (!originalBindTexts.TryGetValue(key, out original))
+                {
+                    original = key.actionText.text;
+                    originalBindTexts[key] = original;
+                }
+
+            try
+            {
+                if (UltrakULL.CommonFunctions.isUsingEnglish())
+                {
+                    // The built-in English is the game's own text.
+                    // OriginalTextSnapshot.Restore() already put it back; do not
+                    // overwrite with a possibly-translated captured original, which
+                    // would keep the previous language's translation on screen.
+                    continue;
+                }
+
+                key.actionText.text = getActionName(original);
+                }
+                catch (Exception e)
+                {
+                    UltrakULL.CommonFunctions.HandleError(e);
+                }
+            }
         }
     }
     [HarmonyPatch(typeof(ControlsOptionsKey), "GenerateTooltip")]

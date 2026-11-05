@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <LangVersion>8.0</LangVersion>
+    <!-- The mod's own JsonFormat sources compile with these in the mod project. -->
+    <NoWarn>$(NoWarn);CS0649</NoWarn>
+    <RootNamespace>UltrakULL.Tests</RootNamespace>
+    <AssemblyName>UltrakULL.Tests</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <!--
+    The pure parts of the mod are compiled directly from the mod's sources:
+    the catalog parser, URL policy, install status resolver, pack registry,
+    safe ZIP extractor and the URL resolver share no Unity/BepInEx code.
+    A test-local Logging shim satisfies the resolver's warn calls.
+  -->
+  <ItemGroup>
+    <Compile Include="..\UltrakULL\json\UrlPolicy.cs" Link="json\UrlPolicy.cs" />
+    <Compile Include="..\UltrakULL\json\CatalogParser.cs" Link="json\CatalogParser.cs" />
+    <Compile Include="..\UltrakULL\json\CloudCatalog.cs" Link="json\CloudCatalog.cs" />
+    <Compile Include="..\UltrakULL\json\JsonFormat.cs" Link="json\JsonFormat.cs" />
+    <Compile Include="..\UltrakULL\json\OnlineCatalog.cs" Link="json\OnlineCatalog.cs" />
+    <Compile Include="..\UltrakULL\json\InstallStatusResolver.cs" Link="json\InstallStatusResolver.cs" />
+    <Compile Include="..\UltrakULL\json\InstalledPackRegistry.cs" Link="json\InstalledPackRegistry.cs" />
+    <Compile Include="..\UltrakULL\json\TranslationManifest.cs" Link="json\TranslationManifest.cs" />
+    <Compile Include="..\UltrakULL\UI\TranslationBrowser\SafeZipExtractor.cs" Link="ui\SafeZipExtractor.cs" />
+    <Compile Include="..\UltrakULL\UI\TranslationBrowser\DownloadUrlResolver.cs" Link="ui\DownloadUrlResolver.cs" />
+  </ItemGroup>
+
+</Project>

@@ -1,3 +1,32 @@
+1.3.3:
+
+ADDED:
+browser: builtin_english_description, tour_welcome_title, tour_welcome_body, tour_welcome_start, tour_welcome_not_now, tour_restart_title, tour_restart_body, tour_next, tour_back, tour_skip, tour_finish, tour_step_(catalog, details, download, installed, switch, updates, repeat)_(title, body)
+
+REMOVED:
+browser: install_status_title, legend_title, legend_logo, legend_dubbing, legend_extra_dubbing, legend_textures, legend_fonts, legend_colors_title, legend_full, legend_partial, legend_none, legend_broken, legend_unknown, legend_version, legend_likes, legend_description, legend_download, legend_note, legend_used (the legend panel was replaced by the interactive product tour)
+
+KEPT:
+browser: legend_status_(installed, update, manual, not_installed, unknown) (still used for the install-status tooltips)
+
+1.3.2:
+
+RENAMED (metadata only; old key names still load, but are migrated to the new ones when the mod saves the file):
+metadata: langName -> languageCode
+metadata: langDisplayName -> languageName (leading/trailing whitespace is now trimmed on load)
+metadata: langAuthor -> credits
+metadata: langVersion -> translationVersion
+metadata: langRTL -> rightToLeft
+
+ADDED:
+metadata: langAuthors (plain author/team names, shown on the browser card; credits remains the free-form thanks block)
+metadata: translationId (identity of the translation in the online catalog; written automatically when a pack is installed or updated through the in-game browser, not intended to be filled by hand)
+New category: browser (strings of the in-game translation browser; empty/missing keys fall back to English)
+browser: action_used, legend_used, download_unsupported_host
+
+CHANGED:
+metadata: languageName of the built-in en-GB is now "English (DEFAULT)"
+
 1.3.1:
 
 ADDED:

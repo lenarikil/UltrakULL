@@ -65,9 +65,10 @@ namespace UltrakULL.Harmony_Patches
         ///
         /// The reveal types the layer and the level name letter by letter, so a
         /// language switch did not reach it and it kept typing the previous language
-        /// until the reveal was over. The strings of the reveal are swapped for the new
-        /// language, and the reveal keeps typing from the letter it is on, so it does
-        /// not start over. The part that is already fully typed is swapped as a whole.
+        /// until the reveal was over. The strings of the reveal are swapped for the
+        /// new language, and the reveal keeps typing from the letter it is on, so it
+        /// does not start over. The part that is already fully typed is swapped as a
+        /// whole.
         /// </summary>
         public static void Reapply()
         {
@@ -110,29 +111,47 @@ namespace UltrakULL.Harmony_Patches
                     }
                 }
 
-                string oldLayer = ReflectionUtils.GetPrivate<LevelNamePopup, string>(popup, typeof(LevelNamePopup), "layerString");
-                string oldName = ReflectionUtils.GetPrivate<LevelNamePopup, string>(popup, typeof(LevelNamePopup), "nameString");
-
-                ReflectionUtils.SetPrivate(popup, typeof(LevelNamePopup), "layerString", newLayer);
-                ReflectionUtils.SetPrivate(popup, typeof(LevelNamePopup), "nameString", newName);
-
-                // The name that is being typed right now continues from its letter on
-                // its own. The one that is fully typed already is swapped here.
-                if (popup.layerText.text == oldLayer)
-                {
-                    popup.layerText.text = newLayer;
-                }
-
-                if (popup.nameText.text == oldName)
-                {
-                    popup.nameText.text = newName;
-                }
+                SwapRevealText(popup, popup.layerText, "layerString", newLayer);
+                SwapRevealText(popup, popup.nameText, "nameString", newName);
             }
             catch (Exception e)
             {
                 Logging.Warn("Failed to apply the active language to the level title reveal!");
                 Logging.Warn(e.ToString());
             }
+        }
+
+        /// <summary>
+        /// Swaps one string of the reveal for the new language.
+        ///
+        /// A string that is fully typed stays fully visible. A string that is in the
+        /// middle of typing keeps its relative progress: the reveal types through the
+        /// currentLetter field, so the letter index is moved to the proportionally
+        /// same position of the new text and the text is written up to it right away.
+        /// The typing then continues on its own from that letter.
+        /// </summary>
+        private static void SwapRevealText(LevelNamePopup popup, TMPro.TMP_Text target, string fieldName, string newText)
+        {
+            string oldText = ReflectionUtils.GetPrivate<LevelNamePopup, string>(popup, typeof(LevelNamePopup), fieldName);
+            if (oldText == newText)
+                return;
+
+            string visible = target.text;
+            if (visible.Length == 0 || visible == oldText)
+            {
+                // Not typed yet, or fully typed: the new string is written as a
+                // whole, the typing (or its end) does the rest.
+                ReflectionUtils.SetPrivate(popup, typeof(LevelNamePopup), fieldName, newText);
+                if (visible == oldText)
+                    target.text = newText;
+                return;
+            }
+
+            ReflectionUtils.SetPrivate(popup, typeof(LevelNamePopup), fieldName, newText);
+
+            int newVisible = LiveTypingText.MapVisibleCount(visible.Length, oldText.Length, newText.Length);
+            ReflectionUtils.SetPrivate(popup, typeof(LevelNamePopup), "currentLetter", newVisible);
+            target.text = newText.Substring(0, newVisible);
         }
     }
 }

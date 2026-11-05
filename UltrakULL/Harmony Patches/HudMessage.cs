@@ -59,9 +59,33 @@ namespace UltrakULL.Harmony_Patches
     [HarmonyPatch(typeof(HudMessageReceiver),"SendHudMessage")]
     public static class SendHudMessagePatch
     {
+        /// <summary>
+        /// The original game-provided pieces of the HUD message that is currently shown.
+        /// Kept so a language switch can re-translate the visible message immediately
+        /// instead of waiting for the next <see cref="SendHudMessage"/> call.
+        /// </summary>
+        private static string _lastOriginalMessage;
+        private static string _lastOriginalMessage2;
+        private static string _lastOriginalInput;
+        private static TMP_Text _hudTextComponent;
+
         [HarmonyPrefix]
         public static bool SendHudMessage_Prefix(ref string newmessage,ref string newinput,ref string newmessage2, int delay = 0, bool silent = false)
         {
+            // Remember the original game-provided pieces before they are translated.
+            if (!string.IsNullOrEmpty(newmessage))
+            {
+                _lastOriginalMessage = newmessage;
+            }
+            _lastOriginalMessage2 = newmessage2 ?? string.Empty;
+            _lastOriginalInput = newinput ?? string.Empty;
+
+            // Find and cache the text component that displays the HUD message.
+            if (_hudTextComponent == null)
+            {
+                _hudTextComponent = FindHudTextComponent();
+            }
+
             if (!CommonFunctions.isUsingEnglish() && !string.IsNullOrEmpty(newmessage))
             {
                 string translated = StringsParent.GetMessage(newmessage, newmessage2 ?? string.Empty, newinput ?? string.Empty);
@@ -79,14 +103,119 @@ namespace UltrakULL.Harmony_Patches
             }
             return true;
         }
+
+        /// <summary>
+        /// Re-applies the active language to the HUD message that is currently on
+        /// screen. Called on every language switch so the visible message changes
+        /// immediately instead of keeping the previous language.
+        /// </summary>
+        public static void Reapply()
+        {
+            if (string.IsNullOrEmpty(_lastOriginalMessage))
+            {
+                return;
+            }
+
+            // Re-locate the component each time: it may have been created after the
+            // last Prefix ran, or its GameObject may have been disabled.
+            _hudTextComponent = FindHudTextComponent();
+            if (_hudTextComponent == null)
+            {
+                ClearCache();
+                return;
+            }
+
+            if (!_hudTextComponent.gameObject.activeInHierarchy)
+            {
+                // The message is not on screen right now.
+                ClearCache();
+                return;
+            }
+
+            // If there is no actual message text on screen, the cached message is
+            // stale (left over from a previous level or an already faded message).
+            // Do not resurrect it — clear the cache instead.
+            if (string.IsNullOrEmpty(_hudTextComponent.text))
+            {
+                ClearCache();
+                return;
+            }
+
+            try
+            {
+                // Rebuild with the newly active language. Built-in English is handled
+                // by the same path: CurrentLanguage is English, so GetMessage yields
+                // the full English text (key included).
+                string translated = StringsParent.GetMessage(_lastOriginalMessage, _lastOriginalMessage2, _lastOriginalInput);
+                if (translated == _lastOriginalMessage)
+                {
+                    translated = HUDMessages.GetHUDToolTip(_lastOriginalMessage);
+                }
+                _hudTextComponent.text = translated;
+            }
+            catch (Exception e)
+            {
+                HandleError(e);
+            }
+        }
+
+        private static void ClearCache()
+        {
+            _lastOriginalMessage = null;
+            _lastOriginalMessage2 = null;
+            _lastOriginalInput = null;
+            _hudTextComponent = null;
+        }
+
+        private static TMP_Text FindHudTextComponent()
+        {
+            try
+            {
+                var receiver = MonoSingleton<HudMessageReceiver>.Instance;
+                if (receiver == null)
+                {
+                    return null;
+                }
+
+                var texts = receiver.GetComponentsInChildren<TMP_Text>(true);
+                for (int i = 0; i < texts.Length; i++)
+                {
+                    var text = texts[i];
+                    if (text != null && text.gameObject.activeInHierarchy)
+                    {
+                        return text;
+                    }
+                }
+            }
+            catch
+            {
+                /* ignore */
+            }
+            return null;
+        }
     }
 
     [HarmonyPatch(typeof(HudMessageReceiver),"SendHudMessage2")]
     public static class SendHudMessage2Patch
     {
+        /// <summary>
+        /// The original game-provided format and inputs for the HUD2 message
+        /// currently shown. Kept so a language switch can re-translate it
+        /// immediately instead of waiting for the next <see cref="SendHudMessage2"/>
+        /// call.
+        /// </summary>
+        private static string _lastOriginalFormat;
+        private static string[] _lastOriginalInputs;
+
         [HarmonyPrefix]
         public static bool SendHudMessage2_Prefix(ref string format, ref string[] newinputs, int delay, bool silent, ref bool inputBeenProcessed, bool automaticTimer)
         {
+            if (!string.IsNullOrEmpty(format))
+            {
+                _lastOriginalFormat = format;
+                _lastOriginalInputs = newinputs;
+            }
+
             if (!isUsingEnglish())
             {
                 // Локализуем каждый input, если они есть
@@ -111,6 +240,88 @@ namespace UltrakULL.Harmony_Patches
                 }
             }
             return true;
+        }
+
+        /// <summary>
+        /// Re-applies the active language to the HUD2 message that is currently on
+        /// screen. Called on every language switch so the visible message changes
+        /// immediately instead of keeping the previous language.
+        /// </summary>
+        public static void Reapply()
+        {
+            if (string.IsNullOrEmpty(_lastOriginalFormat))
+            {
+                return;
+            }
+
+            // Re-locate the component: do not write a stale format into an empty
+            // text element (e.g. after a level change or a faded message).
+            var receiver = MonoSingleton<HudMessageReceiver>.Instance;
+            if (receiver == null)
+            {
+                ClearCache2();
+                return;
+            }
+            var texts = receiver.GetComponentsInChildren<TMP_Text>(true);
+            TMP_Text activeText = null;
+            for (int i = 0; i < texts.Length; i++)
+            {
+                var text = texts[i];
+                if (text != null && text.gameObject.activeInHierarchy)
+                {
+                    activeText = text;
+                    break;
+                }
+            }
+            if (activeText == null || string.IsNullOrEmpty(activeText.text))
+            {
+                ClearCache2();
+                return;
+            }
+
+            try
+            {
+                // Rebuild with the newly active language. Built-in English is handled
+                // by the same path: CurrentLanguage is English, so GetMessage yields
+                // the full English text.
+                string inputs = _lastOriginalInputs != null ? string.Join(" ", _lastOriginalInputs) : string.Empty;
+                string translated = StringsParent.GetMessage(_lastOriginalFormat, string.Empty, inputs);
+                if (translated == _lastOriginalFormat)
+                {
+                    translated = HUDMessages.GetHUDToolTip(_lastOriginalFormat);
+                }
+                ApplyHud2Format(translated, null);
+            }
+            catch (Exception e)
+            {
+                HandleError(e);
+            }
+        }
+
+        private static void ClearCache2()
+        {
+            _lastOriginalFormat = null;
+            _lastOriginalInputs = null;
+        }
+
+        private static void ApplyHud2Format(string format, string[] inputs)
+        {
+            var receiver = MonoSingleton<HudMessageReceiver>.Instance;
+            if (receiver == null)
+            {
+                return;
+            }
+
+            var texts = receiver.GetComponentsInChildren<TMP_Text>(true);
+            for (int i = 0; i < texts.Length; i++)
+            {
+                var text = texts[i];
+                if (text != null && text.gameObject.activeInHierarchy)
+                {
+                    text.text = format;
+                    return;
+                }
+            }
         }
     }
 }

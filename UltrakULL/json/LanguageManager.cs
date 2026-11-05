@@ -27,7 +27,7 @@ namespace UltrakULL.json
         public static ConfigFile configFile;
 
         #region Helper Properties
-        public static bool IsRightToLeft { get => CurrentLanguage.metadata.langRTL; }
+        public static bool IsRightToLeft { get => CurrentLanguage.metadata.rightToLeft; }
         public static bool UsingHinduNumbers { get => CurrentLanguage.metadata.langHinduNumbers; }
         public static float rankHeight { get => CurrentLanguage.metadata.rankHeight; }
         #endregion
@@ -45,7 +45,7 @@ namespace UltrakULL.json
             if (lang != null && !string.IsNullOrEmpty(lang.RootFolder))
                 return Path.Combine(lang.RootFolder, kind);
 
-            string langName = (lang != null && lang.metadata != null) ? lang.metadata.langName : "en-GB";
+            string langName = (lang != null && lang.metadata != null) ? lang.metadata.languageCode : "en-GB";
             return Path.Combine(Paths.ConfigPath, "ultrakull", kind, langName);
         }
 
@@ -94,10 +94,14 @@ namespace UltrakULL.json
             string value = configFile.Bind("General", "LastLanguage", "en-GB").Value;
             string dubValue = configFile.Bind("General", "activeDubbing", "False").Value;
 
-            if (allLanguages.ContainsKey(value))
+            // LastLanguage stores the pack key (folder name). A plain language code
+            // still resolves when only one pack of that locale exists, so old
+            // configs keep working.
+            JsonFormat storedLanguage;
+            if (TryResolveLanguage(value, out storedLanguage))
             {
                 jsonLogger.Log(LogLevel.Message, "Setting language to " + value);
-                CurrentLanguage = CloneLanguage(allLanguages[value]);
+                CurrentLanguage = CloneLanguage(storedLanguage);
                 if (IsRightToLeft)
                 {
                     Logging.Message("Language is set as RTL - applying fix!");
@@ -123,7 +127,42 @@ namespace UltrakULL.json
 
         public static void DumpLastLanguage()
         {
-            configFile.Bind("General", "LastLanguage", "en-GB").Value = CurrentLanguage.metadata.langName; // Thank you copilot
+            // Store the pack key (folder name): it is the unique physical identity
+            // of the installation, while languageCode no longer is (several packs
+            // can share one locale).
+            configFile.Bind("General", "LastLanguage", "en-GB").Value =
+                !string.IsNullOrEmpty(CurrentLanguage.PackKey) ? CurrentLanguage.PackKey : CurrentLanguage.metadata.languageCode;
+        }
+
+        /// <summary>
+        /// Resolves a language key to a loaded pack: first an exact dictionary-key
+        /// match (pack folder name), then a fallback by languageCode so callers
+        /// that only know the locale ("en-GB", "ru-RU") keep working.
+        /// </summary>
+        private static bool TryResolveLanguage(string key, out JsonFormat language)
+        {
+            language = null;
+            if (string.IsNullOrEmpty(key))
+            {
+                return false;
+            }
+
+            if (allLanguages.TryGetValue(key, out language))
+            {
+                return true;
+            }
+
+            foreach (KeyValuePair<string, JsonFormat> pair in allLanguages)
+            {
+                JsonFormat candidate = pair.Value;
+                if (candidate != null && candidate.metadata != null &&
+                    string.Equals(candidate.metadata.languageCode, key, StringComparison.OrdinalIgnoreCase))
+                {
+                    language = candidate;
+                    return true;
+                }
+            }
+            return false;
         }
 
         public static void LoadLanguagesInDirectory(string path)
@@ -133,8 +172,9 @@ namespace UltrakULL.json
             if (!Directory.Exists(path))
                 return;
 
-            // One folder = one language pack. The folder is identified by the
-            // translation.json file at its root; the folder path becomes its RootFolder.
+            // One folder = one language pack. The dictionary key is the folder
+            // name: several packs may translate the same locale (each in its own
+            // folder), so the languageCode can no longer be the key.
             foreach (string directory in Directory.GetDirectories(path))
             {
                 string dirName = Path.GetFileName(directory);
@@ -149,11 +189,18 @@ namespace UltrakULL.json
                 if (TryLoad(translationFile, out JsonFormat lang) && lang != null)
                 {
                     lang.RootFolder = directory;
-                    if (!allLanguages.ContainsKey(lang.metadata.langName) && lang.metadata.langName != "te-mp")
+                    lang.PackKey = dirName;
+
+                    // The manifest is mandatory: a pack without one (a manual
+                    // install) gets it generated from its own metadata. Failures
+                    // only log - readers fall back to the metadata.
+                    ManifestMigrator.MigrateIfNeeded(directory, lang.metadata);
+
+                    if (!allLanguages.ContainsKey(dirName) && dirName != "te-mp")
                     {
-                        allLanguages.Add(lang.metadata.langName, lang);
-                        if (!allLanguagesDisplayNames.ContainsKey(lang.metadata.langDisplayName))
-                            allLanguagesDisplayNames.Add(lang.metadata.langDisplayName, lang);
+                        allLanguages.Add(dirName, lang);
+                        if (!allLanguagesDisplayNames.ContainsKey(lang.metadata.languageName))
+                            allLanguagesDisplayNames.Add(lang.metadata.languageName, lang);
                     }
                 }
             }
@@ -163,7 +210,11 @@ namespace UltrakULL.json
         {
             Logging.Message("Loading language files stored locally on disk...");
 
+            // A full rescan (also at runtime, from the browser's refresh): both maps
+            // are rebuilt from scratch so packs that were removed stop being listed.
             allLanguages = new Dictionary<string, JsonFormat>();
+            allLanguagesDisplayNames = new Dictionary<string, JsonFormat>();
+            BuiltinEnglishManifest = null;
 
             LoadLanguagesInDirectory(Path.Combine(Paths.ConfigPath, "ultrakull"));
 
@@ -171,13 +222,40 @@ namespace UltrakULL.json
             // own text. It is always available so a missing or broken language pack can never
             // leave the game without a valid language. A user-installed en-GB pack takes
             // priority over the built-in one.
-            if (!allLanguages.ContainsKey("en-GB"))
+            if (!HasPackWithLanguageCode("en-GB"))
             {
                 JsonFormat english = LoadBuiltinEnglish();
+                english.PackKey = "en-GB";
                 allLanguages.Add("en-GB", english);
-                if (!allLanguagesDisplayNames.ContainsKey(english.metadata.langDisplayName))
-                    allLanguagesDisplayNames.Add(english.metadata.langDisplayName, english);
+                if (!allLanguagesDisplayNames.ContainsKey(english.metadata.languageName))
+                    allLanguagesDisplayNames.Add(english.metadata.languageName, english);
+
+                // The built-in English has no folder on disk, so its mandatory
+                // manifest only exists in memory (source "builtin").
+                BuiltinEnglishManifest = ManifestMigrator.CreateBuiltinManifest(
+                    "English", "en-GB", english.metadata.translationVersion);
             }
+        }
+
+        /// <summary>
+        /// In-memory manifest of the built-in English pseudo-pack, or null when
+        /// a user-installed en-GB pack replaced the built-in one.
+        /// </summary>
+        public static TranslationManifest BuiltinEnglishManifest;
+
+        /// <summary>True when any loaded pack declares the given languageCode.</summary>
+        private static bool HasPackWithLanguageCode(string languageCode)
+        {
+            foreach (KeyValuePair<string, JsonFormat> pair in allLanguages)
+            {
+                JsonFormat pack = pair.Value;
+                if (pack != null && pack.metadata != null &&
+                    string.Equals(pack.metadata.languageCode, languageCode, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         /// <summary>
@@ -252,9 +330,9 @@ namespace UltrakULL.json
             JsonFormat english = new JsonFormat();
             EnsureNestedObjects(english, 0);
 
-            english.metadata.langName = "en-GB";
-            english.metadata.langDisplayName = "English";
-            english.metadata.langVersion = "1.0";
+            english.metadata.languageCode = "en-GB";
+            english.metadata.languageName = "English (DEFAULT)";
+            english.metadata.translationVersion = "1.0";
             english.RootFolder = null;
 
             // Minimum strings used by the built-in language menu. These are the only labels
@@ -312,10 +390,10 @@ namespace UltrakULL.json
 
         /*
          Now, when reading the file, if missing keys are found, the mod will not give an error.
-        Instead, it will add them to the file.
-        Thanks to GitHub Copilot.
-        Unfortunately, the logs are not working well at this moment... I'm sorry T_T
-        */
+         Instead, it will add them to the file with the value from the built-in English
+         template, so an outdated pack falls back to English text instead of null.
+         Thanks to GitHub Copilot.
+         */
         private static bool TryLoad<T>(string pathName, out T file)
         {
             file = default;
@@ -335,13 +413,29 @@ namespace UltrakULL.json
                 file = JsonConvert.DeserializeObject<T>(jsonFile, settings);
                 if (file != null)
                 {
-                    T reference = Activator.CreateInstance<T>();
-                    string logFileName = $"{Path.GetFileNameWithoutExtension(pathName)}_MISSING_KEYS.log";
-                    jsonLogger.Log(LogLevel.Info, $"Starting to add missing keys for {pathName}");
-                    AddMissingKeys(reference, file, null, logFileName);
+                    // The fill reference is the built-in English template: every key
+                    // the pack does not have gets the English value, so an outdated
+                    // pack shows English instead of crashing on a null string later.
+                    // A fresh template is loaded per pack, so no section instance is
+                    // shared between languages.
+                    object reference;
+                    if (file is JsonFormat)
+                    {
+                        reference = LoadBuiltinEnglish();
+                    }
+                    else
+                    {
+                        reference = Activator.CreateInstance<T>();
+                    }
+
+                    int filledKeys = AddMissingKeys(reference, file, null);
+                    if (filledKeys > 0)
+                    {
+                        jsonLogger.Log(LogLevel.Warning, $"Filled {filledKeys} missing key(s) from the English template in {pathName}");
+                    }
+
                     string updatedJson = JsonConvert.SerializeObject(file, Formatting.Indented);
                     File.WriteAllText(pathName, updatedJson);
-                    jsonLogger.Log(LogLevel.Info, $"Finished adding missing keys for {pathName}");
                 }
 
                 return true;
@@ -353,73 +447,111 @@ namespace UltrakULL.json
             }
         }
 
-        private static void AddMissingKeys(object reference, object target, string parentKey, string logFileName)
+        /// <summary>
+        /// Copies every value the pack does not have from the reference (the built-in
+        /// English template) into the loaded language, and reports each key it fills.
+        /// Sections the pack does not have are created and filled key by key, so the
+        /// pack keeps its own values everywhere else. Returns the number of filled
+        /// keys so the caller can log a summary.
+        /// </summary>
+        private static int AddMissingKeys(object reference, object target, string parentKey)
         {
             if (reference == null || target == null)
-                return;
+                return 0;
 
             Type type = reference.GetType();
             if (type != target.GetType())
-                return;
+                return 0;
+
+            // Strings, primitives and enums are leaf values, not containers. Their
+            // private implementation fields (String.m_stringLength, Int32.m_value,
+            // which refers to itself on a boxed value) must never be walked: the
+            // recursion would not terminate.
+            if (type == typeof(string) || type.IsPrimitive || type.IsEnum)
+                return 0;
+
+            int filledKeys = 0;
+
+            // Collections are handled structurally, never through their fields:
+            // the private bookkeeping of BCL collections (Dictionary.keys is a lazy
+            // KeyCollection without a public constructor, Entry structs, comparers)
+            // is not translation data.
+            if (reference is IDictionary refDict && target is IDictionary targetDict)
+            {
+                foreach (var key in refDict.Keys)
+                {
+                    if (!targetDict.Contains(key))
+                    {
+                        targetDict[key] = refDict[key];
+                        filledKeys++;
+                        jsonLogger.Log(LogLevel.Warning, $"Filled missing key '{parentKey}[{key}]' from the English template");
+                    }
+                    else
+                    {
+                        filledKeys += AddMissingKeys(refDict[key], targetDict[key], parentKey + "[" + key + "]");
+                    }
+                }
+
+                return filledKeys;
+            }
+
+            if (reference is IList refList && target is IList targetList)
+            {
+                for (int i = 0; i < refList.Count; i++)
+                {
+                    if (i < targetList.Count)
+                    {
+                        filledKeys += AddMissingKeys(refList[i], targetList[i], parentKey);
+                    }
+                    else
+                    {
+                        targetList.Add(refList[i]);
+                        filledKeys++;
+                    }
+                }
+
+                return filledKeys;
+            }
 
             foreach (FieldInfo field in type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
             {
                 object refValue = field.GetValue(reference);
                 object targetValue = field.GetValue(target);
+                string fullKey = string.IsNullOrEmpty(parentKey) ? field.Name : parentKey + "." + field.Name;
 
-                if (refValue == null)
+                if (targetValue == null && refValue != null)
                 {
-                    if (targetValue == null)
-                    {
-                        if (field.FieldType.IsClass && field.FieldType != typeof(string))
-                        {
-                            refValue = Activator.CreateInstance(field.FieldType);
-                        }
-                        field.SetValue(target, refValue);
-                        string logMessage = $"Added missing key: {field.Name}";
-                        jsonLogger.Log(LogLevel.Info, logMessage);
-                        LogToFile(logFileName, logMessage);
-                    }
+                    // The pack does not have the key: the template's value is taken,
+                    // so an outdated pack falls back to English instead of a null
+                    // string that crashes the patch that reads it.
+                    field.SetValue(target, refValue);
+                    filledKeys++;
+                    jsonLogger.Log(LogLevel.Warning, $"Filled missing key '{fullKey}' from the English template");
                 }
-                else if (refValue is IDictionary refDict && targetValue is IDictionary targetDict)
+                else if (targetValue == null)
                 {
-                    foreach (var key in refDict.Keys)
+                    // Neither side has a value: a section is still created, so the
+                    // rest of the mod sees a valid object instead of null.
+                    if (field.FieldType.IsClass && field.FieldType != typeof(string))
                     {
-                        if (!targetDict.Contains(key))
+                        try
                         {
-                            targetDict[key] = refDict[key];
-                            string logMessage = $"Added missing key: {key} in dictionary: {field.Name}";
-                            jsonLogger.Log(LogLevel.Info, logMessage);
-                            LogToFile(logFileName, logMessage);
+                            field.SetValue(target, Activator.CreateInstance(field.FieldType));
                         }
-                        else
+                        catch (Exception)
                         {
-                            AddMissingKeys(refDict[key], targetDict[key], field.Name, logFileName);
-                        }
-                    }
-                }
-                else if (refValue is IList refList && targetValue is IList targetList)
-                {
-                    for (int i = 0; i < refList.Count; i++)
-                    {
-                        if (i < targetList.Count)
-                        {
-                            AddMissingKeys(refList[i], targetList[i], field.Name, logFileName);
-                        }
-                        else
-                        {
-                            targetList.Add(refList[i]);
-                            string logMessage = $"Added missing item in list: {field.Name}";
-                            jsonLogger.Log(LogLevel.Info, logMessage);
-                            LogToFile(logFileName, logMessage);
+                            // Not every class can be instantiated blindly; the field
+                            // stays null, exactly like it was before the sync.
                         }
                     }
                 }
                 else
                 {
-                    AddMissingKeys(refValue, targetValue, field.Name, logFileName);
+                    filledKeys += AddMissingKeys(refValue, targetValue, fullKey);
                 }
             }
+
+            return filledKeys;
         }
 
         private static void LogToFile(string logFileName, string message)
@@ -452,9 +584,13 @@ namespace UltrakULL.json
             string json = JsonConvert.SerializeObject(original);
             JsonFormat clone = JsonConvert.DeserializeObject<JsonFormat>(json);
 
-            // RootFolder is [JsonIgnore], so it is not carried through serialization.
+            // RootFolder and PackKey are [JsonIgnore], so they are not carried
+            // through serialization.
             if (clone != null)
+            {
                 clone.RootFolder = original.RootFolder;
+                clone.PackKey = original.PackKey;
+            }
 
             return clone;
         }
@@ -612,103 +748,131 @@ namespace UltrakULL.json
 
         public static void SetCurrentLanguage(string langName)
         {
-            if (CurrentLanguage != null && CurrentLanguage.metadata.langName == langName)
+            // Resolve through the two-step lookup (pack key first, then
+            // languageCode) so both folder names and plain locale codes work.
+            JsonFormat target;
+            if (!TryResolveLanguage(langName, out target))
+            {
+                Logging.Warn("No language found with name " + langName);
+                return;
+            }
+
+            if (CurrentLanguage != null && CurrentLanguage.metadata != null &&
+                !string.IsNullOrEmpty(target.PackKey) &&
+                string.Equals(CurrentLanguage.PackKey, target.PackKey, StringComparison.OrdinalIgnoreCase))
             {
                 Logging.Warn("Tried to switch language to " + langName + " but it was already set as that!");
                 return;
             }
-            if (allLanguages.ContainsKey(langName))
+
+            Logging.Message("Setting language to " + langName);
+
+            CurrentLanguage = CloneLanguage(target);
+            if (IsRightToLeft)
             {
-                Logging.Message("Setting language to " + langName);
+                Logging.Message("Language is an RTL - applying fix!");
+                CurrentLanguage = ApplyRtl(CurrentLanguage);
+            }
 
-                CurrentLanguage = CloneLanguage(allLanguages[langName]);
-                if (IsRightToLeft)
+            // Reload custom fonts for the new language
+            Core.ReloadCustomFonts();
+            TextMeshProFontSwap.ClearFontSwapCache();
+
+            RefreshAssetFolders();
+            AudioSwapper.ClearCacheForLanguageChange();
+            AudioPreloadManager.OnLanguageChanged();
+
+            // Clear PowerSubtitlesSwap handled clips to prevent stale flags
+            // from suppressing original subtitles after language change
+            PowerSubtitlesSwap.ClearHandledClips();
+
+            // Apply the new language to the scene that is currently loaded. The
+            // game's own text is restored first, so switching to the built-in
+            // English brings back the game's own strings and switching to another
+            // language never leaves strings of the previous language behind.
+            Core.ApplyLanguageToCurrentScene();
+
+            AudioPreloadManager.PreloadCurrentScene();
+
+            // Rewrite the subtitle data and the clips of the subtitled sources
+            // right away, without waiting for the scene preload: a line that is
+            // in the middle of playing (the Power intro of 8-3) would keep the
+            // previous language until the preload finished, and its upcoming
+            // subtitle would already be gone. The clip loads stream in on their
+            // own while the preload fills the cache for the rest of the scene.
+            SubtitledAudioSourcesReplacer.ApplySubsAndAudio();
+
+            // Sources the config entries cannot reach anymore - the waves of 8-3
+            // spawn copies of the configured intro objects that carry their own
+            // subtitle data - follow through their already localized lines.
+            LiveSubtitles.ReapplyPendingLines();
+
+            // The voice lines that are in the middle of playing switch right away
+            // at the same playback time. The registry maps the playing clip to
+            // its translation path; the clips load without waiting for the scene
+            // preload.
+            AudioSwapper.ReapplyPlayingVoices();
+
+            // Re-apply audio swaps to all existing boss instances. This runs
+            // after the scene preload, so the rebind also hands the original
+            // clips of the boss voices to the swap registry - which is why the
+            // playing lines are switched again last: when switching away from
+            // English, the registry only learns the lines here.
+            AudioPreloadManager.EnsureCurrentScenePreloaded(delegate
+            {
+                UltrakULL.Harmony_Patches.AudioSwaps.GabrielAudioSwap.RebindExistingInstances();
+                UltrakULL.Harmony_Patches.AudioSwaps.GabrielSecondAudioSwap.RebindExistingInstances();
+                UltrakULL.Harmony_Patches.AudioSwaps.MinosPrimeAudioSwap.RebindExistingInstances();
+                UltrakULL.Harmony_Patches.AudioSwaps.SisyphusPrimeAudioSwap.RebindExistingInstances();
+                UltrakULL.Harmony_Patches.AudioSwaps.MandaloreAudioSwap.RebindExistingInstances();
+                UltrakULL.Harmony_Patches.AudioSwaps.PowerAudioSwap.RebindExistingInstances();
+                UltrakULL.Harmony_Patches.AudioSwaps.PowerIntroSwap.RebindExistingInstances();
+                UltrakULL.Harmony_Patches.AudioSwaps.BigJohninatorAudioSwap.RebindExistingInstances();
+
+                // The second pass reaches the sources that the first one could
+                // not resolve yet (see above): sources that already hold the new
+                // language are skipped, so this is a no-op for them.
+                AudioSwapper.ReapplyPlayingVoices();
+            });
+
+            DumpLastLanguage();
+
+            //Patch some leftover components that aren't caught in the main change wave...
+            CommonFunctions.RefreshLocalizedInputs();
+            InjectLanguageButton.updateLanguageButtonText();
+            LoadingTextPatch.updateLoadingText();
+
+            string sceneName = GetCurrentSceneName();
+            // Skip Bootstrap/Intro: SetCurrentLanguage can run once during startup
+            // when the configured language file is broken (en-GB fallback).
+            if (sceneName != "Bootstrap" && sceneName != "Intro")
+            {
+                // Use the NEW language's strings (CurrentLanguage is already switched here);
+                // empty keys fall back to English.
+                Notifications notif = CurrentLanguage.notifications;
+
+                // Show the human-readable translation name (not the code and not
+                // the folder name) in the "language changed" toast.
+                string displayName = !string.IsNullOrEmpty(CurrentLanguage.metadata.languageName)
+                    ? CurrentLanguage.metadata.languageName
+                    : (CurrentLanguage.PackKey ?? langName);
+                string title = NotificationText.Localize(notif?.languageChanged_title,
+                    NotificationText.LanguageChangedTitle, "lang", displayName);
+
+                if (sceneName == "Main Menu")
                 {
-                    Logging.Message("Language is an RTL - applying fix!");
-                    CurrentLanguage = ApplyRtl(CurrentLanguage);
+                    // The menu re-patches everything, so the new language is fully applied.
+                    string body = NotificationText.Localize(notif?.languageChanged_menuBody,
+                        NotificationText.LanguageChangedMenuBody);
+                    NotificationRouter.Current.Success(title, body, 5f);
                 }
-
-                // Reload custom fonts for the new language
-                Core.ReloadCustomFonts();
-                TextMeshProFontSwap.ClearFontSwapCache();
-
-                RefreshAssetFolders();
-                AudioSwapper.ClearCacheForLanguageChange();
-                AudioPreloadManager.OnLanguageChanged();
-
-                // Clear PowerSubtitlesSwap handled clips to prevent stale flags
-                // from suppressing original subtitles after language change
-                PowerSubtitlesSwap.ClearHandledClips();
-
-                // Apply the new language to the scene that is currently loaded. The
-                // game's own text is restored first, so switching to the built-in
-                // English brings back the game's own strings and switching to another
-                // language never leaves strings of the previous language behind.
-                Core.ApplyLanguageToCurrentScene();
-
-                AudioPreloadManager.PreloadCurrentScene();
-
-                // Re-apply subtitles from SubtitledSourcesConfig to all SubtitledAudioSource objects
-                SubtitledAudioSourcesReplacer.ReplaceSubsAndAudio();
-
-                // Re-apply audio swaps to all existing boss instances. This runs
-                // after the scene preload, so the rebind also hands the original
-                // clips of the boss voices to the swap registry - which is why the
-                // playing lines are switched last: the registry has to know the
-                // lines before they can be replaced in the middle of playing.
-                AudioPreloadManager.EnsureCurrentScenePreloaded(delegate
+                else
                 {
-                    UltrakULL.Harmony_Patches.AudioSwaps.GabrielAudioSwap.RebindExistingInstances();
-                    UltrakULL.Harmony_Patches.AudioSwaps.GabrielSecondAudioSwap.RebindExistingInstances();
-                    UltrakULL.Harmony_Patches.AudioSwaps.MinosPrimeAudioSwap.RebindExistingInstances();
-                    UltrakULL.Harmony_Patches.AudioSwaps.SisyphusPrimeAudioSwap.RebindExistingInstances();
-                    UltrakULL.Harmony_Patches.AudioSwaps.MandaloreAudioSwap.RebindExistingInstances();
-                    UltrakULL.Harmony_Patches.AudioSwaps.PowerAudioSwap.RebindExistingInstances();
-                    UltrakULL.Harmony_Patches.AudioSwaps.PowerIntroSwap.RebindExistingInstances();
-                    UltrakULL.Harmony_Patches.AudioSwaps.BigJohninatorAudioSwap.RebindExistingInstances();
-
-                    // The voice lines that are in the middle of playing (boss
-                    // taunts, hurt sounds, attack calls) switch to the new language
-                    // at the same playback time. Sources that hold no line pick up
-                    // the new language with their next line on their own.
-                    AudioSwapper.ReapplyPlayingVoices();
-                });
-
-                DumpLastLanguage();
-
-                //Patch some leftover components that aren't caught in the main change wave...
-                CommonFunctions.RefreshLocalizedInputs();
-                InjectLanguageButton.updateLanguageButtonText();
-                LoadingTextPatch.updateLoadingText();
-
-                string sceneName = GetCurrentSceneName();
-                // Skip Bootstrap/Intro: SetCurrentLanguage can run once during startup
-                // when the configured language file is broken (en-GB fallback).
-                if (sceneName != "Bootstrap" && sceneName != "Intro")
-                {
-                    // Use the NEW language's strings (CurrentLanguage is already switched here);
-                    // empty keys fall back to English.
-                    Notifications notif = CurrentLanguage.notifications;
-                    string title = NotificationText.Localize(notif?.languageChanged_title,
-                        NotificationText.LanguageChangedTitle, "lang", langName);
-
-                    if (sceneName == "Main Menu")
-                    {
-                        // The menu re-patches everything, so the new language is fully applied.
-                        string body = NotificationText.Localize(notif?.languageChanged_menuBody,
-                            NotificationText.LanguageChangedMenuBody);
-                        NotificationRouter.Current.Success(title, body, 5f);
-                    }
-                    else
-                    {
-                        string body = NotificationText.Localize(notif?.languageChanged_levelBody,
-                            NotificationText.LanguageChangedLevelBody);
-                        NotificationRouter.Current.Warning(title, body, 6f);
-                    }
+                    string body = NotificationText.Localize(notif?.languageChanged_levelBody,
+                        NotificationText.LanguageChangedLevelBody);
+                    NotificationRouter.Current.Warning(title, body, 6f);
                 }
             }
-            else
-                Logging.Warn("No language found with name " + langName);
         }
 
         /// <summary>

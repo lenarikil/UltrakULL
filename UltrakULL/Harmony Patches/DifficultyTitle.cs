@@ -4,6 +4,7 @@ using UltrakULL.json;
 using System;
 using TMPro;
 using static UltrakULL.CommonFunctions;
+using UnityEngine;
 
 namespace UltrakULL.Harmony_Patches
 {
@@ -12,19 +13,20 @@ namespace UltrakULL.Harmony_Patches
     [HarmonyPatch(typeof(DifficultyTitle), "Check")]
     public static class LocalizeGameProgressCheck
     {
-        [HarmonyPrefix]
-        public static bool Check_MyPatch(DifficultyTitle __instance, ref TMP_Text ___txt2)
+        /// <summary>
+        /// Builds the difficulty title text for the given difficulty index and the
+        /// active language.
+        /// </summary>
+        private static string GetDifficultyText(int @int, bool lines)
         {
-            if(isUsingEnglish())
+            string text = "";
+            if (lines)
             {
-                int @int = MonoSingleton<PrefsManager>.Instance.GetInt("difficulty", 0);
-                string text = "";
-                if (__instance.lines)
-                {
-                    text += "-- ";
+                text += "-- ";
+            }
 
-                }
-
+            if (isUsingEnglish())
+            {
                 switch (@int)
                 {
                     case 0:
@@ -46,36 +48,9 @@ namespace UltrakULL.Harmony_Patches
                         text += "ULTRAKILL MUST DIE";
                         break;
                 }
-
-                if (__instance.lines)
-                {
-                    text += " --";
-                }
-
-                if (!___txt2)
-                {
-                    ___txt2 = __instance.GetComponent<TMP_Text>();
-                }
-
-                if (___txt2)
-                {
-                    ___txt2.text = text;
-                    return false;
-                }
-
-                return false;
             }
-
-            try
+            else
             {
-                int @int = MonoSingleton<PrefsManager>.Instance.GetInt("difficulty", 0);
-                string text = "";
-                if (__instance.lines)
-                {
-                    text += "-- ";
-
-                }
-
                 switch (@int)
                 {
                     case 0:
@@ -97,11 +72,60 @@ namespace UltrakULL.Harmony_Patches
                         text += LanguageManager.CurrentLanguage.frontend.difficulty_umd;
                         break;
                 }
+            }
 
-                if (__instance.lines)
+            if (lines)
+            {
+                text += " --";
+            }
+
+            return text;
+        }
+
+        /// <summary>
+        /// Applies the active language to every difficulty title that is on screen.
+        ///
+        /// The difficulty title is written only when the difficulty changes, so a
+        /// language switch did not reach it and it kept the previous language until
+        /// the difficulty was changed again.
+        /// </summary>
+        public static void Reapply()
+        {
+            try
+            {
+                int @int = MonoSingleton<PrefsManager>.Instance.GetInt("difficulty", 0);
+                string text = GetDifficultyText(@int, true);
+
+                DifficultyTitle[] titles = UnityEngine.Object.FindObjectsOfType<DifficultyTitle>(true);
+                for (int i = 0; i < titles.Length; i++)
                 {
-                    text += " --";
+                    DifficultyTitle title = titles[i];
+                    if (title == null)
+                    {
+                        continue;
+                    }
+
+                    TMP_Text txt2 = title.GetComponent<TMP_Text>();
+                    if (txt2 != null)
+                    {
+                        txt2.text = text;
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                Logging.Error("Failed to re-apply difficulty titles.");
+                Logging.Error(e.ToString());
+            }
+        }
+
+        [HarmonyPrefix]
+        public static bool Check_MyPatch(DifficultyTitle __instance, ref TMP_Text ___txt2)
+        {
+            try
+            {
+                int @int = MonoSingleton<PrefsManager>.Instance.GetInt("difficulty", 0);
+                string text = GetDifficultyText(@int, __instance.lines);
 
                 if (!___txt2)
                 {
@@ -116,9 +140,6 @@ namespace UltrakULL.Harmony_Patches
 
                 return false;
             }
-
-
-
             catch (Exception e)
             {
                 Logging.Error("Failed to get difficulty strings.");

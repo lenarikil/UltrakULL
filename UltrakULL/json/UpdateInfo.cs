@@ -4,17 +4,4 @@
     {
         public string tag_name;
     }
-    
-    public class LanguageInfo
-    {
-        public string languageTag;
-        public string languageFullName;
-        public string author;
-        public string versionNumber;
-        
-    }
-    public class MasterLanguages
-    {
-        public LanguageInfo[] availableLanguages;
-    }
 }

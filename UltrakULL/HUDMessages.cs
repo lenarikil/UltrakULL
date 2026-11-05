@@ -182,8 +182,21 @@ namespace UltrakULL
             if (currentLevel.Contains("7-3")) // Feed It Message
             {
                 GameObject feedItMessage = canvasObj.Child("Feed It");
-                feedItMessage.GetComponent<TextMeshProUGUI>().text = "<color=red>" + LanguageManager.CurrentLanguage.act3.act3_violenceThird_feedIt + "</color>";
-                feedItMessage.GetComponent<ScrollingText>().message = "<color=red>" + LanguageManager.CurrentLanguage.act3.act3_violenceThird_feedIt + "</color>";
+                string feedItText = "<color=red>" + LanguageManager.CurrentLanguage.act3.act3_violenceThird_feedIt + "</color>";
+
+                // The message types itself out: while it does, it is swapped with its
+                // progress kept; otherwise the new text is written for the next time
+                // the game triggers it.
+                ScrollingText scrolling = feedItMessage.GetComponent<ScrollingText>();
+                if (LiveTypingText.IsTyping(scrolling))
+                {
+                    LiveTypingText.SwapScrollingMessage(scrolling, feedItText);
+                }
+                else
+                {
+                    feedItMessage.GetComponent<TextMeshProUGUI>().text = feedItText;
+                    scrolling.message = feedItText;
+                }
             }
 
         }

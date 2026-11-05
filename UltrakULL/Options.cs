@@ -645,6 +645,9 @@ namespace UltrakULL
         
         private void PatchColorsOptions(GameObject optionsMenu)
         {
+            if (optionsMenu == null)
+                return;
+
             //Colors options
             //TextMeshProUGUI colorsPanel = GetTextMeshProUGUI(GetGameObjectChild(optionsMenu, "Text (1)"));
             //colorsPanel.text = "--" + LanguageManager.CurrentLanguage.options.colors_title + "--";
@@ -957,7 +960,17 @@ namespace UltrakULL
                     GameObject savesOptions = optionsMenu.Child("Save Slots");
                     try { PatchSavesOptions(savesOptions); } catch (Exception e) { Logging.Error("Failed to patch save options."); Logging.Error(e.ToString()); }
                     GameObject colorblindOptions = optionsMenu.FindPath("Pages", "ColorBlindness Options");
-                    try { PatchColorsOptions(colorblindOptions); } catch (Exception e) { Logging.Error("Failed to patch color options."); Logging.Error(e.ToString()); }
+                    // The colorblindness page is not present in the options menu of
+                    // current game builds. Without the guard the null page reached
+                    // the patch and produced an error on every scene load.
+                    if (colorblindOptions != null)
+                    {
+                        try { PatchColorsOptions(colorblindOptions); } catch (Exception e) { Logging.Error("Failed to patch color options."); Logging.Error(e.ToString()); }
+                    }
+                    else
+                    {
+                        Logging.Info("Colorblindness options page not found, skipping.");
+                    }
                     GameObject rumbleOptions = optionsMenu.Child("Rumble Settings");
                     try { PatchRumbleOptions(rumbleOptions); } catch (Exception e) { Logging.Error("Failed to patch rumble options."); Logging.Error(e.ToString()); }
                     GameObject advancedOptions = optionsMenu.Child("Advanced Options");

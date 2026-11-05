@@ -39,6 +39,19 @@ namespace UltrakULL.UI.TranslationBrowser
         /// <summary>Hidden clone of the game's settings toggle (for the Settings tab).</summary>
         public static GameObject ToggleTemplate;
 
+        /// <summary>Hidden clone of the game's consent dialog Yes/No button.</summary>
+        public static GameObject ConsentButtonTemplate;
+
+        /// <summary>Native size of the consent Yes/No button (e.g. ~170x44).</summary>
+        public static Vector2 ConsentButtonSize = new Vector2(170f, 44f);
+
+        /// <summary>
+        /// Hidden clone of the game's own vertical scrollbar (the settings
+        /// pages). Its event is cleared so clones can be wired to the
+        /// browser's scroll rects.
+        /// </summary>
+        public static Scrollbar ScrollbarTemplate;
+
         /// <summary>
         /// Scans the options menu hierarchy for native UI assets. Safe to call
         /// repeatedly; does nothing after the first successful pass. Missing assets
@@ -116,6 +129,60 @@ namespace UltrakULL.UI.TranslationBrowser
                     Logging.Info("[GameUiAssets] Extracted native toggle template.");
                 }
 
+                // ---- Consent dialog button ----
+                // The Saves page's consent blockers ("Reload/Wipe Consent
+                // Blocker" -> Consent -> Panel -> Yes/No) carry the game's own
+                // confirmation buttons; one of them becomes the template for the
+                // browser's confirm dialogs (item 25).
+                Transform consentButton = FindConsentButton(optionsParent);
+                if (consentButton != null)
+                {
+                    // Measure while the button is still parented inside the
+                    // game's consent panel: the detached template clone has no
+                    // parent, and MeasureEffectiveSize falls back to the raw
+                    // sizeDelta there, which for stretched anchors holds only
+                    // the offsets instead of the real button size.
+                    RectTransform originalRect = consentButton.GetComponent<RectTransform>();
+                    if (originalRect != null)
+                    {
+                        ConsentButtonSize = MeasureEffectiveSize(originalRect);
+                    }
+
+                    ConsentButtonTemplate = Object.Instantiate(consentButton.gameObject);
+                    ConsentButtonTemplate.name = "UllBrowser_ConsentButtonTemplate";
+                    ConsentButtonTemplate.SetActive(false);
+
+                    Logging.Info("[GameUiAssets] Extracted native consent button (size "
+                        + ConsentButtonSize.x + "x" + ConsentButtonSize.y + ").");
+                }
+                else
+                {
+                    Logging.Warn("[GameUiAssets] Consent Yes/No button not found; confirm dialogs will use UiFactory styling.");
+                }
+
+                // ---- Native scrollbar ----
+                // The settings pages scroll through Unity ScrollRects whose
+                // scrollbar carries the game's own visuals. One of them becomes
+                // the template for the browser's lists and preview (item 12).
+                Scrollbar nativeScrollbar = FindNativeScrollbar(optionsParent);
+                if (nativeScrollbar != null)
+                {
+                    ScrollbarTemplate = Object.Instantiate(nativeScrollbar);
+                    ScrollbarTemplate.name = "UllBrowser_ScrollbarTemplate";
+                    ScrollbarTemplate.gameObject.SetActive(false);
+
+                    // The game's scrollbar drives its own scroll rect through its
+                    // event; the template must not keep that listener, the clones
+                    // are wired to the browser's scroll rects instead.
+                    ScrollbarTemplate.onValueChanged = new Scrollbar.ScrollEvent();
+
+                    Logging.Info("[GameUiAssets] Extracted native scrollbar template.");
+                }
+                else
+                {
+                    Logging.Warn("[GameUiAssets] Native scrollbar not found; the browser keeps the flat scrollbar styling.");
+                }
+
                 IsReady = true;
             }
             catch (System.Exception e)
@@ -166,6 +233,69 @@ namespace UltrakULL.UI.TranslationBrowser
                 }
             }
             return null;
+        }
+
+        private static Transform FindConsentButton(Transform optionsParent)
+        {
+            // The consent panels (Saves page) contain "Yes"/"No" buttons with a
+            // Text child. Search the whole options menu recursively (including
+            // inactive objects) so nesting changes stay safe.
+            Transform[] all = optionsParent.GetComponentsInChildren<Transform>(true);
+            foreach (Transform t in all)
+            {
+                if (t.name == "Yes" && t.GetComponent<Button>() != null)
+                {
+                    return t;
+                }
+            }
+            return null;
+        }
+
+        private static Scrollbar FindNativeScrollbar(Transform optionsParent)
+        {
+            // Any vertical scrollbar of the settings pages carries the game's
+            // own art. Search the whole options menu recursively (including
+            // inactive objects); the first vertical one wins.
+            Scrollbar[] all = optionsParent.GetComponentsInChildren<Scrollbar>(true);
+            foreach (Scrollbar bar in all)
+            {
+                if (bar == null)
+                {
+                    continue;
+                }
+                if (bar.direction == Scrollbar.Direction.BottomToTop ||
+                    bar.direction == Scrollbar.Direction.TopToBottom)
+                {
+                    return bar;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Returns the rect's effective size, valid for both fixed and stretched
+        /// anchors. For stretched anchors <see cref="RectTransform.sizeDelta"/> alone
+        /// holds only the offsets from the anchor-driven size, which would
+        /// mis-size the cloned button.
+        /// </summary>
+        private static Vector2 MeasureEffectiveSize(RectTransform rect)
+        {
+            if (rect == null)
+            {
+                return Vector2.zero;
+            }
+
+            RectTransform parentRect = rect.parent as RectTransform;
+            bool stretchedX = rect.anchorMin.x != rect.anchorMax.x;
+            bool stretchedY = rect.anchorMin.y != rect.anchorMax.y;
+            if ((stretchedX || stretchedY) && parentRect != null)
+            {
+                Vector2 parentSize = parentRect.rect.size;
+                return new Vector2(
+                    rect.sizeDelta.x + (stretchedX ? (rect.anchorMax.x - rect.anchorMin.x) * parentSize.x : 0f),
+                    rect.sizeDelta.y + (stretchedY ? (rect.anchorMax.y - rect.anchorMin.y) * parentSize.y : 0f));
+            }
+            return rect.sizeDelta;
         }
     }
 }

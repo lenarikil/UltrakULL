@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace UltrakULL.json
 {
@@ -12,6 +14,13 @@ namespace UltrakULL.json
         [JsonIgnore]
         public string RootFolder;
 
+        // Key of this pack in LanguageManager.allLanguages: the pack folder name.
+        // Several packs may share one languageCode (multi-pack locales), so the
+        // folder name is the only unique physical identity of an installation.
+        [JsonIgnore]
+        public string PackKey;
+
+        [JsonConverter(typeof(MetadataConverter))]
         public Metadata metadata;
         public Body body;
 
@@ -54,6 +63,7 @@ namespace UltrakULL.json
 
         public SandboxStrings sandbox;
         public Notifications notifications;
+        public BrowserStrings browser;
     }
 
     public class FishingStrings
@@ -1308,18 +1318,100 @@ namespace UltrakULL.json
         public string SecretTerminalFont = "";
     }
 
+    /// <summary>
+    /// Metadata of a language pack. Field names are the canonical JSON key names
+    /// (schema v2). Older packs that still use the pre-1.3.2 key names
+    /// (langName, langAuthor, langVersion, langDisplayName, langRTL) keep loading
+    /// through <see cref="MetadataConverter"/>, which maps them onto these fields;
+    /// packs are rewritten with the new keys the first time the mod saves them.
+    /// </summary>
     public class Metadata
     {
-        public string langName;
-        public string langAuthor;
-        public string langVersion;
-        public string langDisplayName;
-        public bool langRTL;
+        public string languageCode;
+        public string languageName;
+        public string langAuthors;
+        public string credits;
+        public string translationVersion;
+        public bool rightToLeft;
         public string minimumModVersion;
         public bool langHinduNumbers;
         public int tmFontSize = 100;
 		public float rankHeight = 0.0f;
         public FontsMetadata fonts = new FontsMetadata();
+
+        // Stable identity of the translation in the online catalog (its "id").
+        // Optional: written automatically when the pack is installed from the
+        // browser; manual installs simply leave it unset.
+        public string translationId;
+    }
+
+    /// <summary>
+    /// Reads (and writes) <see cref="Metadata"/> while accepting the legacy
+    /// pre-1.3.2 JSON key names during deserialization, so already-installed
+    /// language packs do not break when the mod is updated. Serialization always
+    /// emits the new canonical key names, which migrates a pack's file the first
+    /// time the mod rewrites it (missing-key sync already rewrites every pack).
+    /// </summary>
+    public class MetadataConverter : JsonConverter
+    {
+        // Legacy key -> canonical key. Read in canonical-first order.
+        private static readonly Dictionary<string, string> LegacyKeys = new Dictionary<string, string>
+        {
+            { "langName", "languageCode" },
+            { "langDisplayName", "languageName" },
+            { "langAuthor", "credits" },
+            { "langVersion", "translationVersion" },
+            { "langRTL", "rightToLeft" }
+        };
+
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(Metadata);
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            if (reader.TokenType == JsonToken.Null)
+            {
+                return null;
+            }
+
+            JObject obj = JObject.Load(reader);
+            // Rename legacy keys in-memory before the standard population pass,
+            // canonical keys (already present) always win.
+            foreach (KeyValuePair<string, string> mapping in LegacyKeys)
+            {
+                JToken legacy = obj[mapping.Key];
+                if (legacy != null && obj[mapping.Value] == null)
+                {
+                    obj[mapping.Value] = legacy;
+                }
+                obj.Remove(mapping.Key);
+            }
+
+            Metadata metadata = new Metadata();
+            using (JsonReader objectReader = obj.CreateReader())
+            {
+                serializer.Populate(objectReader, metadata);
+            }
+            // Language names shipped with stray leading/trailing whitespace in
+            // several packs (" Русский "); trim once at load time.
+            metadata.languageName = (metadata.languageName ?? "").Trim();
+            if (metadata.languageName.Length == 0)
+            {
+                metadata.languageName = null;
+            }
+            return metadata;
+        }
+
+        // Writing uses the default serializer (canonical field names), so this
+        // converter never takes part in serialization.
+        public override bool CanWrite { get { return false; } }
+
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            throw new NotSupportedException("MetadataConverter is read-only; default serialization emits the canonical key names.");
+        }
     }
 
     public class IntermissionStrings
@@ -3667,6 +3759,9 @@ namespace UltrakULL.json
         public string startup_updateAvailable;
         public string startup_updateCheckFailed;
         public string startup_viewUpdate;
+        public string startup_translationUpdateTitle;
+        public string startup_translationUpdateBody;
+        public string startup_translationOpenCatalog;
 
         public string languageChanged_title;
         public string languageChanged_menuBody;
@@ -3677,5 +3772,154 @@ namespace UltrakULL.json
         public string download_new;
         public string download_selectHint;
         public string download_error;
+    }
+
+    /// <summary>
+    /// Localizable strings of the in-game translation browser. English defaults
+    /// live in BrowserText; a language file overrides any subset of the keys
+    /// (missing/empty keys fall back to English through the missing-key sync).
+    /// Placeholders use {curly} tokens and are substituted by BrowserText.
+    /// </summary>
+    public class BrowserStrings
+    {
+        public string browser_title;
+        public string browser_subtitle;
+
+        public string tab_online;
+        public string tab_installed;
+        public string tab_settings;
+
+        public string search_placeholder;
+
+        public string sort_prefix;
+        public string sort_popularity;
+        public string sort_updated;
+        public string sort_language;
+
+        public string filter_language_prefix;
+        public string filter_language_all;
+
+        public string refresh;
+        public string count_label;
+
+        public string status_loading;
+        public string status_error;
+        public string status_offline;
+        public string status_updated;
+        public string status_empty_catalog;
+        public string status_no_match;
+        public string status_not_loaded;
+
+        public string updated_ago_now;
+        public string updated_ago_minutes;
+        public string updated_ago_hours;
+        public string updated_ago_days;
+
+        public string install_status_installed;
+        public string install_status_update;
+        public string install_status_manual;
+        public string install_status_not_installed;
+        public string install_status_unknown;
+
+        public string basis_manifest;
+        public string basis_metadata;
+        public string basis_likely;
+        public string basis_locale;
+        public string basis_conflict;
+
+        public string action_download;
+        public string action_update;
+        public string action_use;
+        public string action_used;
+        public string action_open_source;
+        public string action_cancel;
+        public string action_back;
+
+        public string download_progress_of;
+        public string download_progress_bytes;
+        public string download_started;
+        public string download_success;
+        public string download_updated_pack;
+        public string download_failed;
+        public string download_invalid;
+        public string download_external_page;
+        public string download_unsupported_host;
+        public string download_cancelled;
+        public string download_active_pack_warning;
+
+        public string confirm_download_title;
+        public string confirm_download_body;
+        public string confirm_update_body;
+
+        public string gallery_empty;
+        public string no_description;
+        public string no_authors;
+
+        public string version_installed;
+        public string version_available;
+        public string version_update_from_to;
+
+        public string feature_voice_over;
+        public string feature_additional_voice_over;
+        public string feature_replacement_textures;
+        public string feature_custom_fonts;
+
+        public string feature_desc_voice_over;
+        public string feature_desc_additional_voice_over;
+        public string feature_desc_replacement_textures;
+        public string feature_desc_custom_fonts;
+
+        // Install-status legend texts: kept for the card status tooltips,
+        // the legend panel itself was replaced by the product tour (item 13).
+        public string legend_status_installed;
+        public string legend_status_update;
+        public string legend_status_manual;
+        public string legend_status_not_installed;
+        public string legend_status_unknown;
+
+        public string installed_title;
+        public string installed_empty;
+        public string installed_rescan;
+        public string settings_title;
+        public string settings_open_folder;
+        public string details_empty;
+        public string builtin_english_description;
+        public string authors_show_all;
+        public string authors_section;
+        public string description_section;
+        public string social_links_section;
+
+        // Product tour (item 13).
+        public string tour_welcome_title;
+        public string tour_welcome_body;
+        public string tour_welcome_start;
+        public string tour_welcome_not_now;
+        public string tour_restart_title;
+        public string tour_restart_body;
+        public string tour_next;
+        public string tour_back;
+        public string tour_skip;
+        public string tour_finish;
+        public string tour_step_catalog_title;
+        public string tour_step_catalog_body;
+        public string tour_step_details_title;
+        public string tour_step_details_body;
+        public string tour_step_download_title;
+        public string tour_step_download_body;
+        public string tour_step_installed_title;
+        public string tour_step_installed_body;
+        public string tour_step_switch_title;
+        public string tour_step_switch_body;
+        public string tour_step_updates_title;
+        public string tour_step_updates_body;
+        public string tour_step_settings_title;
+        public string tour_step_settings_body;
+        public string tour_step_repeat_title;
+        public string tour_step_repeat_body;
+        public string tour_step_icons_title;
+        public string tour_step_icons_body;
+        public string tour_step_ready_title;
+        public string tour_step_ready_body;
+        public string image_load_failed;
     }
 }

@@ -149,6 +149,12 @@ namespace UltrakULL.audio
                 // nothing that is already rendered reaches the player.
                 if (time > 0f)
                     source.time = time;
+
+                // A subtitled source shows its lines from the playback time. The
+                // restart above can leave the source at another position than the
+                // game's subtitle index expects, which would display the lines of
+                // the previous language again.
+                SubtitledAudioSourcesReplacer.SyncSubtitleProgress(source);
             }
             catch (Exception e)
             {
@@ -235,7 +241,13 @@ namespace UltrakULL.audio
 
         public static void SwapClipWithFileAsync(AudioClip sourceClip, string audioFilePath, Action<AudioClip> onComplete)
         {
-            PreloadClipAsync(audioFilePath, sourceClip, onComplete);
+            AudioClip original = ResolveOriginalClip(sourceClip);
+            PreloadClipAsync(audioFilePath, original, delegate(AudioClip newClip)
+            {
+                RegisterTranslatedClip(newClip, original, audioFilePath);
+                if (onComplete != null)
+                    onComplete(newClip);
+            });
         }
 
         public static void PreloadClipAsync(string audioFilePath, AudioClip fallback, Action<AudioClip> onComplete)
@@ -391,9 +403,10 @@ namespace UltrakULL.audio
             if (clips == null || index < 0 || index >= clips.Length)
                 return;
 
-            PreloadClipAsync(audioFilePath, clips[index], delegate(AudioClip clip)
+            AudioClip original = ResolveOriginalClip(clips[index]);
+            PreloadClipAsync(audioFilePath, original, delegate(AudioClip clip)
             {
-                RegisterTranslatedClip(clip, clips[index], audioFilePath);
+                RegisterTranslatedClip(clip, original, audioFilePath);
                 try { clips[index] = clip; } catch { }
             });
         }
@@ -404,16 +417,12 @@ namespace UltrakULL.audio
         /// the translation of the previous language, so the mapping is chased to
         /// the clip of the game itself.
         /// </summary>
-        private static void RegisterTranslatedClip(AudioClip translated, AudioClip fallback, string fullPath)
+        internal static void RegisterTranslatedClip(AudioClip translated, AudioClip fallback, string fullPath)
         {
             if (translated == null || fallback == null || ReferenceEquals(translated, fallback))
                 return;
 
-            AudioClip root = fallback;
-            AudioClip parent;
-            int guard = 0;
-            while (translatedToOriginal.TryGetValue(root, out parent) && parent != null && !ReferenceEquals(parent, root) && guard++ < 8)
-                root = parent;
+            AudioClip root = ResolveOriginalClip(fallback);
 
             if (ReferenceEquals(root, translated))
                 return;
@@ -424,6 +433,23 @@ namespace UltrakULL.audio
 
             translatedToOriginal[translated] = root;
             originalToRelativePath[root] = relative;
+        }
+
+        private static AudioClip ResolveOriginalClip(AudioClip clip)
+        {
+            AudioClip original = clip;
+            AudioClip parent;
+            int guard = 0;
+            while (original != null &&
+                   translatedToOriginal.TryGetValue(original, out parent) &&
+                   parent != null &&
+                   !ReferenceEquals(parent, original) &&
+                   guard++ < 8)
+            {
+                original = parent;
+            }
+
+            return original;
         }
 
         private static string GetPathRelativeToSpeechFolder(string fullPath)
@@ -568,7 +594,15 @@ namespace UltrakULL.audio
                     yield break;
 
                 if (newClip != null)
+                {
+                    // Downloaded clips have an empty name, but the swap logic and the
+                    // subtitle suppression look clips up by name (translation files are
+                    // named after the game's own clips). Without a name, every re-swap
+                    // of an already translated clip resolves nothing and the first
+                    // translation stays forever.
+                    newClip.name = Path.GetFileNameWithoutExtension(filePath);
                     clipCache[filePath] = newClip;
+                }
 
                 CompletePendingLoad(filePath, newClip);
             }
@@ -651,7 +685,7 @@ namespace UltrakULL.audio
 
         private static void WarnMissingOnce(string audioFilePath)
         {
-            string language = LanguageManager.CurrentLanguage != null ? LanguageManager.CurrentLanguage.metadata.langName : "";
+            string language = LanguageManager.CurrentLanguage != null ? LanguageManager.CurrentLanguage.metadata.languageCode : "";
             string key = language + "|" + (audioFilePath ?? string.Empty);
             if (missingPathWarnings.Add(key))
                 Logging.Warn("[AudioSwap] Replacement not found for expected path: " + audioFilePath);

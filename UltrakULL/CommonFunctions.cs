@@ -28,6 +28,18 @@ namespace UltrakULL
     // every frame (e.g. through the fluent .TMP() helper).
     private static readonly HashSet<string> missingTmpWarnings = new HashSet<string>();
 
+    /// <summary>
+    /// Drops the object/child caches. Called when the scene changes so the caches do
+    /// not return objects that belonged to the previous scene.
+    /// </summary>
+    public static void ClearCaches()
+    {
+        rootObjectCache.Clear();
+        childCache.Clear();
+        lastCacheTime = 0f;
+        lastChildCacheTime = 0f;
+    }
+
     private static Dictionary<string, string> LocalizedInputs;
 
         public static void RefreshLocalizedInputs()
@@ -191,7 +203,7 @@ namespace UltrakULL
             var current = LanguageManager.CurrentLanguage;
             if (current != null && current.metadata != null)
             {
-                return current.metadata.langName == "en-GB";
+                return current.metadata.languageCode == "en-GB";
             }
             return false;
         }

@@ -68,25 +68,20 @@ namespace UltrakULL
         }
 
         /// <summary>
-        /// Puts the game's own option texts back into every tracked dropdown.
+        /// Re-applies the active language to every tracked dropdown.
         ///
-        /// The option pages skip their patch for the built-in English, so the options
-        /// of the dropdowns would keep the previous language. The texts of the game
-        /// that were remembered on the first write are written back, and the captions
-        /// follow.
+        /// The options of the dropdowns live in <see cref="TMP_Dropdown.OptionData"/>,
+        /// not in a text component. The pages re-write them on a language switch, but
+        /// the caption of a closed dropdown only changes when the player picks an
+        /// option, so we refresh every caption here. For the built-in English the
+        /// game's own option texts are put back.
         /// </summary>
         public static void Reapply()
         {
             if (states.Count == 0)
                 return;
 
-            if (!CommonFunctions.isUsingEnglish())
-            {
-                // Every other language re-writes the options through the patches of
-                // the option pages, which refresh the captions on their own.
-                return;
-            }
-
+            bool english = CommonFunctions.isUsingEnglish();
             List<TMP_Dropdown> dead = null;
             foreach (KeyValuePair<TMP_Dropdown, State> pair in states)
             {
@@ -99,7 +94,30 @@ namespace UltrakULL
                     continue;
                 }
 
-                RestoreGameTexts(dropdown, pair.Value);
+                State state = pair.Value;
+                if (state.WrittenTexts == null)
+                    continue;
+
+                for (int i = 0; i < state.WrittenTexts.Length && i < dropdown.options.Count; i++)
+                {
+                    string text;
+                    if (english)
+                    {
+                        // The built-in English is the game's own text.
+                        text = (state.GameTexts != null && i < state.GameTexts.Length)
+                            ? state.GameTexts[i]
+                            : state.WrittenTexts[i];
+                    }
+                    else
+                    {
+                        text = state.WrittenTexts[i];
+                    }
+
+                    if (text != null)
+                        dropdown.options[i].text = text;
+                }
+
+                RefreshCaption(dropdown);
             }
 
             RemoveDead(dead);

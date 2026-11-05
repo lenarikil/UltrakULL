@@ -54,11 +54,16 @@ namespace UltrakULL.Harmony_Patches
             {
                 Logging.Warn("Prime end testament, getting text");
                 TextMeshProUGUI primeEndText = ___shopCanvas.gameObject.FindPath("Background", "Main Window", "Scroll View", "Viewport", "Text").TMP();
-                PrimeSanctumStrings pss = new PrimeSanctumStrings();
 
                 // The testament is written once, when the terminal is turned on, so
-                // it is registered as a live group to follow the language.
-                LiveText.ApplyGroup(___shopCanvas.gameObject, delegate { primeEndText.text = pss.GetSecretText(); });
+                // it is registered as a live group to follow the language. The
+                // strings are built from the active language on every write: an
+                // instance captured here would keep the language of the moment the
+                // terminal was turned on through every following language switch.
+                LiveText.ApplyGroup(___shopCanvas.gameObject, delegate
+                {
+                    primeEndText.text = new PrimeSanctumStrings().GetSecretText();
+                });
                 return;
             }
 

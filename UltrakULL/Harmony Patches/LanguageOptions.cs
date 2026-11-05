@@ -1,13 +1,10 @@
-﻿using HarmonyLib;
+using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 using System.IO;
-using System.Net;
-using System.Net.Http;
-using Newtonsoft.Json;
 using TMPro;
 using UltrakULL.json;
 using UltrakULL.UI.Notifications;
@@ -23,12 +20,10 @@ namespace UltrakULL.Harmony_Patches
     {
         public static TextMeshProUGUI languageButtonText;
         public static TextMeshProUGUI languagePageTitleText;
-        private static readonly HttpClient Client = new HttpClient();
 
         private static List<GameObject> languageButtons = new List<GameObject>();
 
         private static GameObject langLocalPage;
-        private static GameObject redownloadConfirmPanel;
         private static GameObject referenceButtonTemplate;
 
         // Exposed so the navigation patches below can react to page/highlight changes
@@ -164,12 +159,6 @@ namespace UltrakULL.Harmony_Patches
             }
         }
 
-
-        public static bool langFileLocallyExists(string languageTag)
-        {
-            string expectedFileLocation = Path.Combine(BepInEx.Paths.ConfigPath, "ultrakull", languageTag, "translation.json");
-            return File.Exists(expectedFileLocation);
-        }
 
         public static void updateLanguageButtonText()
         {
@@ -451,150 +440,6 @@ namespace UltrakULL.Harmony_Patches
                 + (buttons != null && Array.IndexOf(buttons, target) >= 0));
         }
 
-        public static void warnBeforeDownload(LanguageInfo lInfo)
-        {
-            GameObject difficultySelectMenu = GetInactiveRootObject("Canvas").Child("Difficulty Select (1)");
-
-            GameObject panelToUse = GetInactiveRootObject("Canvas").FindPath("OptionsMenu", "Assist Options", "Panel");
-
-            if (redownloadConfirmPanel == null)
-            {
-                redownloadConfirmPanel = GameObject.Instantiate(panelToUse, difficultySelectMenu.transform.parent);
-            }
-
-            redownloadConfirmPanel.name = "ConfirmDownloadPanel";
-
-            Text confirmDownloadText = redownloadConfirmPanel.FindPath("Panel", "Text (2)").Text();
-
-            confirmDownloadText.fontSize = 22;
-            confirmDownloadText.text =
-            "This language has already been downloaded. <color=#34e1eb>Redownload?</color>\n\n"
-                + "<color=orange>The current file's contents will be overwritten.</color>";
-
-            Text confirmDownloadTextConfirm = redownloadConfirmPanel.FindPath("Panel", "Text (1)").Text();
-            confirmDownloadTextConfirm.text = "";
-
-            //Destroy the original buttons and replace them with new ones (at least until I can figure out how to change the listeners of the original buttons)
-            GameObject origYes = redownloadConfirmPanel.FindPath("Panel", "Yes");
-            GameObject origNo = redownloadConfirmPanel.FindPath("Panel", "No");
-            origYes.SetActive(false);
-            origNo.SetActive(false);
-
-            //Make new buttons here
-            GameObject DownloadYes = CreateButton("YES", "DownloadYes");
-            DownloadYes.name = "DownloadYes";
-            DownloadYes.transform.position = new Vector3(1150, 300, 0);
-            DownloadYes.GetComponentInChildren<RectTransform>().sizeDelta = new Vector2(300f, 50f);
-            DownloadYes.GetComponentInChildren<Text>().text = "YES";
-            DownloadYes.GetComponentInChildren<Text>().font = Core.GlobalFont;
-            DownloadYes.transform.SetParent(redownloadConfirmPanel.transform);
-
-            GameObject DownloadNo = CreateButton("NO", "DownloadNo");
-            DownloadNo.name = "DownloadNo";
-            DownloadNo.transform.position = new Vector3(750, 300, 0);
-            DownloadNo.GetComponentInChildren<RectTransform>().sizeDelta = new Vector2(300f, 50f);
-            DownloadNo.GetComponentInChildren<Text>().text = "NO";
-            DownloadNo.GetComponentInChildren<Text>().font = Core.GlobalFont;
-            DownloadNo.transform.SetParent(redownloadConfirmPanel.transform);
-
-            DownloadYes.GetComponentInChildren<Button>().onClick.AddListener(delegate { redownloadConfirmPanel.SetActive(false); downloadLanguageFile(lInfo.languageTag, lInfo.languageFullName); });
-            DownloadNo.GetComponentInChildren<Button>().onClick.AddListener(delegate { redownloadConfirmPanel.SetActive(false); });
-
-            redownloadConfirmPanel.SetActive(true);
-        }
-
-        public static void downloadLanguageFile(string languageTag, string languageName, string remoteUrl = null)
-        {
-            Notifications notif = LanguageManager.CurrentLanguage.notifications;
-            NotificationRouter.Current.Info("UltrakULL",
-                NotificationText.Localize(notif?.download_downloading, NotificationText.Downloading), 2.5f);
-
-            string remoteFileName = languageTag + ".json";
-
-            // Explicit download URL (from the online catalog metadata) wins over the
-            // legacy per-language-tag URL scheme.
-            string languageFileUrl = !string.IsNullOrEmpty(remoteUrl)
-                ? remoteUrl
-                : "https://clearwateruk.github.io/mods/ultrakULL/" + remoteFileName;
-
-            // Save into the language's own folder (one folder = one language pack).
-            string languageFolder = Path.Combine(BepInEx.Paths.ConfigPath, "ultrakull", languageTag);
-            Directory.CreateDirectory(languageFolder);
-
-            string fullPath = Path.Combine(languageFolder, "translation.json");
-
-            Logging.Warn("Downloading to: " + fullPath);
-
-            Client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-            Client.DefaultRequestHeaders.UserAgent.TryParseAdd("request");
-            Client.Timeout = TimeSpan.FromSeconds(5);
-
-            try
-            {
-                using (WebClient webClient = new WebClient())
-                {
-                    string messageNotif;
-                    bool newLangDownloaded = false;
-
-                    //If the file was simply updated, it can be used straightaway.
-                    //If a new lang file was downloaded, display a notif to the user to enter a level or reload the menu.
-                    if (langFileLocallyExists(languageTag))
-                    {
-                        messageNotif = NotificationText.Localize(notif?.download_updated,
-                            NotificationText.DownloadUpdated, "lang", languageName);
-                    }
-                    else
-                    {
-                        messageNotif = NotificationText.Localize(notif?.download_new,
-                            NotificationText.DownloadNew, "lang", languageName);
-                        newLangDownloaded = true;
-                    }
-
-                    webClient.DownloadFile(languageFileUrl, fullPath);
-                    string jsonFile = File.ReadAllText(fullPath);
-                    JsonFormat file = JsonConvert.DeserializeObject<JsonFormat>(jsonFile);
-                    if (file != null)
-                        file.RootFolder = languageFolder;
-
-                    Logging.Info("Lang file saved.");
-
-
-                    MonoSingleton<HudMessageReceiver>.Instance.ClearMessage();
-                    NotificationRouter.Current.Success("UltrakULL",
-                        messageNotif + (newLangDownloaded
-                            ? NotificationText.Localize(notif?.download_selectHint, NotificationText.DownloadSelectHint)
-                            : ""),
-                        newLangDownloaded ? 6f : 4f);
-
-                    if (newLangDownloaded)
-                    {
-                        LanguageManager.allLanguages.Add(languageTag, file);
-
-                        Transform optionsParent = GetInactiveRootObject("Canvas").Child("OptionsMenu").transform;
-                        GameObject slotRowPrefab = optionsParent.Find("Save Slots").Find("Grid").Find("Slot Row").gameObject;
-                        addLocalLanguageToLocalList(ref slotRowPrefab, file.metadata.langName, true);
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                NotificationRouter.Current.Error("UltrakULL",
-                    NotificationText.Localize(notif?.download_error, NotificationText.DownloadError), 5f);
-                Logging.Error("Attempted download from: " + languageFileUrl);
-                Logging.Error(e.ToString());
-            }
-
-        }
-
-        /// <summary>
-        /// Called after a successful download so an open browser picks the new
-        /// language up in its Installed tab.
-        /// </summary>
-        public static void addLocalLanguageToLocalList(ref GameObject slotRowPrefab, string language, bool newlyAdded = false)
-        {
-            BrowserHost.RefreshInstalled();
-        }
-
         public static bool Prefix(OptionsMenuToManager __instance)
         {
             languageButtons.Clear();
@@ -617,6 +462,10 @@ namespace UltrakULL.Harmony_Patches
             // the options content area.
             langLocalPage = new GameObject("Language Page", typeof(RectTransform), typeof(CanvasRenderer));
             langLocalPage.transform.SetParent(pagesParent, false);
+            // The same open animation the game's own panels and buttons play
+            // (item 23); the component animates on enable, so re-opening the
+            // page replays it.
+            langLocalPage.AddComponent<HudOpenEffect>();
             langLocalPage.SetActive(false);
             RectTransform pageRect = langLocalPage.GetComponent<RectTransform>();
             pageRect.anchorMin = generalPageRect.anchorMin;
@@ -694,6 +543,14 @@ namespace UltrakULL.Harmony_Patches
                     langLocalPage.SetActive(true);
                 }
                 ApplyLanguageNavHighlight();
+
+                // Offer the product tour only when the mod page is actually opened,
+                // never on construction/game start (item 13.5).
+                var browser = UltrakULL.UI.TranslationBrowser.BrowserHost.CurrentView;
+                if (browser != null)
+                {
+                    browser.ShowWelcomeOnce();
+                }
             }
 
             void ApplyLanguageNavHighlight()

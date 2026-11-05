@@ -29,6 +29,15 @@ namespace UltrakULL
         public static volatile bool updateFailed;
         public static volatile string latestOnlineVersion;
         public static volatile bool updateCheckCompleted;
+
+        // Active translation update check (15.3): resolved on a background task
+        // from the online catalog, shown as a second startup toast once ready.
+        public static volatile bool translationUpdateCheckCompleted;
+        public static volatile bool translationUpdateAvailable;
+        public static volatile string translationUpdateName;
+        public static volatile string translationUpdateInstalledVersion;
+        public static volatile string translationUpdateLatestVersion;
+        private static bool translationUpdateNotifShown = false;
         
         public static bool GlobalFontReady;
         public static bool TMPFontReady;
@@ -163,11 +172,115 @@ namespace UltrakULL
             updateCheckCompleted = true;
         }
 
+        /// <summary>
+        /// Background check whether the ACTIVE translation has a newer version
+        /// in the online catalog (15.3). Runs after the mod update check; never
+        /// throws and never blocks startup. The result is surfaced as a second
+        /// startup toast with an "open catalog" action (15.4).
+        /// </summary>
+        public static async Task CheckActiveTranslationUpdate()
+        {
+            try
+            {
+                // The language manager initializes right after this task is
+                // started; wait briefly so the check never sees a null language.
+                for (int i = 0; i < 100 && LanguageManager.CurrentLanguage == null; i++)
+                {
+                    await Task.Delay(100);
+                }
+
+                // Built-in English and packs without a catalog identity cannot
+                // be matched, so there is nothing to report.
+                JsonFormat current = LanguageManager.CurrentLanguage;
+                if (current == null || current.metadata == null
+                    || string.IsNullOrWhiteSpace(current.metadata.translationId))
+                {
+                    return;
+                }
+
+                string translationId = current.metadata.translationId.Trim();
+                if (!await CatalogService.LoadAsync())
+                {
+                    Logging.Warn("[Startup] Catalog not available; skipping the active translation update check.");
+                    return;
+                }
+
+                TranslationEntry entry = CatalogService.FindById(translationId);
+                if (entry == null)
+                {
+                    // The pack is no longer listed: nothing to update towards.
+                    return;
+                }
+
+                List<InstalledPackInfo> packs = InstalledPackRegistry.Scan(
+                    Path.Combine(Paths.ConfigPath, "ultrakull"));
+                InstallResolution resolution = InstallStatusResolver.Resolve(entry, packs);
+                if (resolution.Status != InstallStatus.UpdateAvailable)
+                {
+                    return;
+                }
+
+                translationUpdateAvailable = true;
+                translationUpdateName = entry.name ?? current.metadata.languageName ?? translationId;
+                translationUpdateInstalledVersion = resolution.InstalledVersion ?? "?";
+                translationUpdateLatestVersion = entry.version ?? "?";
+                Logging.Message("[Startup] Active translation update available: " + translationUpdateName
+                    + " v" + translationUpdateInstalledVersion + " -> v" + translationUpdateLatestVersion);
+            }
+            catch (Exception e)
+            {
+                // The check is best-effort: a failure must not affect startup.
+                Logging.Warn("[Startup] Active translation update check failed: " + e.Message);
+            }
+            finally
+            {
+                translationUpdateCheckCompleted = true;
+            }
+        }
+
+        /// <summary>
+        /// Second startup toast (15.3/15.4): the active translation has a newer
+        /// version in the catalog. The action opens the online catalog page in
+        /// the system browser; updating happens in the in-game browser as usual.
+        /// </summary>
+        private static void ShowTranslationUpdateNotificationIfNeeded()
+        {
+            if (translationUpdateNotifShown || !translationUpdateCheckCompleted)
+                return;
+            if (!translationUpdateAvailable)
+            {
+                translationUpdateNotifShown = true;
+                return;
+            }
+            if (GetCurrentSceneName() != "Main Menu")
+                return;
+
+            translationUpdateNotifShown = true;
+
+            JsonFormat current = LanguageManager.CurrentLanguage;
+            Notifications notif = current != null ? current.notifications : null;
+
+            string title = NotificationText.Localize(notif?.startup_translationUpdateTitle,
+                NotificationText.TranslationUpdateTitle);
+            string body = NotificationText.Localize(notif?.startup_translationUpdateBody,
+                NotificationText.TranslationUpdateBody,
+                "name", translationUpdateName ?? "?",
+                "installedVersion", translationUpdateInstalledVersion ?? "?",
+                "latestVersion", translationUpdateLatestVersion ?? "?");
+
+            NotificationRouter.Current.Warning(title, body,
+                NotificationText.Localize(notif?.startup_translationOpenCatalog,
+                    NotificationText.TranslationUpdateOpenCatalog),
+                () => Application.OpenURL(CatalogService.CatalogUrl),
+                10f);
+        }
+
         // Called every frame from MainPatch.Update; shows the update toast once the
         // background check has finished (it can complete after the main menu has loaded).
         public static void TryShowPendingNotifications()
         {
             ShowStartupNotificationIfNeeded();
+            ShowTranslationUpdateNotificationIfNeeded();
         }
 
 
@@ -629,7 +742,7 @@ namespace UltrakULL
             startupNotifShown = true;
 
             string version = MainPatch.GetVersion();
-            string lang = LanguageManager.CurrentLanguage.metadata.langName;
+            string lang = LanguageManager.CurrentLanguage.metadata.languageCode;
             Notifications notif = LanguageManager.CurrentLanguage.notifications;
 
             string title = NotificationText.Localize(notif?.startup_title, NotificationText.StartupTitle,
@@ -678,6 +791,10 @@ namespace UltrakULL
             // scene, so a later language switch can put the original strings back.
             OriginalTextSnapshot.Capture();
 
+            // Drop the CommonFunctions object/child caches so they do not return
+            // objects that belonged to the previous scene.
+            CommonFunctions.ClearCaches();
+
             // The tracked originals of the previous scene belong to objects that are
             // gone by now.
             LiveText.PruneDead();
@@ -725,6 +842,12 @@ namespace UltrakULL
             // English.
             LocalizedDropdowns.Reapply();
 
+            // Control bind names and level-name texts are written once when the
+            // controls/level screens open, so they need their own refresh to follow
+            // the new language.
+            ControlBindNames.Reapply();
+            LevelNameFinderTranslation.Reapply();
+
             // The money counter is written by the game itself, so it needs its own
             // refresh to follow the new language.
             UpdateMoneyPatch.Reapply();
@@ -736,6 +859,11 @@ namespace UltrakULL
             // The button that switches between the standard and the alternate colors
             // is only written by the game when the colors are switched.
             GunColorTypeGetterPatch.Reapply();
+            LocalizeGunColorTypeShop.Reapply();
+
+            // The difficulty title is written only when the difficulty changes, so it
+            // needs its own refresh to follow the new language.
+            UltrakULL.Harmony_Patches.LocalizeGameProgressCheck.Reapply();
 
             // The game builds the cheat menu only once, when it starts. It has to be
             // rebuilt, so the menu and the cheat list on the HUD follow the new
@@ -754,14 +882,38 @@ namespace UltrakULL
             LocalizeSaveSlots.Reapply();
             LocalizeLevelStatNames.Reapply();
 
+            // The level-select leaderboard labels are written only when the panel
+            // opens, so they need their own refresh to follow the new language.
+            LevelLeaderboards.Reapply();
+
             // The subtitles that are on screen keep their line, only their language
             // changes.
             LiveSubtitles.Reapply();
+            UltrakULL.Harmony_Patches.Subtitles.GabrielSubtitlesSwap.Reapply();
 
             // The skip hint of a cutscene and the title reveal of the level follow
             // the new language as well, without starting over.
             CutsceneSkipTextPatch.Reapply();
             LocalizeLevelPopup.Reapply();
+
+            // HUD messages that are visible right now follow the new language
+            // immediately instead of keeping the previous language until the next
+            // SendHudMessage call.
+            SendHudMessagePatch.Reapply();
+            SendHudMessage2Patch.Reapply();
+
+            // The style meter (freshness multiplier and style-kill names) follows
+            // the new language immediately instead of waiting for the next style
+            // update or kill.
+            LocalizeAddPoints.Reapply();
+            LocalizeWeaponFreshnessText.Reapply();
+
+            // The intermission boxes type their text out. The boxes that are on
+            // screen follow the new language from the position they are at, and the
+            // dubbing of the line that is playing switches with them.
+            UltrakULL.Harmony_Patches.LocalizeIntermission.ReapplyTyping();
+            UltrakULL.Harmony_Patches.LocalizeIntermission.ReapplyAudio();
+
             SandboxWorldOptions.Reapply();
             SpawnMenuPatch.Reapply();
             LocalizeFinalRankInfo.Reapply();
@@ -819,6 +971,17 @@ namespace UltrakULL
                             if (isUsingEnglish())
                             {
                                 Logging.Warn("Current language is English, not patching.");
+
+                                // The testament panels type their own text, so the
+                                // snapshot restore cannot reach a panel that is open:
+                                // its typing changed the text the mod wrote. The
+                                // panels follow the game's own text through their
+                                // registry instead.
+                                if (levelName.Contains("-S"))
+                                {
+                                    SecretLevels.ReapplyTestamentsForEnglish();
+                                }
+
                                 break;
                             }
 

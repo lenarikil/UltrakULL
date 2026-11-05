@@ -5,18 +5,14 @@ namespace UltrakULL
 {
     class PrimeSanctumStrings
     {
-        private string p1SecretText;
-        private string p2SecretText;
-        //private string p3SecretText;
-
         public string GetSecretText()
         {
             string currentLevel = GetCurrentSceneName();
 
             switch (currentLevel)
             {
-                case "Level P-1": { return this.p1SecretText; }
-                case "Level P-2": { return this.p2SecretText; }
+                case "Level P-1": { return BuildP1SecretText(); }
+                case "Level P-2": { return BuildP2SecretText(); }
               //case "Level P-3": { return this.p3SecretText; }
 
                 default: { return "Unknown secret text"; }
@@ -37,9 +33,9 @@ namespace UltrakULL
             }
         }
 
-        public PrimeSanctumStrings()
+        private static string BuildP1SecretText()
         {
-            this.p1SecretText =
+            return
                 LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_first_secretText1 + "\n"
                 + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_first_secretText2 + "\n<color=#666666>"
                 + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_first_secretText3 + "</color>\n"
@@ -49,8 +45,11 @@ namespace UltrakULL
                 + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_first_secretText7 + "\n\n"
                 + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_first_secretText8 + "\n\n"
                 + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_first_secretText9 + "\n\n" + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_first_secretText10;
+        }
 
-            this.p2SecretText =
+        private static string BuildP2SecretText()
+        {
+            return
                 LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_secretText1 + "\n"
                 + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_secretText2 + "\n<color=#666666>"
                 + LanguageManager.CurrentLanguage.primeSanctum.primeSanctum_second_secretText3 + "</color>\n\n"

@@ -100,6 +100,9 @@ namespace UltrakULL
 					PostInitPatches(canvasObj);
 				}
 
+				// Start texture replacement only after the scene-loaded handlers and
+				// the mod's own scene localization have finished.
+				UltrakULL.Harmony_Patches.TexturePatcher.OnSceneLoaded();
 			}
 		}
 
@@ -163,16 +166,18 @@ namespace UltrakULL
 			try
 			{
 				Logging.Warn("--- Checking for updates ---");
-				Task.Run(() =>
+				Task.Run(async () =>
 				{
 					try
 					{
-						return Core.CheckForUpdates();
+						await Core.CheckForUpdates();
+						// After the mod update check: look for a newer version of the
+						// ACTIVE translation in the online catalog (15.3).
+						await Core.CheckActiveTranslationUpdate();
 					}
 					catch(Exception e)
 					{
 						Logging.Message($"Failed to read version info! {e.Message}");
-						return null;
 					}
 				});
 				

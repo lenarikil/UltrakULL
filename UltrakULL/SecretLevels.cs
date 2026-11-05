@@ -35,6 +35,97 @@ namespace UltrakULL
             return abbreviation.ToString();
         }
 
+        /// <summary>
+        /// Writes the testament text of a panel.
+        ///
+        /// A panel that is open types its text out. One that is typing right now
+        /// keeps its progress and switches to the new language; the rest is written
+        /// as static text, so the panel types it when the player opens it.
+        /// </summary>
+        private static void SetTestamentText(TextMeshProUGUI textComponent, string newText)
+        {
+            if (textComponent == null)
+                return;
+
+            // The first patch of a scene still finds the game's own text in the
+            // panel. It is remembered here because it is what the built-in English
+            // goes back to: the localization pass does not run for it.
+            if (!testamentOriginals.ContainsKey(textComponent))
+                testamentOriginals[textComponent] = textComponent.text;
+
+            ScrollingText scrolling = textComponent.GetComponent<ScrollingText>();
+            if (scrolling != null && scrolling.isActiveAndEnabled && LiveTypingText.IsTyping(scrolling))
+            {
+                LiveTypingText.SwapScrollingMessage(scrolling, newText);
+                return;
+            }
+
+            textComponent.text = newText;
+        }
+
+        /// <summary>
+        /// The game's own text of every testament panel the mod patched, so a switch
+        /// to the built-in English can put it back.
+        /// </summary>
+        private static readonly Dictionary<TextMeshProUGUI, string> testamentOriginals =
+            new Dictionary<TextMeshProUGUI, string>();
+
+        /// <summary>
+        /// Puts the game's own text back into the testament panels. Called when the
+        /// built-in English is selected: the localization pass does not run for it,
+        /// and the snapshot restore cannot reach a panel that is open, because its
+        /// typing changed the text the mod wrote. Panels that are not on screen are
+        /// written as static text, exactly like the patch does for a translation.
+        /// </summary>
+        public static void ReapplyTestamentsForEnglish()
+        {
+            try
+            {
+                List<TextMeshProUGUI> dead = null;
+                foreach (KeyValuePair<TextMeshProUGUI, string> pair in testamentOriginals)
+                {
+                    if (pair.Key == null)
+                    {
+                        if (dead == null)
+                            dead = new List<TextMeshProUGUI>();
+                        dead.Add(pair.Key);
+                    }
+                }
+
+                if (dead != null)
+                {
+                    foreach (TextMeshProUGUI panel in dead)
+                        testamentOriginals.Remove(panel);
+                }
+
+                foreach (KeyValuePair<TextMeshProUGUI, string> pair in testamentOriginals)
+                {
+                    TextMeshProUGUI panel = pair.Key;
+                    string original = pair.Value;
+                    if (panel == null || string.IsNullOrEmpty(original))
+                        continue;
+
+                    ScrollingText scrolling = panel.GetComponent<ScrollingText>();
+                    if (scrolling != null && scrolling.isActiveAndEnabled && LiveTypingText.IsTyping(scrolling))
+                    {
+                        LiveTypingText.SwapScrollingMessage(scrolling, original);
+                    }
+                    else
+                    {
+                        // The message field follows the text, so a panel that types
+                        // again types English.
+                        panel.text = original;
+                        if (scrolling != null)
+                            scrolling.message = original;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Logging.Warn("[SecretLevels] Failed to restore the English testament text: " + e.Message);
+            }
+        }
+
         private void PatchTestament(ref GameObject testamentRoom)
         {
             TextMeshProUGUI testamentPanelText = null;
@@ -125,16 +216,16 @@ namespace UltrakULL
             {
                 case "Level 0-S":
                     {
-                        testamentPanelText.text =
+                        SetTestamentText(testamentPanelText,
                             LanguageManager.CurrentLanguage.secretLevels.secretLevels_prelude_testamentTitle
                             + "\n\n\n" +
                             LanguageManager.CurrentLanguage.secretLevels.secretLevels_prelude_testament1
-                            + "\n\n\n" + 
+                            + "\n\n\n" +
                             LanguageManager.CurrentLanguage.secretLevels.secretLevels_prelude_testament2
                             + "\n\n\n" +
                             LanguageManager.CurrentLanguage.secretLevels.secretLevels_prelude_testament3
                             + "\n\n\n" +
-                            LanguageManager.CurrentLanguage.secretLevels.secretLevels_prelude_testament4;
+                            LanguageManager.CurrentLanguage.secretLevels.secretLevels_prelude_testament4);
 
                         //testamentPanelTitle.text = LanguageManager.CurrentLanguage.secretLevels.secretLevels_prelude_testamentTitle;
 
@@ -142,7 +233,7 @@ namespace UltrakULL
                     }
                 case "Level 1-S":
                     {
-                        testamentPanelText.text =
+                        SetTestamentText(testamentPanelText,
                             LanguageManager.CurrentLanguage.secretLevels.secretLevels_first_testamentTitle
                             + "\n\n" +
 
@@ -152,7 +243,7 @@ namespace UltrakULL
                             + "\n\n\n" +
                             LanguageManager.CurrentLanguage.secretLevels.secretLevels_first_testament3
                             + "\n\n\n" +
-                            LanguageManager.CurrentLanguage.secretLevels.secretLevels_first_testament4;
+                            LanguageManager.CurrentLanguage.secretLevels.secretLevels_first_testament4);
 
                        // testamentPanelTitle.text = LanguageManager.CurrentLanguage.secretLevels.secretLevels_first_testamentTitle;
                         break;
@@ -162,7 +253,7 @@ namespace UltrakULL
                     {
                         if (!(testamentPanelText4S1 == null))
                         {
-                            testamentPanelText4S1.text =
+                            SetTestamentText(testamentPanelText4S1,
                             LanguageManager.CurrentLanguage.secretLevels.secretLevels_fourth_testamentTitle + "\n\n\n" +
 
                             LanguageManager.CurrentLanguage.secretLevels.secretLevels_fourth_testament1 + "\n" +
@@ -173,13 +264,13 @@ namespace UltrakULL
                             LanguageManager.CurrentLanguage.secretLevels.secretLevels_fourth_testament5 + "\n\n" +
 
                             LanguageManager.CurrentLanguage.secretLevels.secretLevels_fourth_testament6 + "\n\n\n" +
-                            LanguageManager.CurrentLanguage.secretLevels.secretLevels_fourth_testament7;
+                            LanguageManager.CurrentLanguage.secretLevels.secretLevels_fourth_testament7);
 
                             //testamentPanelTitle.text = LanguageManager.CurrentLanguage.secretLevels.secretLevels_fourth_testamentTitle;
                         }
                         if (!(testamentPanelText4S2 == null))
                         {
-                            testamentPanelText4S2.text =
+                            SetTestamentText(testamentPanelText4S2,
                             LanguageManager.CurrentLanguage.secretLevels.secretLevels_fourth_testamentTitle + "\n\n\n" +
 
                             LanguageManager.CurrentLanguage.secretLevels.secretLevels_fourth_testament1 + "\n" +
@@ -190,7 +281,7 @@ namespace UltrakULL
                             LanguageManager.CurrentLanguage.secretLevels.secretLevels_fourth_testament5 + "\n\n" +
 
                             LanguageManager.CurrentLanguage.secretLevels.secretLevels_fourth_testament6 + "\n\n\n" +
-                            LanguageManager.CurrentLanguage.secretLevels.secretLevels_fourth_testament7;
+                            LanguageManager.CurrentLanguage.secretLevels.secretLevels_fourth_testament7);
 
                             //testamentPanelTitle.text = LanguageManager.CurrentLanguage.secretLevels.secretLevels_fourth_testamentTitle;
                         }
@@ -198,8 +289,8 @@ namespace UltrakULL
                     }
                 case "Level 5-S":
                     {
-                        testamentPanelText.text =
-                                LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testamentTitle + "\n\n" + 
+                        SetTestamentText(testamentPanelText,
+                                LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testamentTitle + "\n\n" +
                                 LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testament1 + "\n" +
                                 LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testament2 + "\n\n" + 
 
@@ -214,7 +305,7 @@ namespace UltrakULL
                                 LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testament9 + "\n" +
                                 LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testament10 + "\n" +
                                 LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testament11 + "\n" +
-                                LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testament12;
+                                LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testament12);
 
                         //testamentPanelTitle.text = LanguageManager.CurrentLanguage.secretLevels.secretLevels_fifth_testamentTitle;
 
@@ -222,7 +313,7 @@ namespace UltrakULL
                     }
                 case "Level 7-S":
                     {
-                        testamentPanelText.text =
+                        SetTestamentText(testamentPanelText,
                                 LanguageManager.CurrentLanguage.secretLevels.secretLevels_seventh_testamentTitle + "\n\n\n" +
 
                                 LanguageManager.CurrentLanguage.secretLevels.secretLevels_seventh_testament1 + "\n\n" +
@@ -240,7 +331,7 @@ namespace UltrakULL
                                 LanguageManager.CurrentLanguage.secretLevels.secretLevels_seventh_testament8 + "\n\n" +
 
                                 LanguageManager.CurrentLanguage.secretLevels.secretLevels_seventh_testament9 + "\n" +
-                                LanguageManager.CurrentLanguage.secretLevels.secretLevels_seventh_testament10;
+                                LanguageManager.CurrentLanguage.secretLevels.secretLevels_seventh_testament10);
                         
                         break;
                     }

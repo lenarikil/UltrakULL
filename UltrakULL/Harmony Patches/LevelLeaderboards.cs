@@ -14,6 +14,82 @@ namespace UltrakULL.Harmony_Patches
 {
     public class LevelLeaderboards
     {
+        /// <summary>
+        /// Applies the active language to every level-select leaderboard that is on
+        /// screen.
+        ///
+        /// The leaderboard labels are written only when the panel opens
+        /// (<see cref="LevelSelectLeaderboard.OnEnable"/>), so a language switch did
+        /// not reach them and they kept the previous language until the panel was
+        /// closed and opened again.
+        /// </summary>
+        public static void Reapply()
+        {
+            if (LeaderboardProperties.Difficulties == null || LeaderboardProperties.Difficulties.Length < 5)
+                return;
+
+            LevelSelectLeaderboard[] boards = UnityEngine.Object.FindObjectsOfType<LevelSelectLeaderboard>(true);
+            for (int i = 0; i < boards.Length; i++)
+            {
+                LevelSelectLeaderboard board = boards[i];
+                if (board == null)
+                {
+                    continue;
+                }
+
+                try
+                {
+                    TMP_Text anyPercent = AccessTools.Field(typeof(LevelSelectLeaderboard), "anyPercentLabel")?.GetValue(board) as TMP_Text;
+                    TMP_Text pRank = AccessTools.Field(typeof(LevelSelectLeaderboard), "pRankLabel")?.GetValue(board) as TMP_Text;
+                    GameObject noItemsPanel = AccessTools.Field(typeof(LevelSelectLeaderboard), "noItemsPanel")?.GetValue(board) as GameObject;
+
+                    if (isUsingEnglish())
+                    {
+                        // The built-in English is the game's own text.
+                        LeaderboardProperties.Difficulties[0] = "HARMLESS";
+                        LeaderboardProperties.Difficulties[1] = "LENIENT";
+                        LeaderboardProperties.Difficulties[2] = "STANDARD";
+                        LeaderboardProperties.Difficulties[3] = "VIOLENT";
+                        LeaderboardProperties.Difficulties[4] = "BRUTAL";
+
+                        if (anyPercent != null)
+                            anyPercent.text = "Any%";
+                        if (pRank != null)
+                            pRank.text = "P Rank";
+                    }
+                    else
+                    {
+                        LeaderboardProperties.Difficulties[0] = LanguageManager.CurrentLanguage.frontend.difficulty_harmless;
+                        LeaderboardProperties.Difficulties[1] = LanguageManager.CurrentLanguage.frontend.difficulty_lenient;
+                        LeaderboardProperties.Difficulties[2] = LanguageManager.CurrentLanguage.frontend.difficulty_standard;
+                        LeaderboardProperties.Difficulties[3] = LanguageManager.CurrentLanguage.frontend.difficulty_violent;
+                        LeaderboardProperties.Difficulties[4] = LanguageManager.CurrentLanguage.frontend.difficulty_brutal;
+
+                        if (anyPercent != null)
+                            anyPercent.text = LanguageManager.CurrentLanguage.frontend.leaderboard_anyPercent;
+                        if (pRank != null)
+                            pRank.text = LanguageManager.CurrentLanguage.frontend.leaderboard_pPercent;
+                    }
+
+                    if (noItemsPanel != null)
+                    {
+                        Text noItemsText = noItemsPanel.Child("Text").Text();
+                        if (noItemsText != null)
+                        {
+                            if (isUsingEnglish())
+                                noItemsText.text = "No entries";
+                            else
+                                noItemsText.text = LanguageManager.CurrentLanguage.frontend.leaderboard_noEntries;
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    HandleError(e);
+                }
+            }
+        }
+
         [HarmonyPatch(typeof(LevelSelectLeaderboard),"OnEnable")]
         public class LevelLeaderboardPatch
         {
